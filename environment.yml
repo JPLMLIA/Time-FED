@@ -5,6 +5,7 @@ dependencies:
   - python=3.8.5=h26836e1_1
   - pip=20.2.3=py38_0
   - pip:
+    - h5py==2.10.0
     - mat4py==0.4.3
     - numpy==1.19.2
     - pandas==1.1.3
