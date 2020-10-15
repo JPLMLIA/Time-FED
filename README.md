@@ -1,6 +1,5 @@
 # Machine Learning for the Optical Channel
 
----
 ## Setup
 
 Clone the repo via `git pull https://github.jpl.nasa.gov/jamesmo/MLOC.git`
