@@ -111,37 +111,51 @@ def load_cn2(path, datenum=False, round=False):
         as the index
     """
     def mat50(file):
-        hold = {i: [] for i in range(len(columns))}
-        data = loadmat(file)
-        for pair in data['YearData']:
-            for i, value in enumerate(pair):
-                hold[i].append(value)
-        for i, arr in hold.items():
-            tmp[columns[i]] = np.append(tmp[columns[i]], arr)
+        data = list(loadmat(file).values())[0]
+        return pd.DataFrame(data, columns=cols)
 
     def mat73(file):
         with h5py.File(file, 'r') as h5:
-            data = {k: np.array(v) for k, v in h5.items()}['YearData']
-        for i, col in enumerate(data):
-            tmp[columns[i]] = np.append(tmp[columns[i]], col)
+            data = h5[list(h5.keys())[0]]
+            ret = pd.DataFrame(data).T
+            return ret.rename(columns={i: cols[i] for i in range(len(cols))})
 
     Logger.info('Loading in Cn2 data')
 
-    columns = ['datenum', 'Cn2', 'solar_zenith_angle']
-    tmp = {col: np.array([]) for col in columns}
+    cols  = ['datenum', 'Cn2', 'solar_zenith_angle']
     files = sorted(glob(f'{path}/BLS_*.mat'))
-
+    df    = pd.DataFrame(columns=cols)
     for file in tqdm(files, desc='Files processed'):
+        print(file)
         try:
-            mat50(file)
+            df = df.append(mat50(file))
         except:
-            mat73(file)
-
-    # Convert to a DataFrame
-    df = pd.DataFrame(tmp)
+            df = df.append(mat73(file))
 
     # Remove duplicates
     df = df[df.duplicated(keep='first')]
+
+    # Convert Matlab datenum to Python datetime
+    df['datetime'] = pd.to_datetime(df.datenum-719529, unit='D')
+    df = df.set_index('datetime').sort_index()
+
+    # Round to the nearest second -- cleans up the nanoseconds
+    if round:
+        df.index = df.index.round('1s')
+
+    # Drop the datenum column
+    if not datenum:
+        df.drop(columns=['datenum'], inplace=True)
+
+    return df
+
+@timeit
+def load_r0(file, datenum=False, round=False):
+    """
+    Loads the fl4.mat file
+    """
+    data = list(loadmat(file).values())[0]
+    df = pd.DataFrame(data, columns=['datenum', 'o(I)/I', 'r0', 'sun_zenith_angle'])
 
     # Convert Matlab datenum to Python datetime
     df['datetime'] = pd.to_datetime(df.datenum-719529, unit='D')
