@@ -153,6 +153,23 @@ def load_cn2(path, datenum=False, round=False):
 def load_r0(file, datenum=False, round=False):
     """
     Loads the fl4.mat file
+
+    Parameters
+    ----------
+    file : str
+        Location of fl4.mat
+    datenum : bool
+        Retains the Matlab datenum column in the return DataFrame, defaults to
+        `False` which will drop the column
+    round : bool
+        Rounds the datetimes that were converted from Matlab datenum to the
+        nearest second
+
+    Returns
+    -------
+    pandas.DataFrame
+        A DataFrame of the r0 data including o(I)/I, solar zenith angle, and
+        datetime as the index
     """
     data = list(loadmat(file).values())[0]
     df = pd.DataFrame(data, columns=['datenum', 'o(I)/I', 'r0', 'sun_zenith_angle'])
