@@ -46,7 +46,7 @@ def timeit(func):
     return _wrap
 
 @timeit
-def load_weather(path):
+def load_weather(path, interpolate=True, **interp_args):
     f"""
     Loads in weather data from .txt files
 
@@ -85,6 +85,9 @@ def load_weather(path):
                 df = df.join(_df, sort=True)
             else:
                 df = _df
+
+    if interpolate:
+        df.interpolate(inplace=True, **interp_args)
 
     return df
 
