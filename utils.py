@@ -47,14 +47,14 @@ def timeit(func):
 
 @timeit
 def load_weather(path, interpolate=True, **interp_args):
-    f"""
+    """
     Loads in weather data from .txt files
 
     Parameters
     ----------
     path : str
         Path to the directory containing weather .txt files found in
-        subdirectories per the mapping: {mappings}
+        subdirectories per the mappings
 
     Returns
     -------
