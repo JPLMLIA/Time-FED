@@ -8,6 +8,8 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import warnings
 
+from matplotlib.patches import Patch
+from matplotlib.ticker  import FormatStrFormatter
 from types import SimpleNamespace as SN
 
 from utils import (
@@ -22,16 +24,18 @@ warnings.filterwarnings('ignore')
 logger = logging.getLogger()
 logger.setLevel(logging.ERROR)
 
-#%% Commonly used arguments
-dist_plot = {
+#%% Analysis functions
+valCount = {
     'kind'   : 'bar',
     'ylabel' : 'Count',
-    'xlabel' : 'Distance',
     'logy'   : True,
     'figsize': (30, 10)
 }
-
-#%% Analysis functions
+override = {
+    'Cn2': {
+        'logx': True
+    }
+}
 
 def protect(func):
     """
@@ -44,180 +48,40 @@ def protect(func):
             print(f'Function {func.__name__}() raised an exception:\n{e}')
     return _wrap
 
-@protect
-def analyze(df, quantile=0.001, std=3):
+def show(save=False):
     """
-    Analyzes a provided dataframe with some generic statistics
-
-    Assumptions:
-    - The index is dtype DateTime
-
-    Parameters
-    ----------
-    df : pandas.DataFrame
-        The DataFrame to perform analysis on
-    quantile : float
-        The lower quantile to extract, the upper will be 1-this
-    std : int
-        The number of standard deviations away when determining outliers
+    Shows a plot, saves it if set
     """
-    stats = SN()
+    plt.tight_layout()
+    if save:
+        plt.savefig(save)
+    plt.show()
 
-    # Some integrity checks
-    assert df.index.is_all_dates
-    df = df.sort_index()
+def generate_histogram(col, df, n_bins=109, save=False):
+    """
+    Generates a histogram for the provided column and highlights the sigma
+    regions.
+    """
+    sigmas = {
+        1: 'red',
+        2: 'orange',
+        3: 'yellow',
+        4: 'green',
+        5: 'blue'
+    }
 
-    ## Time analysis
-    stats.time   = time = SN()
-    time.total   = df.index.size
-    time.first   = df.index[0]
-    time.last    = df.index[-1]
-    time.cadence = df.index[1:] - df.index[:-1].values
-    time.counts  = time.cadence.value_counts()
-    time.mean    = time.cadence.mean()
+    legend = [Patch(facecolor=colour, label=f'{sigma}σ', alpha=.3, edgecolor='black') for sigma, colour in sigmas.items()]
 
-    ## NaN analysis
-    stats.df   = sndf = SN()
-    nan_df     = df.isna()
-    sndf.total = nan_df.sum()
-    sndf.corr  = (nan_df * 1).corr(method='pearson')
-
-    ### Per column analysis
-    stats.columns = SN()
-    for col in df.columns:
-        series = df[col]
-        vars(stats.columns)[col] = ref = SN()
-
-        # Distance between nans
-        nans = ref.nans = SN()
-        nan_inds     = series[series.isna()].index
-        nans.dist    = nan_inds[1:] - nan_inds[:-1].values
-        nans.mean    = nans.dist.mean()
-        nans.count   = nans.dist.value_counts()
-        nans.total   = nan_inds.size
-        nans.percent = (nans.total / df[col].size) * 100
-
-        ## Value analysis
-        vals = ref.values = SN()
-        vals.mean = series.mean()
-
-        # Outliers using std
-        vals.stddevs = (series - series.mean()).abs()
-        vals.std     = series.std()
-        vals.filter  = vals.std * std # This is the value to use as the outlier filter
-
-    return stats
-
-#%% Load data
-path = 'Weather Data/'
-
-#df = load_r0(path, round=True)
-#df = load_cn2(path, round=True)
-df = load_weather(path, interpolate=False)
-
-df
-
-#%% Perform analysis
-stats = analyze(df)
-interpret(stats)
-
-#%% Time
-print(f'There are {stats.time.total} rows of timestamps starting from {stats.time.first} to {stats.time.last}.')
-print(f'For this range, the average cadence was {stats.time.mean}. Below is a graph showing other differences in cadences discovered.\n')
-ax = stats.time.counts.plot(title='Distance between timestamps', **dist_plot)
-
-#%% Global NaNs
-print(f'The total NaNs for each column are as follows:\n{stats.df.total}')
-print(f'\nThe correlation of these nans between columns are provided in the following heatmap:\n')
-ax = sns.heatmap(stats.df.corr, annot=True, vmin=-1, vmax=1, cmap='RdYlBu')
-# Correlation matrix between features
-
-#%% Column NaNs
-def interpret_columns():
-    for col in vars(stats.columns):
-        ref = vars(stats.columns)[col]
-        #print(list(vars(ref.nans).keys()))
-        print(f'Column {col} is {ref.nans.percent:.2f}% NaNs ({ref.nans.total} / {stats.time.total}).')
-        print(f'The average distance between NaNs is {ref.nans.mean}. Below is a graph showing the various differences in distances between NaNs.\n')
-
-        if ref.nans.count.size > 150:
-            print(f'The following graph may not be useful as there are >150 different distances between NaNs for this column.')
-            print(f'As such, a preview of the series from which this plot is generated will be provided.\n {ref.nans.count}')
-            print('\nThe graph is useful for gaining a feel on how often there\'s differing distances between NaNs.')
-
-        ax = ref.nans.count.plot(title=f'Distance between NaNs for {col}', **dist_plot)
-        plt.show()
-
-        N = int(ref.values.std.filter / ref.values.std.std)
-        print(f'Outlier values are discovered using two methods: standard deviation and quantiles')
-        print(f'Using the standard deviation ({ref.values.std.std:.2f}), values above/below N={N} standard deviations away are flagged as outliers ({N}*{ref.values.std.std:.2f}={ref.values.std.filter:.2f} = the "filter").')
-        print(f'The values above this filter are:\n{ref.values.std.above}')
-        print(f'\nFirst 50 values, graphed:')
-        ref.values.std.above.plot(**dist_plot)
-        plt.show()
-
-        print(f'\nThe values below this filter are:\n{ref.values.std.below}')
-        print(f'\nFirst 50 values, graphed:')
-        ref.values.std.below.plot(**dist_plot)
-        plt.show()
-
-
-        yield
-
-col_analysis = interpret_columns()
-# Distance between non-nans, see x-axis as ascending
-#%% Execute this line to generate the analysis for the next column in the dataframe
-next(col_analysis)
-
-#%%
-ref.values.std.below
-
-# plot histograms then colour the 5 sigma
-
-
-stats.columns.pressure.values
-#%%
-above = stats.columns.pressure.values.stddevs > stats.columns.pressure.values.filter
-upper = (df.pressure.loc[above[above].index[0]], df.pressure.loc[above[above].index[-1]])
-below = stats.columns.pressure.values.stddevs < stats.columns.pressure.values.filter
-lower = (df.pressure.loc[above[below].index[0]], df.pressure.loc[above[below].index[-1]])
-upper
-lower
-#%%
-ax = df.pressure.hist(bins=100)
-ax.axvspan(*lower, color='red', alpha=0.5)
-ax.axvspan(*upper, color='red', alpha=0.5)
-#plt.show()
-
-dir(ax)
-min, max = ax.get_xlim()
-mean = df.pressure.mean()
-std = df.pressure.std()
-lower, upper = mean - 3 * std, mean + 3 * std
-#%%
-from matplotlib.patches import Patch
-from matplotlib.ticker  import FormatStrFormatter
-
-n_bins = 109
-sigmas = {
-    1: 'blue',
-    2: 'yellow',
-    3: 'red',
-    4: 'green',
-    5: 'purple'
-}
-
-legend = [Patch(facecolor=colour, label=f'{sigma}σ', alpha=.3, edgecolor='black') for sigma, colour in sigmas.items()]
-
-for col in df:
     ticks = set()
 
+    # Gather stats
     min  = df[col].min()
     max  = df[col].max()
     mean = df[col].mean()
     std  = df[col].std()
-    ax   = df[col].hist(bins=n_bins, log=True, color='grey', figsize=(20, 10))
-    lower, upper = zip(ax.get_xlim(), )
+
+    # Create the histogram
+    ax = df[col].hist(bins=n_bins, log=True, color='grey', figsize=(30, 10))
 
     # Highlight the sigma regions
     for sigma, colour in sigmas.items():
@@ -232,22 +96,191 @@ for col in df:
 
     # Plot the stddev
     ax.axvspan(mean, mean, color='red')
+    ax.axvspan(min, min, color='black')
+    ax.axvspan(max, max, color='black')
 
     # Change the x-axis ticks to be meaningful
     ticks.add(mean)
     ax.set_xticks(list(ticks), minor=False)
-    ax.xaxis.set_minor_formatter(FormatStrFormatter("%.2f"))
-    ax.tick_params(which='minor', direction='inout', length=7, labeltop=True, labelbottom=False, top=True)
+    ax.xaxis.set_minor_formatter(FormatStrFormatter('%.2f'))
+    ax.tick_params(which='minor', length=0, labeltop=True, labelbottom=False, top=True)
     ax.set_xticks([min, max], minor=True)
-    #ax.text(mean, 0, 'mean', verticalalignment='center')
+    ax.grid(axis='x', b=False)
 
     # Set some texts
     ax.set_title(f'Histogram of {col}, bins={n_bins}')
     ax.set_ylabel('Value Count')
     ax.set_xlabel('Value')
     ax.legend(handles=legend, loc='upper right')
-    plt.savefig(f'plots/5sigma_hist_{col}.png')
-    plt.show()
-#ax.text(lower[1] - (lower[1] - lower[0])/2, ax.get_ylim()[1]/2, 'boop')
 
-#%%
+    if save:
+        save = f'{save}/5sigma_hist_{col}.png'
+    show(save)
+
+@protect
+def analyze(df, drop=True, save=False, name=None):
+    """
+    Analyzes a provided dataframe with some generic statistics
+
+    Assumptions:
+    - The index is dtype DateTime
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        The DataFrame to perform analysis on
+    """
+    if save and not name:
+        print('The `save` parameter was provided but no name was given, please provide a name for this dataset (eg. "weather")')
+        return
+
+    # Special printing
+    fprint = lambda s: print(f"{'='*80}\n{s} |\n{'-'*(len(s)+2)}")
+
+    # Some integrity checks
+    assert df.index.is_all_dates
+    df = df.sort_index()
+
+    # Drop rows that are entirely empty
+    if drop:
+        df = df.dropna(axis=0, how='all')
+
+    ## Time analysis
+    fprint('Time Analysis')
+
+    first   = df.index[0]
+    last    = df.index[-1]
+    cadence = df.index[1:] - df.index[:-1].values - pd.Timedelta('1 minute')
+
+    print(f'There are {df.index.size} rows of timestamps ranging from {first} to {last}.')
+    print(f'For this range, the average cadence was {cadence.mean()}. Below is a graph showing other differences in cadences discovered.\n')
+
+    ax = cadence.value_counts().sort_index().plot(rot=45, title='Distance between timestamps', xlabel='Distance', **valCount)
+    show(f'{save}/{name}_time_cadence.png' if save else False)
+
+    ## Value analysis
+    fprint('Value Analysis')
+
+    print(f'The total values for each column are as follows:\n{~df.isna().sum()}')
+    print(f'\nThe correlation of these values between columns are provided in the following heatmap:\n')
+
+    fig, ax = plt.subplots(figsize=(5, 5))
+    ax = sns.heatmap(df.corr(method='pearson'), annot=True, vmin=-1, vmax=1, cmap='RdYlBu', ax=ax)
+    ax.set_title('Correlation of values between columns{f" for {name}" if name else ""}')
+    show(f'{save}/{name}_value_corrs.png' if save else False)
+
+    ## NaN analysis
+    fprint('NaN Analysis')
+
+    nandf    = df.isna()
+    nantotal = nandf.sum()
+    nancorr  = (nandf * 1).corr(method='pearson')
+
+    print(f'The total NaNs for each column are as follows:\n{nantotal}')
+    if nancorr.any().any():
+        print(f'\nThe correlation of the positions of these nans between columns are provided in the following heatmap:\n')
+
+        fig, ax = plt.subplots(figsize=(5, 5))
+        ax = sns.heatmap(nancorr, annot=True, vmin=-1, vmax=1, cmap='RdYlBu', ax=ax)
+        ax.set_title(f'Correlation of NaN positions between columns{f" for {name}" if name else ""}')
+        show(f'{save}/{name}_nan_corrs.png' if save else False)
+
+    ### Per column analysis
+    for col in df.columns:
+        fprint(f'Analysis for Column {col}')
+        series = df[col]
+
+        # Distance between values
+        valinds = series[~series.isna()].index
+        cadence = valinds[1:] - valinds[:-1].values - pd.Timedelta('1 minute')
+        count   = cadence.value_counts()
+        percent = (valinds.size / series.size) * 100
+
+        print(f'The column is {percent:.2f}% dense, {valinds.size} / {series.size}')
+        print(f'The average distance between values is {cadence.mean()}. Below is a graph showing the various differences in distances between values:\n')
+
+        ax = count.sort_index().iloc[:50].plot(title='Distance between Values', xlabel='Distance', rot=45, **valCount)
+        show(f'{save}/{name}_dist_between_vals.png' if save else False)
+
+        # Average Values
+        print('\nThe following graph plots the daily average of each year:')
+
+        fig, ax = plt.subplots(figsize=(30, 10))
+        daily   = series.resample('1D').mean()
+        years   = pd.date_range(daily.index[0], daily.index[-1], freq='1Y', normalize=True)
+        for i, year in enumerate(years):
+            if i == 0:
+                data = daily[daily.index <= year]
+            else:
+                data = daily[(daily.index > years[i-1]) & (daily.index <= year)]
+
+            # Reset the index to day of year to remove the year, and plot
+            data.index = data.index.dayofyear
+            ax = data.plot(label=year.year, ax=ax, alpha=1)
+        else:
+            ax.legend()
+            ax.set_title(f'Daily Average Value for {col}')
+            ax.set_xlabel('Day of Year')
+            ax.set_ylabel('Value')
+            show(f'{save}/{col}_daily_average.png' if save else False)
+
+        # Outliers
+        print('\nThe follow graph is a histogram of the given column with the standard deviation regions away from the mean highlighted to show outliers.')
+        print('The red vertical line is the mean of the column, and each highlighted region is N standard deviations away.')
+        print('The lower x-axis mark the boundaries of these sigma regions. The upper x-axis mark the min/max values for the series.')
+        generate_histogram(col, df, save=save)
+
+#%% Load data
+path = 'Weather Data/'
+
+#df = load_r0(path, round=True)
+#df = load_cn2(path, round=True)
+df = load_weather(path, interpolate=False)
+
+df
+
+#%% Perform analysis
+analyze(df, save='plots/weather/', name='weather')
+
+#%% Generate Histograms
+
+for col in df:
+    generate_histograms(col, save=True)
+
+#%% TESTING
+from matplotlib.text import Text
+months = pd.date_range(start='1/1/1970', periods=12, freq=pd.offsets.MonthBegin(1))
+ticks = [Text(months.dayofyear[i], 0, month) for i, month in enumerate(months.month_name())]
+
+fig, ax = plt.subplots(figsize=(30, 10))
+daily   = series.resample('1D').mean()
+years   = pd.date_range(daily.index[0], daily.index[-1], freq='1Y', normalize=True)
+for i, year in enumerate(years):
+    if i == 0:
+        data = daily[daily.index <= year]
+    else:
+        data = daily[(daily.index > years[i-1]) & (daily.index <= year)]
+
+    # Reset the index to day of year to remove the year, and plot
+    data.index = data.index.strftime('%m/%d')
+    ax = data.plot(label=year.year, ax=ax, alpha=1)
+else:
+    ax.legend()
+    ax.set_title(f'Daily Average Value for {col}')
+    ax.set_xlabel('Day of Year')
+    ax.set_ylabel('Value')
+    plt.show()
+
+#%% TESTING
+
+import numpy as np
+m = daily.copy()
+m.index = m.index.dayofyear
+m.values
+
+
+m = m.sort_index()
+z = np.polyfit(x=m.index.values, y=m.values, deg=1)
+p = np.poly1d(z)
+p
+z
