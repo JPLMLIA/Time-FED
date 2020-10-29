@@ -1,6 +1,7 @@
 """
 Various utility functions
 """
+import datetime as dt
 import h5py
 import logging
 import numpy  as np
@@ -8,7 +9,7 @@ import os
 import pandas as pd
 import sys
 
-from datetime import datetime as dt
+from datetime import datetime as dtt
 from glob     import glob
 from mat4py   import loadmat
 from tqdm     import tqdm
@@ -37,9 +38,9 @@ def timeit(func):
         Returns the return of the tracked function
     """
     def _wrap(*args, **kwargs):
-        start = dt.now()
+        start = dtt.now()
         ret   = func(*args, **kwargs)
-        Logger.debug(f'Finished function {func.__name__} in {(dt.now() - start).total_seconds()} seconds')
+        Logger.debug(f'Finished function {func.__name__} in {(dtt.now() - start).total_seconds()} seconds')
         return ret
     # Need to pass the docs on for sphinx to generate properly
     _wrap.__doc__ = func.__doc__
@@ -77,7 +78,7 @@ def load_weather(path, interpolate=True, **interp_args):
         for file in tqdm(files, desc=f'Compiling {column}', position=1):
             _df = pd.concat([
                 _df,
-                pd.read_csv(file, sep='\t', header=None, names=['ts', column], index_col='ts', parse_dates=True, dtype={column: float}, na_values='///')
+                pd.read_csv(file, sep='\t', header=None, names=['ts', column], index_col='ts', parse_dates=True, dttype={column: float}, na_values='///')
             ])
         else:
             _df = _df.resample('1T').mean()
@@ -92,7 +93,7 @@ def load_weather(path, interpolate=True, **interp_args):
     return df
 
 @timeit
-def load_cn2(path, datenum=False, round=False):
+def load_cn2(path, datenum=False, round=False, drop_dups=True):
     """
     Loads in Cn2 .mat files, support for mat5.0 and mat7.3 files only
 
@@ -136,10 +137,15 @@ def load_cn2(path, datenum=False, round=False):
             df = df.append(mat73(file))
 
     # Remove duplicates
-    df = df[df.duplicated(keep='first')]
+    if drop_dups:
+        df = df.drop_duplicates()
+
+    datenum2datetime = lambda i: dtt.fromordinal(int(i)) + dt.timedelta(days=i%1) - dt.timedelta(days=366)
+    df['datetime'] = df.datenum.apply(datenum2datetime)
 
     # Convert Matlab datenum to Python datetime
-    df['datetime'] = pd.to_datetime(df.datenum-719529, unit='D')
+    #df['datetime'] = pd.to_datetime(df.datenum-719529, unit='D')
+
     df = df.set_index('datetime').sort_index()
 
     # Round to the nearest second -- cleans up the nanoseconds
@@ -153,7 +159,7 @@ def load_cn2(path, datenum=False, round=False):
     return df
 
 @timeit
-def load_r0(file, datenum=False, round=False):
+def load_r0_day(file, datenum=False, round=False):
     """
     Loads the fl4.mat file
 
@@ -175,7 +181,7 @@ def load_r0(file, datenum=False, round=False):
         datetime as the index
     """
     data = list(loadmat(file).values())[0]
-    df = pd.DataFrame(data, columns=['datenum', 'o(I)/I', 'r0', 'sun_zenith_angle'])
+    df = pd.DataFrame(data, columns=['datenum', 'o(I)_I', 'r0', 'sun_zenith_angle'])
 
     # Convert Matlab datenum to Python datetime
     df['datetime'] = pd.to_datetime(df.datenum-719529, unit='D')
