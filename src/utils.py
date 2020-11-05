@@ -78,7 +78,7 @@ def load_weather(path, interpolate=True, **interp_args):
         for file in tqdm(files, desc=f'Compiling {column}', position=1):
             _df = pd.concat([
                 _df,
-                pd.read_csv(file, sep='\t', header=None, names=['ts', column], index_col='ts', parse_dates=True, dttype={column: float}, na_values='///')
+                pd.read_csv(file, sep='\t', header=None, names=['datetime', column], index_col='datetime', parse_dates=True, dtype={column: float}, na_values='///')
             ])
         else:
             _df = _df.resample('1T').mean()
@@ -92,8 +92,11 @@ def load_weather(path, interpolate=True, **interp_args):
 
     return df
 
+def datenum2datetime(datenum):
+    return dtt.fromordinal(int(datenum)) + dt.timedelta(days=datenum%1) - dt.timedelta(days=366)
+
 @timeit
-def load_cn2(path, datenum=False, round=False, drop_dups=True):
+def load_bls(path, datenum=False, round=False, drop_dups=True):
     """
     Loads in Cn2 .mat files, support for mat5.0 and mat7.3 files only
 
@@ -126,11 +129,17 @@ def load_cn2(path, datenum=False, round=False, drop_dups=True):
 
     Logger.info('Loading in Cn2 data')
 
-    cols  = ['datenum', 'Cn2', 'solar_zenith_angle']
-    files = sorted(glob(f'{path}/BLS_*.mat'))
-    df    = pd.DataFrame(columns=cols)
+    if os.path.isfile(path):
+        files = [path]
+    elif os.path.isdir(path):
+        files = sorted(glob(f'{path}/BLS_*.mat'))
+    else:
+        Logger.error(f'The provided path is neither a directory nor a file: {path}')
+        return
+
+    cols = ['datenum', 'Cn2', 'solar_zenith_angle']
+    df   = pd.DataFrame(columns=cols)
     for file in tqdm(files, desc='Files processed'):
-        print(file)
         try:
             df = df.append(mat50(file))
         except:
@@ -140,7 +149,6 @@ def load_cn2(path, datenum=False, round=False, drop_dups=True):
     if drop_dups:
         df = df.drop_duplicates()
 
-    datenum2datetime = lambda i: dtt.fromordinal(int(i)) + dt.timedelta(days=i%1) - dt.timedelta(days=366)
     df['datetime'] = df.datenum.apply(datenum2datetime)
 
     # Convert Matlab datenum to Python datetime
@@ -158,38 +166,57 @@ def load_cn2(path, datenum=False, round=False, drop_dups=True):
 
     return df
 
-@timeit
-def load_r0_day(file, datenum=False, round=False):
+def load_r0(path, kind, datenum=False, round=True, drop=True):
     """
-    Loads the fl4.mat file
+    Loads the an r0 .mat file, specifically:
+
+    r0 daytime   = fl4.mat
+    r0 nighttime = Cyclops1820.mat
 
     Parameters
     ----------
-    file : str
+    path : str
         Location of fl4.mat
+    kind : str
+        Selects which kind of dataset the provided file is, either "day" or
+        "night"
     datenum : bool
         Retains the Matlab datenum column in the return DataFrame, defaults to
         `False` which will drop the column
     round : bool
         Rounds the datetimes that were converted from Matlab datenum to the
         nearest second
+    drop : bool
+        Drops rows that are complete duplicates, ie. all columns are the same
+        values as another row
 
     Returns
     -------
     pandas.DataFrame
-        A DataFrame of the r0 data including o(I)/I, solar zenith angle, and
-        datetime as the index
+        A DataFrame of the r0 data
     """
-    data = list(loadmat(file).values())[0]
-    df = pd.DataFrame(data, columns=['datenum', 'o(I)_I', 'r0', 'sun_zenith_angle'])
+    if kind == 'day':
+        cols = ['datenum', 'o(I)_I', 'r0', 'sun_zenith_angle']
+    elif kind == 'night':
+        cols = ['datenum', 'r0', 'sun_zenith_angle']
+    else:
+        Logger.error('load_r0() requires the `kind` parameter to be either "day" or "night"')
+        return
+
+    data = list(loadmat(path).values())[0]
+    df = pd.DataFrame(data, columns=cols)
 
     # Convert Matlab datenum to Python datetime
-    df['datetime'] = pd.to_datetime(df.datenum-719529, unit='D')
+    df['datetime'] = df.datenum.apply(datenum2datetime)
     df = df.set_index('datetime').sort_index()
 
     # Round to the nearest second -- cleans up the nanoseconds
     if round:
         df.index = df.index.round('1s')
+
+    # Drop duplicates
+    if drop:
+        df = df.drop_duplicates()
 
     # Drop the datenum column
     if not datenum:
