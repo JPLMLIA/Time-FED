@@ -36,7 +36,7 @@ sns.set_context('poster')
 # Do not remove any variable, leave them as default if unsure. Follow the instructions if provided.
 config = SN(
     # Select the dataset and provide the path to the data directory
-    name = 'weather',       # Options: ['bls', 'r0_day', 'r0_night']
+    name = 'weather',       # Options: ['weather', 'bls', 'r0_day', 'r0_night']
     path = './Weather Data/',
     # Expected files:
     # bls         : BLS1820B.mat
@@ -45,7 +45,7 @@ config = SN(
 
     # Enable plots to save to the given dir
     save = True,
-    dir  = './plots/r0_nighttime',
+    dir  = './plots/weather/',
 
     # Enable plots; see the lower sections of the config to know
     plots = SN(
@@ -456,7 +456,7 @@ loader = lambda: pd.DataFrame()
 if config.name is 'weather':
     loader = partial(load_weather, interpolate=False)
 elif config.name is 'bls':
-    loader = partial(load_bls, datenum=True, round=True)
+    loader = partial(load_bls, datenum=True, round=True, drop_dups=True)
 elif config.name is 'r0_day':
     loader = partial(load_r0, kind='day', datenum=True, round=True)
 elif config.name is 'r0_night':
