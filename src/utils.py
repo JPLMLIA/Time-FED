@@ -46,6 +46,82 @@ def timeit(func):
     _wrap.__doc__ = func.__doc__
     return _wrap
 
+def cadence(df, limit='30 min', dropna=True):
+    """
+    Utility statistics function to provide the time deltas that are above and
+    below the given limit.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        The dataframe to analyze.
+    limit : str
+        A delta string to be used in pandas.Timedelta(string).
+    dropna : bool
+        Drops rows that are NaN for all columns before analyzing. This will
+        ensure only cadences between values are provided.
+    """
+    if dropna:
+        df = df.dropna(how='all')
+
+    # Get the cadence of the DataFrame's index
+    cadence = pd.Series(df.index).diff().shift(-1)
+
+    # Retrieve the subset that is between 1 minute and the above delta
+    between = cadence[
+        (pd.Timedelta('1 min') < cadence)
+      & (cadence < pd.Timedelta(limit))
+     ].value_counts().sort_index()
+
+    # Retrieve the subset that is above the provided delta
+    above = cadence[cadence > pd.Timedelta(limit)].sort_values()
+
+    return cadence, between, above
+
+def interpolate(df, limit=30, method='linear', dropna=True, **kwargs):
+    """
+    Applies interpolation to a DataFrame up to a given limit. Assumes the
+    resolution of the DataFrame is 1 minute and will resample it to insert
+    missing timestamps.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        The dataframe to interpolate. Assumes the resolution is 1 minute.
+    limit : int
+        The limit (in minutes) to interpolate over. Gaps larger than this limit
+        will only interpolate up to the limit then leave the NaNs.
+    method : str or dict
+        The interpolation method to apply. If a string, applies the method to
+        all columns. If dict, applies methods on a per-column basis in the form
+        {column_name: method}.
+    dropna : bool
+        Drops rows that are NaN for all columns.
+    **kwargs
+        Additional keyword arguments to pass on to the interpolating function.
+    """
+    # Assert the resolution is 1 minute
+    assert df.index.resolution == 'minute'
+
+    # Resample to the minute to insert missing timestamps
+    df = df.resample('1 min').mean()
+
+    # Assert the cadence is 1 minute perfect
+    cadence = pd.Series(df.index).diff().shift(-1)
+    assert cadence.mean() == pd.Timedelta('1 min')
+
+    # Apply interpolation
+    if isinstance(method, str):
+        df = df.interpolate(method=method, limit=limit, **kwargs)
+    else:
+        for column, method in method.items():
+            df[column] = df[column].interpolate(method=method, limit=limit, **kwargs)
+
+    if dropna:
+        df = df.dropna(how='all')
+
+    return df
+
 @timeit
 def load_weather(path, interpolate=True, **interp_args):
     """
@@ -88,7 +164,7 @@ def load_weather(path, interpolate=True, **interp_args):
                 df = _df
 
     if interpolate:
-        df.interpolate(inplace=True, **interp_args)
+        df = interpolate(df, **interp_args)
 
     return df
 
@@ -96,7 +172,7 @@ def datenum2datetime(datenum):
     return dtt.fromordinal(int(datenum)) + dt.timedelta(days=datenum%1) - dt.timedelta(days=366)
 
 @timeit
-def load_bls(path, datenum=False, round=False, drop_dups=True):
+def load_bls(path, datenum=False, round=False, drop_dups=True, **interp_args):
     """
     Loads in Cn2 .mat files, support for mat5.0 and mat7.3 files only
 
@@ -149,11 +225,8 @@ def load_bls(path, datenum=False, round=False, drop_dups=True):
     if drop_dups:
         df = df.drop_duplicates()
 
-    df['datetime'] = df.datenum.apply(datenum2datetime)
-
     # Convert Matlab datenum to Python datetime
-    #df['datetime'] = pd.to_datetime(df.datenum-719529, unit='D')
-
+    df['datetime'] = df.datenum.apply(datenum2datetime)
     df = df.set_index('datetime').sort_index()
 
     # Round to the nearest second -- cleans up the nanoseconds
@@ -164,9 +237,12 @@ def load_bls(path, datenum=False, round=False, drop_dups=True):
     if not datenum:
         df.drop(columns=['datenum'], inplace=True)
 
+    if interpolate:
+        df = interpolate(df, **interp_args)
+
     return df
 
-def load_r0(path, kind, datenum=False, round=True, drop=True):
+def load_r0(path, kind, datenum=False, round=True, drop_dups=True, **interp_args):
     """
     Loads the an r0 .mat file, specifically:
 
@@ -186,7 +262,7 @@ def load_r0(path, kind, datenum=False, round=True, drop=True):
     round : bool
         Rounds the datetimes that were converted from Matlab datenum to the
         nearest second
-    drop : bool
+    drop_dups : bool
         Drops rows that are complete duplicates, ie. all columns are the same
         values as another row
 
@@ -215,11 +291,14 @@ def load_r0(path, kind, datenum=False, round=True, drop=True):
         df.index = df.index.round('1s')
 
     # Drop duplicates
-    if drop:
+    if drop_dups:
         df = df.drop_duplicates()
 
     # Drop the datenum column
     if not datenum:
         df.drop(columns=['datenum'], inplace=True)
+
+    if interpolate:
+        df = interpolate(df, **interp_args)
 
     return df
