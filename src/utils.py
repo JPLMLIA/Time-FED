@@ -123,7 +123,7 @@ def interpolate(df, limit=30, method='linear', dropna=True, **kwargs):
     return df
 
 @timeit
-def load_weather(path, interpolate=True, **interp_args):
+def load_weather(path, interp=False, **interp_args):
     """
     Loads in weather data from .txt files
 
@@ -172,7 +172,7 @@ def datenum2datetime(datenum):
     return dtt.fromordinal(int(datenum)) + dt.timedelta(days=datenum%1) - dt.timedelta(days=366)
 
 @timeit
-def load_bls(path, datenum=False, round=False, drop_dups=True, **interp_args):
+def load_bls(path, datenum=False, round=False, drop_dups=True, resample=True, resolution='1 min', interp=False, **interp_args):
     """
     Loads in Cn2 .mat files, support for mat5.0 and mat7.3 files only
 
@@ -186,6 +186,18 @@ def load_bls(path, datenum=False, round=False, drop_dups=True, **interp_args):
     round : bool
         Rounds the datetimes that were converted from Matlab datenum to the
         nearest second
+    drop_dups : bool
+        Drops rows that are complete duplicates, ie. all columns are the same
+        values as another row
+    resample : bool
+        Resamples the data to the provided resolution using the mean
+    resolution : str
+        The resample resolution; uses mean() to downsample
+    interp : bool
+        Enables automatic interpolation of the dataset. Requires resampling the
+        data to 1 minute resolution
+    **interp_args
+        Additionally arguments to pass the the interpolation() function
 
     Returns
     -------
@@ -237,12 +249,16 @@ def load_bls(path, datenum=False, round=False, drop_dups=True, **interp_args):
     if not datenum:
         df.drop(columns=['datenum'], inplace=True)
 
-    if interpolate:
+    # Must be resampled if interp is set
+    if resample or interp:
+        df = df.resample(resolution).mean()
+
+    if interp:
         df = interpolate(df, **interp_args)
 
     return df
 
-def load_r0(path, kind, datenum=False, round=True, drop_dups=True, **interp_args):
+def load_r0(path, kind, datenum=False, round=True, drop_dups=True, resample=True, resolution='1 min', interp=False, **interp_args):
     """
     Loads the an r0 .mat file, specifically:
 
@@ -265,6 +281,15 @@ def load_r0(path, kind, datenum=False, round=True, drop_dups=True, **interp_args
     drop_dups : bool
         Drops rows that are complete duplicates, ie. all columns are the same
         values as another row
+    resample : bool
+        Resamples the data to the provided resolution using the mean
+    resolution : str
+        The resample resolution; uses mean() to downsample
+    interp : bool
+        Enables automatic interpolation of the dataset. Requires resampling the
+        data to 1 minute resolution
+    **interp_args
+        Additionally arguments to pass the the interpolation() function
 
     Returns
     -------
@@ -298,7 +323,11 @@ def load_r0(path, kind, datenum=False, round=True, drop_dups=True, **interp_args
     if not datenum:
         df.drop(columns=['datenum'], inplace=True)
 
-    if interpolate:
+    # Must be resampled if interp is set
+    if resample or interp:
+        df = df.resample(resolution).mean()
+
+    if interp:
         df = interpolate(df, **interp_args)
 
     return df
