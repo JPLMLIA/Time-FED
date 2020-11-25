@@ -163,7 +163,7 @@ def load_weather(path, interp=False, **interp_args):
             else:
                 df = _df
 
-    if interpolate:
+    if interp:
         df = interpolate(df, **interp_args)
 
     return df
@@ -297,9 +297,9 @@ def load_r0(path, kind, datenum=False, round=True, drop_dups=True, resample=True
         A DataFrame of the r0 data
     """
     if kind == 'day':
-        cols = ['datenum', 'o(I)_I', 'r0', 'sun_zenith_angle']
+        cols = ['datenum', 'o(I)_I', 'r0', 'solar_zenith_angle']
     elif kind == 'night':
-        cols = ['datenum', 'r0', 'sun_zenith_angle']
+        cols = ['datenum', 'r0', 'solar_zenith_angle']
     else:
         Logger.error('load_r0() requires the `kind` parameter to be either "day" or "night"')
         return
