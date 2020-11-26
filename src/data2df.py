@@ -14,7 +14,7 @@ from utils import load_weather, load_bls, load_r0
 # CONSTANTS
 #
 
-VALID_DATASETS = ['weather', 'cn2', 'r0-day', 'r0-night']
+VALID_DATASETS = ['weather', 'bls', 'r0-day', 'r0-night']
 
 #
 # SUBROUTINES
@@ -34,14 +34,14 @@ def main(input, output, dataset):
 
     if dataset == 'weather':
         df = load_weather(input)
-    elif dataset == 'cn2':
+    elif dataset == 'bls':
         df = load_bls(input)
     elif dataset == 'r0-day':
         df = load_r0(input, 'day')
     else:
         df = load_r0(input, 'night')
 
-    df.to_hdf(output, dataset)
+    df.to_hdf(output, dataset.replace('-','_'))
 
     return True
 
