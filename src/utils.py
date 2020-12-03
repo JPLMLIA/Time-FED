@@ -78,7 +78,60 @@ def cadence(df, limit='30 min', dropna=True):
 
     return cadence, between, above
 
-def interpolate(df, limit=30, method='linear', dropna=True, **kwargs):
+def dense_regions(df, min_size=500):
+    """
+    Yields subframes of the given dataframe in which all columns are fully
+    dense. Yields regions from largest to smallest.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        The dataframe to subset
+    min_size : int
+        The minimum size of the subframe
+
+    Notes
+    -----
+    `bounds` is a list of tuples (lower bound, upper bound, size)
+    """
+    valid = df.notna().all(axis=1)
+    bounds = []
+
+    i = j = 0
+    while j < valid.size:
+        # This row is valid (no nans), increment j
+        if valid[j]:
+            j += 1
+        # Otherwise this row has a nan on it
+        else:
+            # A window was captured
+            if j != i:
+                # If the window size is larger than the min_size, save it
+                if j-i >= min_size:
+                    bounds.append([i, j, j-i])
+                # Shift i to j's position
+                i = j
+            # Otherwise step i, j
+            else:
+                i += 1
+                j += 1
+    else:
+        # End case, if there was a window at exit check if to save it
+        if j != i:
+            if j-i >= min_size:
+                bounds.append([i, j, j-i])
+
+    # Sort the boundaries by their size
+    bounds.sort(reverse=True, key=lambda pair: pair[2])
+    for lower, upper, size in bounds:
+        try:
+            # Check if the subframe is fully dense then yield it
+            assert df.iloc[lower:upper].notna().all().all()
+            yield df.iloc[lower:upper]
+        except:
+            print(f'Error: Bounds ({lower}, {upper}, {size}) was not fully dense in the given dataframe. There is a bug in this function, please open a ticket.')
+
+def interpolate(df, limit=30, method='linear', dropna=True, override=False, **kwargs):
     """
     Applies interpolation to a DataFrame up to a given limit. Assumes the
     resolution of the DataFrame is 1 minute and will resample it to insert
@@ -97,11 +150,14 @@ def interpolate(df, limit=30, method='linear', dropna=True, **kwargs):
         {column_name: method}.
     dropna : bool
         Drops rows that are NaN for all columns.
+    override : bool
+        Overrides safety checks and attempts interpolation anyways.
     **kwargs
         Additional keyword arguments to pass on to the interpolating function.
     """
-    # Assert the resolution is 1 minute
-    assert df.index.resolution == 'minute'
+    if not override:
+        # Assert the resolution is 1 minute
+        assert df.index.resolution == 'minute'
 
     # Resample to the minute to insert missing timestamps
     df = df.resample('1 min').mean()
@@ -258,6 +314,7 @@ def load_bls(path, datenum=False, round=False, drop_dups=True, resample=True, re
 
     return df
 
+@timeit
 def load_r0(path, kind, datenum=False, round=True, drop_dups=True, resample=True, resolution='1 min', interp=False, **interp_args):
     """
     Loads the an r0 .mat file, specifically:
