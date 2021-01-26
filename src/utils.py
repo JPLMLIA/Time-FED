@@ -228,7 +228,7 @@ def datenum2datetime(datenum):
     return dtt.fromordinal(int(datenum)) + dt.timedelta(days=datenum%1) - dt.timedelta(days=366)
 
 @timeit
-def load_bls(path, datenum=False, round=False, drop_dups=True, resample=True, resolution='1 min', interp=False, **interp_args):
+def load_bls(path, datenum=False, round=False, drop_dups=True, resample=False, resolution='1 min', interp=False, **interp_args):
     """
     Loads in Cn2 .mat files, support for mat5.0 and mat7.3 files only
 
@@ -315,7 +315,7 @@ def load_bls(path, datenum=False, round=False, drop_dups=True, resample=True, re
     return df
 
 @timeit
-def load_r0(path, kind, datenum=False, round=True, drop_dups=True, resample=True, resolution='1 min', interp=False, **interp_args):
+def load_r0(path, kind, datenum=False, round=True, drop_dups=True, resample=False, resolution='1 min', interp=False, **interp_args):
     """
     Loads the an r0 .mat file, specifically:
 
@@ -386,5 +386,73 @@ def load_r0(path, kind, datenum=False, round=True, drop_dups=True, resample=True
 
     if interp:
         df = interpolate(df, **interp_args)
+
+    return df
+
+def compile_datasets(weather=None, bls=None, r0_day=None, r0_night=None, h5=None, resample='median'):
+    """
+    Ingests all of the raw data into dataframes then compiles them into a merged
+    dataframe.
+
+    Parameters
+    ----------
+    weather : str
+        Equivalent to the `path` argument of utils.load_weather()
+    bls : str
+        Equivalent to the `path` argument of utils.load_bls()
+    r0_day : str
+        Equivalent to the `path` argument of utils.load_r0()
+    r0_night : str
+        Equivalent to the `path` argument of utils.load_r0()
+    h5 : str
+        Optional path to an h5 to write to
+    resample : str
+        If set, resamples the dataframes to 1 minute using the method given
+    """
+    # Import here to prevent being a package dependency
+    import xarray as xr
+
+    data = {}
+
+    if weather:
+        data['weather'] = load_weather(weather)
+    if bls:
+        data['bls'] = load_bls(bls, round=True, resample=False, datenum=False)
+    if r0_day:
+        data['r0/day']   = load_r0(r0_day,   kind='day',   round=True, resample=False, datenum=False)
+    if r0_night:
+        data['r0/night'] = load_r0(r0_night, kind='night', round=True, resample=False, datenum=False)
+
+    # Resample to a minute
+    if resample:
+        for key, df in data.items():
+            if resample == 'median':
+                data[key] = df.resample('1 min').median()
+            elif resample == 'mean':
+                data[key] = df.resample('1 min').mean()
+
+    # Save dataframes
+    if h5:
+        for key, df in data.items():
+            df.to_hdf(h5, key)
+
+    # Convert to xarray
+    for key, df in data.items():
+        data[key] = df.to_xarray()
+
+    # Combine r0 day and night
+    if 'r0/day' in data and 'r0/night' in data:
+        data['r0'] = xr.merge(
+            data['r0/day'],
+            data['r0/night']
+        )
+        data['r0/day'].rename({'r0': 'r0_day'})
+        data['r0/night'].rename({'r0': 'r0_night'})
+
+    ds = xr.merge(*data.values(), compat='override')
+    df = ds.to_dataframe()
+
+    if h5:
+        df.to_hdf(h5, 'merged')
 
     return df
