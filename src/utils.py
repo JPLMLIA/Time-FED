@@ -7,6 +7,7 @@ import logging
 import numpy  as np
 import os
 import pandas as pd
+import seaborn as sns
 import sys
 
 from datetime import datetime as dtt
@@ -14,6 +15,8 @@ from glob     import glob
 from mat4py   import loadmat
 from tqdm     import tqdm
 
+# Set context of seaborn
+sns.set_context('talk')
 
 logging.basicConfig(
     level   = logging.DEBUG,
@@ -22,6 +25,9 @@ logging.basicConfig(
     stream  = sys.stdout
 )
 Logger = logging.getLogger(os.path.basename(__file__))
+
+# Increase matplotlib's logger to warning to disable the debug spam it makes
+logging.getLogger('matplotlib').setLevel(logging.WARNING)
 
 def timeit(func):
     """
@@ -356,7 +362,7 @@ def load_r0(path, kind, datenum=False, round=True, drop_dups=True, resample=Fals
     if kind == 'day':
         cols = ['datenum', 'o(I)_I', 'r0', 'solar_zenith_angle']
     elif kind == 'night':
-        cols = ['datenum', 'r0', 'solar_zenith_angle']
+        cols = ['datenum', 'r0', 'solar_zenith_angle', 'polaris_count']
     else:
         Logger.error('load_r0() requires the `kind` parameter to be either "day" or "night"')
         return
@@ -414,14 +420,16 @@ def compile_datasets(weather=None, bls=None, r0_day=None, r0_night=None, h5=None
 
     data = {}
 
+    if r0_day:
+        data['r0/day']   = load_r0(r0_day,   kind='day',   round=True, resample=False, datenum=False)
+        data['r0/day']['r0'] *= 100
+    if r0_night:
+        data['r0/night'] = load_r0(r0_night, kind='night', round=True, resample=False, datenum=False)
+        data['r0/night'].drop(columns='polaris_count', inplace=True)
     if weather:
         data['weather'] = load_weather(weather)
     if bls:
         data['bls'] = load_bls(bls, round=True, resample=False, datenum=False)
-    if r0_day:
-        data['r0/day']   = load_r0(r0_day,   kind='day',   round=True, resample=False, datenum=False)
-    if r0_night:
-        data['r0/night'] = load_r0(r0_night, kind='night', round=True, resample=False, datenum=False)
 
     # Resample to a minute
     if resample:
@@ -442,17 +450,25 @@ def compile_datasets(weather=None, bls=None, r0_day=None, r0_night=None, h5=None
 
     # Combine r0 day and night
     if 'r0/day' in data and 'r0/night' in data:
-        data['r0'] = xr.merge(
+        data['r0'] = xr.merge([
             data['r0/day'],
             data['r0/night']
-        )
-        data['r0/day'].rename({'r0': 'r0_day'})
-        data['r0/night'].rename({'r0': 'r0_night'})
+        ])
+        data['r0/day']   = data['r0/day'].rename({'r0': 'r0_day'})
+        data['r0/night'] = data['r0/night'].rename({'r0': 'r0_night'})
 
-    ds = xr.merge(*data.values(), compat='override')
+    # Reorganize so r0 comes before bls
+    dss = []
+    for key, ds in data.items():
+        if key in ['r0']:
+            dss = [ds] + dss
+        else:
+            dss.append(ds)
+
+    ds = xr.merge(dss, compat='override')
     df = ds.to_dataframe()
 
     if h5:
         df.to_hdf(h5, 'merged')
 
-    return df
+    return data, dss, df
