@@ -7,6 +7,8 @@ import os
 # Import utils to set the logger
 import utils
 
+logger = logging.getLogger(os.path.basename(__file__))
+
 def subselect(a, b, df):
     """
     Subselects from a dataframe between dates
@@ -36,12 +38,13 @@ def subselect(a, b, df):
             sub = df[df.index >= a]
         else:
             logger.error(f'Unsupported comparison type: {b}')
+            return
     else:
         sub = df[(a <= df.index) & (df.index < b)]
 
     return sub
 
-def preprocess(df, output=None, key_out=None, between=None, train=None, test=None, **kwargs):
+def preprocess(df, output=None, key_out=None, exclude=None, between=None, train=None, test=None, **kwargs):
     """
     Preprocesses the dataframe with additional features
 
@@ -76,11 +79,17 @@ def preprocess(df, output=None, key_out=None, between=None, train=None, test=Non
     logger.debug(f'df.describe():\n{df.describe()}')
 
     logger.info('Creating new features')
-    df['month']  = df.index.month
-    df['day']    = df.index.dayofyear
-    df['logCn2'] = np.log10(df['Cn2'])
+    df['month'] = df.index.month
+    df['day']   = df.index.dayofyear
+    if 'Cn2' in df:
+        df['logCn2'] = np.log10(df['Cn2'])
 
     logger.debug(f'Count of non-NaN values:\n{(~df.isnull()).sum()}')
+
+    if exclude:
+        cols = set(df.columns)
+        drop = cols - (cols - set(exclude))
+        df   = df.drop(columns=drop)
 
     if output:
         df.to_hdf(output, key_out)
@@ -91,6 +100,7 @@ def preprocess(df, output=None, key_out=None, between=None, train=None, test=Non
         logger.debug(f'Count of non-NaN values for train:\n{(~train.isnull()).sum()}')
         if output:
             train.to_hdf(output, 'train')
+        # Interpolate train only
 
     if test:
         logger.info(f'Creating testing subset using {test}')
@@ -123,6 +133,10 @@ if __name__ == '__main__':
                                             metavar  = 'KEY',
                                             help     = 'The key to use for the dataframe when writing to the output.h5'
     )
+    parser.add_argument('-e', '--exclude',  type     = str,
+                                            nargs    = '+',
+                                            help     = 'Selects features to drop before subselecting'
+    )
     parser.add_argument('-b', '--between',  type     = str,
                                             nargs    = 2,
                                             metavar  = ('DATE1', 'DATE2'),
@@ -145,10 +159,7 @@ if __name__ == '__main__':
                                                      + '\n\tSelect between [date1, date2): --train date1 date2'
     )
 
-
     args = parser.parse_args()
-
-    logger = logging.getLogger(os.path.basename(__file__))
 
     try:
         df = pd.read_hdf(args.input, args.key_in)
