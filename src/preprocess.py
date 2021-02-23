@@ -9,16 +9,53 @@ import utils
 
 logger = logging.getLogger(os.path.basename(__file__))
 
-def subselect(a, b, df):
+def filter(feature, args, df):
+    """
+    Filters a feature's values given a set of arguments
+
+    Parameters
+    ----------
+    args : utils.Config
+        Config object defining arguments for filtering
+    df : pandas.DataFrame
+        The dataframe to filter on
+
+    Returns
+    -------
+    df : pandas.DataFrame
+        The filtered dataframe
+    """
+    old_count = (~df[feature].isna()).sum()
+
+    if 'lt' in args:
+        logger.debug(f'\t< {args.lt}')
+        df = df[df[feature] < args.lt]
+
+    if 'gt' in args:
+        logger.debug(f'\t> {args.gt}')
+        df = df[df[feature] > args.gt]
+
+    if 'lte' in args:
+        logger.debug(f'\t<= {args.lte}')
+        df = df[df[feature] <= args.lte]
+
+    if 'gte' in args:
+        logger.debug(f'\t>= {args.gte}')
+        df = df[df[feature] >= args.gte]
+
+    new_count = (~df[feature].isna()).sum()
+    logger.debug(f'\tFiltered {(1-new_count/old_count)*100:.2f}% of the data')
+
+    return df
+
+def subselect(args, df):
     """
     Subselects from a dataframe between dates
 
     Parameters
     ----------
-    a : str
-        The first date
-    b : str
-        Either the second date or a conditional for the first date
+    args : utils.Config
+        Config object defining arguments for subselecting
     df : pandas.DataFrame
         The dataframe to subselect from
 
@@ -27,54 +64,42 @@ def subselect(a, b, df):
     sub : pandas.DataFrame
         The subselected dataframe
     """
-    if b in ['<', '<=', '>', '>=']:
-        if b == '<':
-            sub = df[df.index < a]
-        elif b == '<=':
-            sub = df[df.index <= a]
-        elif b == '>':
-            sub = df[df.index > a]
-        elif b == '>=':
-            sub = df[df.index >= a]
-        else:
-            logger.error(f'Unsupported comparison type: {b}')
-            return
-    else:
-        sub = df[(a <= df.index) & (df.index < b)]
+    # Take a view of the dataframe
+    sub = df
+
+    if 'lt' in args:
+        logger.debug(f'\t< {args.lt}')
+        sub = sub[sub.index < args.lt]
+
+    if 'gt' in args:
+        logger.debug(f'\t> {args.gt}')
+        sub = sub[sub.index > args.gt]
+
+    if 'lte' in args:
+        logger.debug(f'\t<= {args.lte}')
+        sub = sub[sub.index <= args.lte]
+
+    if 'gte' in args:
+        logger.debug(f'\t>= {args.gte}')
+        sub = sub[sub.index >= args.gte]
 
     return sub
 
-def preprocess(df, output=None, key_out=None, exclude=None, between=None, train=None, test=None, **kwargs):
+def preprocess(config):
     """
     Preprocesses the dataframe with additional features
 
     Parameters
     ----------
-    df : pandas.DataFrame
-        The dataframe to apply new features to
-    output : str
-        Path to output.h5; Optional, will only write if provided
-    key_out : str
-        The key to use for the dataframe when writing to the output.h5
-    between : tuple of str
-        Subselects between two dates: DATE1 <= time < DATE2
-    train : tuple of str
-        Subselects the processed dataframe as a training dataframe. Requires 2 strings, the first always being a date and the second being either a date or conditional. Usage examples:
-         Select after a date: (date, <)
-         Select before a date: (date, >)
-         Select between [date1, date2): (date1, date2)
-    test : tuple of str
-        Subselects the processed dataframe as a testing dataframe. Requires 2 strings, the first always being a date and the second being either a date or conditional. Usage examples:
-         Select after a date: (date, <)
-         Select before a date: (date, >)
-         Select between [date1, date2): (date1, date2)
-
-    Returns
-    -------
+    config : utils.Config
+        Config object containing arguments for preprocessing
     """
-    if between:
-        logger.info(f'Subselecting between [{between[0]}, {between[1]})')
-        df = subselect(*between, df).copy()
+    # Load the data dataframe
+    df = pd.read_hdf(config.input.file, config.input.key)
+
+    if config.subselect:
+        logger.info('Subselecting whole dataset')
+        df = subselect(config.subselect, df).copy()
 
     logger.debug(f'df.describe():\n{df.describe()}')
 
@@ -84,88 +109,52 @@ def preprocess(df, output=None, key_out=None, exclude=None, between=None, train=
     if 'Cn2' in df:
         df['logCn2'] = np.log10(df['Cn2'])
 
+    # Apply filtering
+    if config.filter:
+        for feature, args in vars(config.filter).items():
+            logger.debug(f'Filtering {feature}')
+            df = filter(feature, args, df)
+
     logger.debug(f'Count of non-NaN values:\n{(~df.isnull()).sum()}')
 
-    if exclude:
+    if config.exclude:
         cols = set(df.columns)
-        drop = cols - (cols - set(exclude))
+        drop = cols - (cols - set(config.exclude))
         df   = df.drop(columns=drop)
 
-    if output:
-        df.to_hdf(output, key_out)
+    # Write to output
+    df.to_hdf(config.output.file, f'{config.output.key}/full')
 
-    if train:
-        logger.info(f'Creating training subset using {train}')
-        train = subselect(*train, df)
+    if config.train:
+        logger.info('Creating training subset')
+        train = subselect(config.train, df)
         logger.debug(f'Count of non-NaN values for train:\n{(~train.isnull()).sum()}')
-        if output:
-            train.to_hdf(output, 'train')
+        train.to_hdf(config.output.file, f'{config.output.key}/train')
         # Interpolate train only
 
-    if test:
-        logger.info(f'Creating testing subset using {test}')
-        test = subselect(*test, df)
+    if config.test:
+        logger.info('Creating testing subset')
+        test = subselect(config.test, df)
         logger.debug(f'Count of non-NaN values for test:\n{(~test.isnull()).sum()}')
-        if output:
-            test.to_hdf(output, 'test')
-
-    return df, train, test
+        test.to_hdf(config.output.file, f'{config.output.key}/test')
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
 
-    parser.add_argument('-i', '--input',    type     = str,
+    parser.add_argument('-c', '--config',   type     = str,
                                             required = True,
-                                            metavar  = '/path/to/data.h5',
-                                            help     = 'Path to input.h5'
-    )
-    parser.add_argument('-ki', '--key_in',  type     = str,
-                                            metavar  = 'KEY',
-                                            help     = 'The key of the dataframe in the input.h5'
-    )
-    parser.add_argument('-o', '--output',   type     = str,
-                                            metavar  = '/path/to/output.h5',
-                                            help     = 'Path to output.h5; Optional, will only write if provided'
-    )
-    parser.add_argument('-ko', '--key_out', type     = str,
-                                            default  = 'preprocess',
-                                            metavar  = 'KEY',
-                                            help     = 'The key to use for the dataframe when writing to the output.h5'
-    )
-    parser.add_argument('-e', '--exclude',  type     = str,
-                                            nargs    = '+',
-                                            help     = 'Selects features to drop before subselecting'
-    )
-    parser.add_argument('-b', '--between',  type     = str,
-                                            nargs    = 2,
-                                            metavar  = ('DATE1', 'DATE2'),
-                                            help     = 'Subselects between two dates: DATE1 <= time < DATE2'
-    )
-    parser.add_argument('--train',          type     = str,
-                                            nargs    = 2,
-                                            metavar  = ('DATE', 'ARG'),
-                                            help     = 'Subselects the processed dataframe as a training dataframe. Requires 2 strings, the first always being a date and the second being either a date or conditional. Usage examples:' \
-                                                     + '\n\tSelect after a date: --train date <' \
-                                                     + '\n\tSelect before a date: --train date >' \
-                                                     + '\n\tSelect between [date1, date2): --train date1 date2'
-    )
-    parser.add_argument('--test',           type     = str,
-                                            nargs    = 2,
-                                            metavar  = ('DATE', 'ARG'),
-                                            help     = 'Subselects the processed dataframe as a testing dataframe. Requires 2 strings, the first always being a date and the second being either a date or conditional. Usage examples:' \
-                                                     + '\n\tSelect after a date: --test date <' \
-                                                     + '\n\tSelect before a date: --test date >' \
-                                                     + '\n\tSelect between [date1, date2): --train date1 date2'
+                                            metavar  = '/path/to/config.yaml',
+                                            help     = 'Path to a config.yaml file'
     )
 
     args = parser.parse_args()
 
     try:
-        df = pd.read_hdf(args.input, args.key_in)
+        config = utils.Config(args.config, 'preprocess')
 
-        preprocess(df, **vars(args))
+        preprocess(config)
 
         logger.info('Finished successfully')
-    except Exception as e:
+    except Exception:
         logger.exception('Failed to complete')

@@ -9,6 +9,7 @@ import os
 import pandas as pd
 import seaborn as sns
 import sys
+import yaml
 
 from datetime import datetime as dtt
 from glob     import glob
@@ -472,3 +473,44 @@ def compile_datasets(weather=None, bls=None, r0_day=None, r0_night=None, h5=None
         df.to_hdf(h5, 'merged')
 
     return data, dss, df
+
+class _Helper:
+    """
+    Helper object for Config to allow for nested dot notation accessing config
+    args
+    """
+    def __init__(self, data):
+        for key, value in data.items():
+            if isinstance(value, dict):
+                setattr(self, key, _Helper(value))
+            else:
+                setattr(self, key, value)
+
+    def __contains__(self, key):
+        return hasattr(self, key)
+
+class Config:
+    def __init__(self, file, section):
+        """
+        Loads a config.yaml file
+
+        Parameters
+        ----------
+        path : str
+            Path to the config.yaml file to read
+        section : str
+            Selects which section of the config to return
+        """
+        with open(file, 'r') as f:
+            data = yaml.load(f, Loader=yaml.FullLoader)
+        self.config = _Helper(data)
+        self.active = getattr(self.config, section)
+
+    def __getattr__(self, key):
+        try:
+            return getattr(self.active, key)
+        except:
+            return None
+
+    def __contains__(self, key):
+        return hasattr(self, key)
