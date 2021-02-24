@@ -50,7 +50,7 @@ def roll(df, window, step=1, observations=None):
         for i in tqdm(range(0, size, step), desc='Rolling'):
             if i < size:
                 j = i+1
-                while (df.index[j] - df.index[i]) < delta:
+                while j < size and (df.index[j] - df.index[i]) < delta:
                     j += 1
 
                 sub = df.iloc[i:j]
@@ -183,5 +183,3 @@ if __name__ == '__main__':
 
 # df = pd.read_hdf('local/data/v2/data.h5', 'merged')
 # nf = df.drop(columns=['wind_direction', 'r0_day', 'r0_night']).dropna(how='any', axis=0)
-
-df.sort_index(inplace=True)
