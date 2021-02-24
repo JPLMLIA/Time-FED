@@ -136,10 +136,13 @@ def process(config):
     df   = df.dropna(how='any', axis=0)
     logger.debug(f'Dropping NaNs reduced the data by {(1-df.index.size/orig)*100:.2f}%')
 
+    logger.info('Creating the rolling windows and beginning processing')
     # Create rolling windows and process tsfresh on each window
     rolls = roll(df, window=config.window, step=config.step, observations=config.observations)
     with utils.Pool(processes=config.cores) as pool:
         extracts = pool.map(func, rolls)
+
+    logger.info('Concatting the feature frames together')
     ret = pd.concat(extracts)
     ret.sort_index(inplace=True)
 
