@@ -7,7 +7,8 @@ import logging
 import pandas as pd
 import numpy as np
 
-from tqdm import tqdm
+from functools import partial
+from tqdm      import tqdm
 
 #%%
 
@@ -121,14 +122,13 @@ def process(config):
     """
     The main process of TrackWindow
     """
-    ret = pd.DataFrame()
-
     # Retrieve features to use
     features = get_features(
         whitelist = config.features.whitelist,
         blacklist = config.features.blacklist,
         prompt    = config.prompt.features
     )
+    func = partial(extract, features=features)
 
     # load the data and drop nan values
     df   = pd.read_hdf(config.input.file, config.input.key)
@@ -139,8 +139,9 @@ def process(config):
     # Create rolling windows and process tsfresh on each window
     rolls = roll(df, window=config.window, step=config.step, observations=config.observations)
     with utils.Pool(processes=config.cores) as pool:
-        for extr in pool.imap(extract, rolls):
-            ret = pd.concat([ret, extr])
+        extracts = pool.map(func, rolls)
+    ret = pd.concat(extracts)
+    ret.sort_index(inplace=True)
 
     # if self.save:
     #     if len(ret.index):
@@ -179,3 +180,5 @@ if __name__ == '__main__':
 
 # df = pd.read_hdf('local/data/v2/data.h5', 'merged')
 # nf = df.drop(columns=['wind_direction', 'r0_day', 'r0_night']).dropna(how='any', axis=0)
+
+df.sort_index(inplace=True)
