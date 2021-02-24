@@ -4,6 +4,8 @@ Various utility functions
 import datetime as dt
 import h5py
 import logging
+import multiprocessing as mp
+import multiprocessing.pool as mp_pool
 import numpy  as np
 import os
 import pandas as pd
@@ -514,3 +516,32 @@ class Config:
 
     def __contains__(self, key):
         return hasattr(self, key)
+
+class NoDaemonProcess(mp.Process):
+    '''
+    Credit goes to Massimiliano
+    https://stackoverflow.com/questions/6974695/python-process-pool-non-daemonic
+    '''
+    @property
+    def daemon(self):
+        return False
+
+    @daemon.setter
+    def daemon(self, value):
+        pass
+
+class NoDaemonContext(type(mp.get_context())):
+    '''
+    Credit goes to Massimiliano
+    https://stackoverflow.com/questions/6974695/python-process-pool-non-daemonic
+    '''
+    Process = NoDaemonProcess
+
+class Pool(mp_pool.Pool):
+    '''
+    Credit goes to Massimiliano
+    https://stackoverflow.com/questions/6974695/python-process-pool-non-daemonic
+    '''
+    def __init__(self, *args, **kwargs):
+        kwargs['context'] = NoDaemonContext()
+        super().__init__(*args, **kwargs)

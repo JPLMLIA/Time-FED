@@ -1,0 +1,181 @@
+#%%
+# %load_ext autoreload
+# %autoreload 2
+# %matplotlib inline
+#%%
+import logging
+import pandas as pd
+import numpy as np
+
+from tqdm import tqdm
+
+#%%
+
+import argparse
+import re
+
+from tsfresh import extract_features
+from tsfresh.feature_extraction import ComprehensiveFCParameters
+from tsfresh.utilities.dataframe_functions import impute
+
+import utils
+
+#%%
+
+logger = logging.getLogger('mloc/extract_features.py')
+
+def roll(df, window, step=1, observations=None):
+    """
+    Creates a generator for rolling over a pandas DataFrame with a given window
+    size.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+    window : str or int
+        The window size to extract
+    step : int
+        Step size to take when rolling over the DataFrame
+    observations : int
+        Minimum number of observations required to be a valid window
+
+    Yields
+    ------
+    pandas.DataFrame
+    """
+    size = df.index.size
+    if isinstance(window, str):
+        delta = pd.Timedelta(window)
+        for i in tqdm(range(0, size, step), desc='Rolling'):
+            if i < size:
+                j = i+1
+                while (df.index[j] - df.index[i]) < delta:
+                    j += 1
+
+                sub = df.iloc[i:j]
+
+                if observations:
+                    if sub.index.size < observations:
+                        continue
+                yield sub
+
+    elif isinstance(window, int):
+        for i in tqdm(range(0, size, step), desc='Rolling'):
+            if i < size:
+                yield df.iloc[i:min(i+window, size)]
+
+#%%
+
+def get_features(whitelist=None, blacklist=None, prompt=False):
+    """
+    """
+    features = ComprehensiveFCParameters()
+
+    # Apply white/black lists if available
+    if whitelist:
+        features = {key: value for key, value in features.items() if key in whitelist}
+    if blacklist:
+        features = {key: value for key, value in features.items() if key not in blacklist}
+
+    # Prompt the user with a list of available features
+    if prompt:
+        retain = list(features.keys())
+        logger.info('Current list of features to be used in feature extraction:')
+
+        for i, feat in enumerate(retain):
+            logger.info(f'\t{i}\t- {feat}')
+
+        response = input('Please select which features to use in extraction (eg. 0 3 11): ')
+        indices  = re.findall(r'(\d+)', response)
+        retain   = [retain[int(i)] for i in indices]
+
+        features = {key: value for key, value in features.items() if key in retain}
+
+    return features
+
+def extract(df, features=None):
+    """
+    """
+    columns     = df.columns
+    df['_ID']   = np.full(len(df), 0)
+    df['_TIME'] = df.index
+    extract = extract_features(
+        df,
+        column_id    = '_ID',
+        column_sort  = '_TIME',
+        column_kind  = None,
+        column_value = None,
+        impute_function       = impute,
+        default_fc_parameters = features,
+        disable_progressbar   = True,
+        n_jobs = 1
+    )
+
+    # Imitate the original index and values
+    extract.index    = [df.index[-1]]
+    extract[columns] = df[columns].iloc[-1]
+
+    return extract
+
+def process(config):
+    """
+    The main process of TrackWindow
+    """
+    ret = pd.DataFrame()
+
+    # Retrieve features to use
+    features = get_features(
+        whitelist = config.features.whitelist,
+        blacklist = config.features.blacklist,
+        prompt    = config.prompt.features
+    )
+
+    # load the data and drop nan values
+    df   = pd.read_hdf(config.input.file, config.input.key)
+    orig = df.index.size
+    df   = df.dropna(how='any', axis=0)
+    logger.debug(f'Dropping NaNs reduced the data by {(1-df.index.size/orig)*100:.2f}%')
+
+    # Create rolling windows and process tsfresh on each window
+    rolls = roll(df, window=config.window, step=config.step, observations=config.observations)
+    with utils.Pool(processes=config.cores) as pool:
+        for extr in pool.imap(extract, rolls):
+            ret = pd.concat([ret, extr])
+
+    # if self.save:
+    #     if len(ret.index):
+    #         logger.info('Saving the tsfresh dataframe to h5')
+    #         ret.to_hdf(self.save, key='feats')
+    #     else:
+    #         logger.error('The tsfresh dataframe is empty, skipping save')
+
+    if config.output.file:
+        ret.to_hdf(config.output.file, config.output.key)
+
+    return ret
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
+
+    parser.add_argument('-c', '--config',   type     = str,
+                                            required = True,
+                                            metavar  = '/path/to/config.yaml',
+                                            help     = 'Path to a config.yaml file'
+    )
+
+    args = parser.parse_args()
+
+    try:
+        config = utils.Config(args.config, 'extract_features')
+
+        process(config)
+
+        logger.info('Finished successfully')
+    except Exception as e:
+        logger.exception('Failed to complete')
+
+#%%
+
+# df = pd.read_hdf('local/data/v2/data.h5', 'merged')
+# nf = df.drop(columns=['wind_direction', 'r0_day', 'r0_night']).dropna(how='any', axis=0)

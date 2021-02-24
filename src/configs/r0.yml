@@ -10,7 +10,7 @@ preprocess:
     lte: 2019/12/31
   test:
     gt: 2019/12/31
-  exclude: [r0_day, r0_night, Cn2, logCn2, wind_direction, month]
+  exclude: [r0_day, r0_night, Cn2, wind_direction, month]
   output:
     file: /Users/jamesmo/projects/mloc/local/data/v2/r0.preprocess.h5
     key: default
@@ -59,3 +59,19 @@ classify:
     select:
     exclude: [r0_day, r0_night, Cn2, o(I)_I, wind_direction, month]
 #
+extract_features:
+  window: 5 day
+  step: 1
+  observations: 5
+  cores: 8g
+  input:
+    file: /Users/jamesmo/projects/mloc/local/data/v2/r0.preprocess.h5
+    key: default/full
+  output:
+    file: /Users/jamesmo/projects/mloc/local/data/v2/r0.features.h5
+    key: default
+  prompt:
+    features: False
+  features:
+    whitelist:
+    blacklist:
