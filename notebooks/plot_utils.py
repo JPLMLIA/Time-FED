@@ -5,10 +5,22 @@ Summary: plotting scripts for notebooks
 
 import numpy as np
 import matplotlib.pyplot as plt
+import pandas as pd
+import scipy.stats as stats
+from mpl_toolkits.axes_grid1 import make_axes_locatable
+import seaborn as sns
+sns.set_context('talk')
+
 
 #
 # SUBROUTINES
 #
+
+def error_perc(truth, pred):
+    return np.divide(truth-pred,truth)
+
+def error_diff(truth, pred):
+    return truth-pred
 
 def density_estimation(m1, m2, xmin, xmax, ymin, ymax):
     X, Y = np.mgrid[xmin:xmax:100j, ymin:ymax:100j]
