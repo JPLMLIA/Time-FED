@@ -104,9 +104,11 @@ def preprocess(config):
     logger.debug(f'df.describe():\n{df.describe()}')
 
     logger.info('Creating new features')
-    df['month'] = df.index.month
-    df['day']   = df.index.dayofyear
-    if 'Cn2' in df:
+    if 'month' in config.features:
+        df['month'] = df.index.month
+    if 'day' in config.features:
+        df['day']   = df.index.dayofyear
+    if 'logCn2' in config.features:
         df['logCn2'] = np.log10(df['Cn2'])
 
     # Apply filtering

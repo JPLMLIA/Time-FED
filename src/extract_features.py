@@ -1,27 +1,17 @@
-#%%
-# %load_ext autoreload
-# %autoreload 2
-# %matplotlib inline
-#%%
+import argparse
 import logging
+import numpy  as np
 import pandas as pd
-import numpy as np
+import re
 
 from functools import partial
 from tqdm      import tqdm
 
-#%%
-
-import argparse
-import re
-
-from tsfresh import extract_features
-from tsfresh.feature_extraction import ComprehensiveFCParameters
+from tsfresh                               import extract_features
+from tsfresh.feature_extraction            import ComprehensiveFCParameters
 from tsfresh.utilities.dataframe_functions import impute
 
 import utils
-
-#%%
 
 logger = logging.getLogger('mloc/extract_features.py')
 
@@ -64,8 +54,6 @@ def roll(df, window, step=1, observations=None):
         for i in tqdm(range(0, size, step), desc='Rolling'):
             if i < size:
                 yield df.iloc[i:min(i+window, size)]
-
-#%%
 
 def get_features(whitelist=None, blacklist=None, prompt=False):
     """
@@ -112,12 +100,12 @@ def extract(df, features=None):
         n_jobs = 1
     )
 
-    # Imitate the original index and values
-    extract.index    = [df.index[-1]]
-    extract[columns] = df[columns].iloc[-1]
+    # Imitate the original index
+    extract.index = [df.index[-1]]
 
     return extract
 
+@utils.timeit
 def process(config):
     """
     The main process of TrackWindow
@@ -140,20 +128,18 @@ def process(config):
     # Create rolling windows and process tsfresh on each window
     rolls = roll(df, window=config.window, step=config.step, observations=config.observations)
     with utils.Pool(processes=config.cores) as pool:
-        extracts = pool.map(func, rolls)
+        extracts = pool.imap(func, rolls, chunksize=200)
+        extracts.wait()
 
     logger.info('Concatting the feature frames together')
     ret = pd.concat(extracts)
     ret.sort_index(inplace=True)
 
-    # if self.save:
-    #     if len(ret.index):
-    #         logger.info('Saving the tsfresh dataframe to h5')
-    #         ret.to_hdf(self.save, key='feats')
-    #     else:
-    #         logger.error('The tsfresh dataframe is empty, skipping save')
+    # Add back in the original columns
+    ret[df.columns] = df.loc[ret.index]
 
     if config.output.file:
+        logger.info(f'Saving to {config.output.file}')
         ret.to_hdf(config.output.file, config.output.key)
 
     return ret
@@ -178,8 +164,3 @@ if __name__ == '__main__':
         logger.info('Finished successfully')
     except Exception as e:
         logger.exception('Failed to complete')
-
-#%%
-
-# df = pd.read_hdf('local/data/v2/data.h5', 'merged')
-# nf = df.drop(columns=['wind_direction', 'r0_day', 'r0_night']).dropna(how='any', axis=0)
