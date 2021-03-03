@@ -15,7 +15,7 @@ import utils
 
 logger = logging.getLogger('mloc/extract_features.py')
 
-def roll(df, window, step=1, observations=None):
+def roll(df, window, step=1, observations=None, drop=None):
     """
     Creates a generator for rolling over a pandas DataFrame with a given window
     size.
@@ -29,6 +29,8 @@ def roll(df, window, step=1, observations=None):
         Step size to take when rolling over the DataFrame
     observations : int
         Minimum number of observations required to be a valid window
+    drop : list
+        List of variables to drop before yielding
 
     Yields
     ------
@@ -48,12 +50,19 @@ def roll(df, window, step=1, observations=None):
                 if observations:
                     if sub.index.size < observations:
                         continue
+
+                if drop:
+                    sub = sub.drop(columns=drop)
+
                 yield sub
 
     elif isinstance(window, int):
         for i in tqdm(range(0, size, step), desc='Rolling'):
             if i < size:
-                yield df.iloc[i:min(i+window, size)]
+                sub = df.iloc[i:min(i+window, size)]
+                if drop:
+                    sub = sub.drop(columns=drop)
+                yield sub
 
 def get_features(whitelist=None, blacklist=None, prompt=False):
     """
@@ -126,7 +135,12 @@ def process(config):
 
     logger.info('Creating the rolling windows and beginning processing')
     # Create rolling windows and process tsfresh on each window
-    rolls = roll(df, window=config.window, step=config.step, observations=config.observations)
+    rolls = roll(df,
+        window       = config.window,
+        step         = config.step,
+        observations = config.observations,
+        drop         = config.drop
+    )
     with utils.Pool(processes=config.cores) as pool:
         extracts = pool.imap(func, rolls, chunksize=200)
         extracts.wait()
