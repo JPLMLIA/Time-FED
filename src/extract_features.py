@@ -30,7 +30,9 @@ def roll(df, window, step=1, observations=None, drop=None):
     observations : int
         Minimum number of observations required to be a valid window
     drop : list
-        List of variables to drop before yielding
+        List of variables to drop before yielding. This allows for variables to
+        be considered in the observations during rolling but excluded from
+        tsfresh extractions.
 
     Yields
     ------
@@ -141,9 +143,10 @@ def process(config):
         observations = config.observations,
         drop         = config.drop
     )
+    extracts = []
     with utils.Pool(processes=config.cores) as pool:
-        extracts = pool.imap(func, rolls, chunksize=200)
-        extracts.wait()
+        for ret in pool.imap_unordered(func, rolls, chunksize=200):
+            extracts.append(ret)
 
     logger.info('Concatting the feature frames together')
     ret = pd.concat(extracts)
