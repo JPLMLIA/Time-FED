@@ -75,67 +75,67 @@ def scatter_with_errors(truth, preds, error_func, xmin, xmax, ymin, ymax):
 
     plt.show()
 
-    def plot_errors_in_time(truth, preds):
-        fig, ax = plt.subplots(3, 1)
-        ax[0].plot(truth.index, truth, 'gx', label='actual')
-        ax[0].plot(truth.index, preds, 'ro', label='predicted')
-        ax[0].set_xlabel("Datetime")
-        ax[0].set_ylabel("r0")
-        ax[0].legend()
+def plot_errors_in_time(truth, preds):
+    fig, ax = plt.subplots(3, 1)
+    ax[0].plot(truth.index, truth, 'gx', label='actual')
+    ax[0].plot(truth.index, preds, 'ro', label='predicted')
+    ax[0].set_xlabel("Datetime")
+    ax[0].set_ylabel("r0")
+    ax[0].legend()
 
-        ax[1].plot(truth.index, error_diff(truth, preds), 'bx')
-        ax[1].set_xlabel("Datetime")
-        ax[1].set_ylabel("error r0")
+    ax[1].plot(truth.index, error_diff(truth, preds), 'bx')
+    ax[1].set_xlabel("Datetime")
+    ax[1].set_ylabel("error r0")
 
-        ax[2].plot(truth.index, error_perc(truth, preds), 'bx')
-        ax[2].set_xlabel("Datetime")
-        ax[2].set_ylabel("perc error r0")
-        plt.show()
+    ax[2].plot(truth.index, error_perc(truth, preds), 'bx')
+    ax[2].set_xlabel("Datetime")
+    ax[2].set_ylabel("perc error r0")
+    plt.show()
 
-    def plot_importance(forest, X, featnames):
-        importances = forest.feature_importances_
-        std = np.std([tree.feature_importances_ for tree in forest.estimators_],
-                     axis=0)
-        indices = np.argsort(importances)[::-1]
+def plot_importance(forest, X, featnames):
+    importances = forest.feature_importances_
+    std = np.std([tree.feature_importances_ for tree in forest.estimators_],
+                 axis=0)
+    indices = np.argsort(importances)[::-1]
 
-        # Print the feature ranking
-        print("Feature ranking:")
+    # Print the feature ranking
+    print("Feature ranking:")
 
-        for f in range(X.shape[1]):
-            print(f"{f + 1}. {featnames[indices[f]]:20} ({importances[indices[f]]})")
+    for f in range(X.shape[1]):
+        print(f"{f + 1}. {featnames[indices[f]]:20} ({importances[indices[f]]})")
 
-        # Plot the impurity-based feature importances of the forest
-        plt.figure()
-        plt.title("Feature importances")
-        plt.bar(range(X.shape[1]), importances[indices],
-                color="r", yerr=std[indices], align="center")
-        plt.xticks(range(X.shape[1]), [featnames[i] for i in indices], rotation='vertical')
-        plt.xlim([-1, X.shape[1]])
-        plt.show()
+    # Plot the impurity-based feature importances of the forest
+    plt.figure()
+    plt.title("Feature importances")
+    plt.bar(range(X.shape[1]), importances[indices],
+            color="r", yerr=std[indices], align="center")
+    plt.xticks(range(X.shape[1]), [featnames[i] for i in indices], rotation='vertical')
+    plt.xlim([-1, X.shape[1]])
+    plt.show()
 
-    def plot_overall_synchrony(feat1, feat2, feat1name, feat2name, r):
-        f, ax = plt.subplots(2, 1, figsize=(7, 3), sharex=True)
-        ax[0].plot(feat1, label=feat1name)
-        ax[1].plot(feat2, label=feat2name)
-        ax[1].set(title=f"Overall Pearson r = {np.round(r, 2)}");
-        return
+def plot_overall_synchrony(feat1, feat2, feat1name, feat2name, r):
+    f, ax = plt.subplots(2, 1, figsize=(7, 3), sharex=True)
+    ax[0].plot(feat1, label=feat1name)
+    ax[1].plot(feat2, label=feat2name)
+    ax[1].set(title=f"Overall Pearson r = {np.round(r, 2)}");
+    return
 
-    def plot_local_synchrony(feat1, feat2, feat1name, feat2name, r_window_size=120):
-        # Compute rolling window synchrony
-        rolling_r = feat1.rolling(window=r_window_size, center=True).corr(feat2)
-        f, ax = plt.subplots(3, 1, figsize=(14, 6), sharex=True)
-        ax[0].plot(feat1, label=feat1name)
-        ax[1].plot(feat2, label=feat2name)
-        rolling_r.plot(ax=ax[2])
-        ax[0].set(ylabel=feat1name)
-        ax[1].set(ylabel=feat2name)
-        ax[2].set(ylabel='Pearson r')
-        plt.suptitle("data and rolling window correlation")
+def plot_local_synchrony(feat1, feat2, feat1name, feat2name, r_window_size=120):
+    # Compute rolling window synchrony
+    rolling_r = feat1.rolling(window=r_window_size, center=True).corr(feat2)
+    f, ax = plt.subplots(3, 1, figsize=(14, 6), sharex=True)
+    ax[0].plot(feat1, label=feat1name)
+    ax[1].plot(feat2, label=feat2name)
+    rolling_r.plot(ax=ax[2])
+    ax[0].set(ylabel=feat1name)
+    ax[1].set(ylabel=feat2name)
+    ax[2].set(ylabel='Pearson r')
+    plt.suptitle("data and rolling window correlation")
 
-    def print_pearsonr(feat1, feat2):
-        r, p = stats.pearsonr(feat1, feat2)
-        print(f"Scipy computed Pearson r: {r} and p-value: {p}")
-        return r, p
+def print_pearsonr(feat1, feat2):
+    r, p = stats.pearsonr(feat1, feat2)
+    print(f"Scipy computed Pearson r: {r} and p-value: {p}")
+    return r, p
 
 def error_by_r0_histograms(truth, errs, r0min, r0max):
     plt.figure()
