@@ -283,13 +283,20 @@ def importances(model, features, config):
     for i in range(len(features)):
         logger.info(f'- {i+1}. {features[indices[i]]:20} ({imports[indices[i]]})')
 
+    xaxis   = range(pconf.number or len(features))
+    indices = indices[:len(xaxis)]
+
     # Plot
     fig, ax = plt.subplots(figsize=pconf.figsize)
-    ax.bar(x=range(len(features)), height=imports[indices], yerr=stddev[indices], align='center', color='r')
+    ax.bar(x=xaxis, height=imports[indices], yerr=stddev[indices], align='center', color='r')
+
+    # Set ylim
+    ax.set_ylim([0, 1])
+    ax.set_yticks([0, .25, .5, .75, 1])
 
     # Set xlim and ticks
-    ax.set_xlim([-1, len(features)])
-    ax.set_xticks(range(len(features)))
+    ax.set_xlim([-1, len(xaxis)])
+    ax.set_xticks(xaxis)
     ax.tick_params(axis='x', labelrotation=pconf.labelrotation)
 
     # Set labels
