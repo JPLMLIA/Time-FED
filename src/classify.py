@@ -4,6 +4,11 @@ import os
 import pandas as pd
 
 from sklearn.ensemble import RandomForestRegressor
+from sklearn.metrics  import (
+    mean_absolute_percentage_error,
+    mean_squared_error,
+    r2_score
+)
 
 # Import utils first to set the logger
 import utils
@@ -38,13 +43,23 @@ def train_and_test(model, train, test, label, features):
     logger.debug(f'Using label {label}')
 
     model.fit(train[features], train[label])
-    r2   = model.score(test[features], test[label])
-    pred = model.predict(test[features])
 
-    logger.debug(f'r2 score = {r2}')
+    pred     = model.predict(test[features])
+    r2       = r2_score(test[label], pred)
+    sq_err   = mean_squared_error(test[label], pred)
+    perc_err = mean_absolute_percentage_error(test[label], pred)
 
-    return pred, r2
+    logger.debug(f'r2 score      = {r2}')
+    logger.debug(f'square error  = {sq_err}')
+    logger.debug(f'percent error = {perc_err}')
 
+    return pred, {
+        'r2'      : r2,
+        'sq_err'  : sq_err,
+        'perc_err': perc_err
+    }
+
+@utils.timeit
 def classify(config):
     """
     Builds a model, trains and tests against it, then creates plots for the run.
@@ -54,12 +69,12 @@ def classify(config):
     config : utils.Config
         Config object defining arguments for classify
     """
-    train = pd.read_hdf(config.input.file, f'{config.input.key}/train')
-    test  = pd.read_hdf(config.input.file, f'{config.input.key}/test')
+    train = pd.read_hdf(config.input.file, f'{config.input.train}')
+    test  = pd.read_hdf(config.input.file, f'{config.input.test}')
 
     logger.info('Creating, training, and testing the model')
 
-    model = RandomForestRegressor(n_estimators=100, random_state=0)
+    model = RandomForestRegressor(n_estimators=100, random_state=0, n_jobs=-1)
 
     # Retrieve features list, exclude the label from it
     features = config.features.select
@@ -80,7 +95,7 @@ def classify(config):
         test  =  test[ ~test.isnull().any(axis=1)]
 
     # Train and test the model
-    pred, r2 = train_and_test(model, train, test, config.label, features)
+    pred, scores = train_and_test(model, train, test, config.label, features)
 
     # If plotting is enabled, run the functions and save output if given
     if config.plots.enabled:
