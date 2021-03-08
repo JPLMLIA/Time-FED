@@ -13,12 +13,13 @@ preprocess:
   exclude: [r0_day, r0_night, r0, Cn2, logCn2, o(I)_I, wind_direction, month]
   output:
     file: /Users/jamesmo/projects/mloc/local/data/v2/temperature.preprocess.h5
-    key: default
+    key: base
 #
 classify:
   input:
     file: /Users/jamesmo/projects/mloc/local/data/v2/temperature.preprocess.h5
-    key: default
+    train: base/train
+    test: base/test
   label: temperature
   dropna: True
   plots:
@@ -41,6 +42,7 @@ classify:
     importances:
       figsize: [20, 10]
       labelrotation: 30
+      number:
       title: Feature Importances
       file: feature_importances.png
     histogram_errors:

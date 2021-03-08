@@ -1,8 +1,8 @@
 #
 preprocess:
   input:
-    file: /Users/jamesmo/projects/mloc/local/data/v2/data.h5
-    key: merged
+    file: /Users/jamesmo/projects/mloc/local/data/v2/r0.features.h5
+    key: features
   subselect:
     gte: 2018/05/03
     lt: 2020/12/30
@@ -10,20 +10,22 @@ preprocess:
     lte: 2019/12/31
   test:
     gt: 2019/12/31
-  exclude: [r0_day, r0_night, Cn2, wind_direction, month]
+  exclude: [r0_day, r0_night, Cn2, wind_direction]
+  features: []
   output:
     file: /Users/jamesmo/projects/mloc/local/data/v2/r0.preprocess.h5
-    key: default
+    key: classify
 #
 classify:
   input:
     file: /Users/jamesmo/projects/mloc/local/data/v2/r0.preprocess.h5
-    key: default
+    train: classify/train
+    test: classify/test
   label: r0
   dropna: True
   plots:
     enabled: True
-    directory: /Users/jamesmo/projects/mloc/local/plots/classify
+    directory: /Users/jamesmo/projects/mloc/local/plots/classify/r0_features/
     errors_in_time:
     scatter_with_errors:
       x:
@@ -39,8 +41,9 @@ classify:
       figsize: [10, 10]
       file: scatter_errors.png
     importances:
-      figsize: [20, 10]
-      labelrotation: 30
+      figsize: [20, 30]
+      number: 20
+      labelrotation: 90
       title: Feature Importances
       file: feature_importances.png
     histogram_errors:
@@ -51,7 +54,7 @@ classify:
       file: histogram_errors.png
     local_synchrony:
       feature1: r0
-      feature2: logCn2
+      feature2: solar_zenith_angle
       window_size: 120
       figsize: [30, 6]
       file: local_synchony.png
@@ -75,3 +78,4 @@ extract_features:
   features:
     whitelist:
     blacklist:
+  drop: [r0]
