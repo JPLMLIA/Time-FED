@@ -308,3 +308,49 @@ def importances(model, features, config):
         plt.savefig(f'{config.plots.directory}/{pconf.file}')
     else:
         plt.show()
+
+def date_range(true, pred, config):
+    """
+    """
+    # Get the plot configs for this plot type
+    pconf = config.plots.date_range
+
+    # Cast to series for easy subselection
+    pred = pd.Series(pred, index=true.index)
+
+    # Generate a plot for each date range given
+    for date, dconf in pconf.dates:
+        # Subselect
+        start, end = dconf.start, dconf.end
+        logger.debug(f'Plotting between {start} to {end}')
+
+        true_sub = true.loc[(start <= true.index) & (true.index < end)]
+        pred_sub = pred.loc[(start <= pred.index) & (pred.index < end)]
+
+        # Plot
+        fig, ax = plt.subplots(figsize=pconf.figsize)
+        ax.plot(true_sub, 'g.', label='true')
+        ax.plot(pred_sub, 'r.', label='predicted')
+        ax.legend()
+        ax.set_ylabel(config.label)
+        ax.set_title(f'True vs Predicted between {start} to {end}')
+
+        # Save
+        if config.plots.directory:
+            plt.savefig(f'{config.plots.directory}/{date}.{pconf.file}')
+        else:
+            plt.show()
+
+def plot_one_day(preds, smooth_df, orig_df, startdate, enddate):
+
+    preds_df = pd.DataFrame(preds, index=smooth_df.index)
+
+    daymask = (orig_df.index > startdate ) & (orig_df.index < enddate)
+
+    plt.figure(figsize=(20, 5))
+    plt.plot(orig_df[daymask], 'g.', label='r0')
+    plt.plot(smooth_df[daymask], 'b.', label='r0 smoothed (15min)')
+    plt.plot(preds_df[daymask], 'r.', label='preds')
+    plt.ylabel('r0')
+    plt.legend()
+    return

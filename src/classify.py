@@ -109,6 +109,8 @@ def classify(config):
 
         plots.local_synchrony(train, config=config)
 
+        plots.date_range(test[config.label], pred, config=config)
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)

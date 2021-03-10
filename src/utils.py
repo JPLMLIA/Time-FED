@@ -482,6 +482,7 @@ class _Helper:
     args
     """
     def __init__(self, data):
+        self.__dict__ = data
         for key, value in data.items():
             if isinstance(value, dict):
                 setattr(self, key, _Helper(value))
@@ -490,6 +491,9 @@ class _Helper:
 
     def __contains__(self, key):
         return hasattr(self, key)
+
+    def __iter__(self):
+        return iter(self.__dict__.items())
 
 class Config:
     def __init__(self, file, section):
