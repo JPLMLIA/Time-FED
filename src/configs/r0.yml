@@ -15,20 +15,20 @@ preprocess:
   shift: [r0]
   output:
     file: /Users/jamesmo/projects/mloc/local/data/v2/r0.preprocess.h5
-    key: default
+    key: preprocess
 #
 classify:
   input:
     file: /Users/jamesmo/projects/mloc/local/data/v2/r0.preprocess.h5
-    train: default/train
-    test: default/test
+    train: preprocess/train
+    test: preprocess/test
   label: r0
   dropna: True
   features:
     select:
     exclude: [r0_day, r0_night, Cn2, o(I)_I, wind_direction, month]
   plots:
-    enabled: True
+    enabled: False
     directory: /Users/jamesmo/projects/mloc/local/plots/classify/r0
     errors_in_time:
     scatter_with_errors:
@@ -84,11 +84,13 @@ extract_features:
   step: 1000
   observations: 5
   cores: 8
+  label: r0
+  drop: [r0]
   input:
     file: /Users/jamesmo/projects/mloc/local/data/v2/r0.preprocess.h5
     key: default/full
   output:
-    file: /Users/jamesmo/projects/mloc/local/data/v2/r0.features.h5
+    file: /Users/jamesmo/projects/mloc/local/data/v2/r0_features.h5
     key: default
   prompt:
     features: False

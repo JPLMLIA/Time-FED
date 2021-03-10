@@ -1,7 +1,7 @@
 #
 preprocess:
   input:
-    file: /Users/jamesmo/projects/mloc/local/data/v2/r0.features.h5
+    file: /Users/jamesmo/projects/mloc/local/data/v2/r0_features.h5
     key: features
   subselect:
     gte: 2018/05/03
@@ -14,18 +14,18 @@ preprocess:
   features: []
   shift: [r0]
   output:
-    file: /Users/jamesmo/projects/mloc/local/data/v2/r0.preprocess.h5
-    key: classify
+    file: /Users/jamesmo/projects/mloc/local/data/v2/r0_features.h5
+    key: preprocess
 #
 classify:
   input:
-    file: /Users/jamesmo/projects/mloc/local/data/v2/r0.preprocess.h5
-    train: classify/train
-    test: classify/test
+    file: /Users/jamesmo/projects/mloc/local/data/v2/r0_features.h5
+    train: preprocess/train
+    test: preprocess/test
   label: r0
   dropna: True
   plots:
-    enabled: True
+    enabled: False
     directory: /Users/jamesmo/projects/mloc/local/plots/classify/r0_features/
     errors_in_time:
     scatter_with_errors:
@@ -84,12 +84,13 @@ extract_features:
   step: 1
   observations: 5
   cores: 64
+  label: r0
   input:
-    file: /Users/jamesmo/projects/mloc/local/data/v2/r0.preprocess.h5
-    key: default/full
+    file: /Users/jamesmo/projects/mloc/local/data/v2/r0_features.h5
+    key: preprocess/full
   output:
-    file: /Users/jamesmo/projects/mloc/local/data/v2/r0.features.h5
-    key: default
+    file: /Users/jamesmo/projects/mloc/local/data/v2/r0_features.h5
+    key: classify
   prompt:
     features: False
   features:

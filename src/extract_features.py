@@ -7,7 +7,10 @@ import re
 from functools import partial
 from tqdm      import tqdm
 
-from tsfresh                               import extract_features
+from tsfresh import (
+    extract_features,
+    select_features
+)
 from tsfresh.feature_extraction            import ComprehensiveFCParameters
 from tsfresh.utilities.dataframe_functions import impute
 
@@ -154,6 +157,9 @@ def process(config):
 
     # Add back in the original columns
     ret[df.columns] = df.loc[ret.index]
+
+    # Select features
+    ret = select_features(ret.drop(columns=[config.label]), ret[config.label])
 
     if config.output.file:
         logger.info(f'Saving to {config.output.file}')
