@@ -111,6 +111,10 @@ def preprocess(config):
     if 'logCn2' in config.features:
         df['logCn2'] = np.log10(df['Cn2'])
 
+    if config.shift:
+        for feature in config.shift:
+            df[f'{feature}_shifted'] = df[feature].shift(1)
+
     # Apply filtering
     if config.filter:
         for feature, args in vars(config.filter).items():
