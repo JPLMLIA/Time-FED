@@ -158,12 +158,17 @@ def process(config):
     # Add back in the original columns
     ret[df.columns] = df.loc[ret.index]
 
+    if config.output.file:
+        logger.info(f'Saving raw to {config.output.file}')
+        ret.to_hdf(config.output.file, f'{config.output.key}/full')
+
     # Select features
+    logger.info('Selecting relevant features')
     ret = select_features(ret.drop(columns=[config.label]), ret[config.label])
 
     if config.output.file:
         logger.info(f'Saving to {config.output.file}')
-        ret.to_hdf(config.output.file, config.output.key)
+        ret.to_hdf(config.output.file, f'{config.output.key}/select')
 
     return ret
 
