@@ -1,7 +1,7 @@
 #
 preprocess:
   input:
-    file: /Users/jamesmo/projects/mloc/local/data/v2/r0_features.h5
+    file: /Users/jamesmo/projects/mloc/local/data/v2/r0.features.h5
     key: features
   subselect:
     gte: 2018/05/03
@@ -12,20 +12,20 @@ preprocess:
     gt: 2019/12/31
   exclude: [r0_day, r0_night, Cn2, wind_direction]
   features: []
-  shift: [r0]
+  shift: []
   output:
-    file: /Users/jamesmo/projects/mloc/local/data/v2/r0_features.h5
+    file: /Users/jamesmo/projects/mloc/local/data/v2/r0.features.h5
     key: preprocess
 #
 classify:
   input:
-    file: /Users/jamesmo/projects/mloc/local/data/v2/r0_features.h5
+    file: /Users/jamesmo/projects/mloc/local/data/v2/r0.features.h5
     train: preprocess/train
     test: preprocess/test
   label: r0
   dropna: True
   plots:
-    enabled: False
+    enabled: True
     directory: /Users/jamesmo/projects/mloc/local/plots/classify/r0_features/
     errors_in_time:
     scatter_with_errors:
@@ -65,16 +65,16 @@ classify:
       dates:
         5-30-20:
           start: 2020/05/30 00:00
-          end  : 2020/05/31 00:00
+          end  : 2020/05/30 23:59
         8-29-20:
-          start: 2020/08/29 00:00
-          end  : 2020/08/30 00:00
+          start: 2020/08/30 00:00
+          end  : 2020/08/30 23:59
         2-15-20:
           start: 2020/02/15 00:00
-          end  : 2020/02/16 00:00
+          end  : 2020/02/15 23:59
         11-15-20:
           start: 2020/11/15 00:00
-          end  : 2020/11/16 00:00
+          end  : 2020/11/15 23:59
   features:
     select:
     exclude: [r0_day, r0_night, Cn2, o(I)_I, wind_direction, month]

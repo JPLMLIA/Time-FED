@@ -3,13 +3,16 @@ Plotting functions for classify.py
 """
 import logging
 import matplotlib.pyplot as plt
-import numpy      as np
-import pandas     as pd
+import numpy   as np
+import pandas  as pd
+import seaborn as sns
 
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy.stats             import gaussian_kde
 
 logger = logging.getLogger('mloc/plots.py')
+
+sns.set_context('talk')
 
 def local_synchrony(df, config):
     """
@@ -326,6 +329,7 @@ def date_range(true, pred, config):
 
         true_sub = true.loc[(start <= true.index) & (true.index < end)]
         pred_sub = pred.loc[(start <= pred.index) & (pred.index < end)]
+        print(true_sub, pred_sub)
 
         # Plot
         fig, ax = plt.subplots(figsize=pconf.figsize)
@@ -336,21 +340,8 @@ def date_range(true, pred, config):
         ax.set_title(f'True vs Predicted between {start} to {end}')
 
         # Save
+        plt.tight_layout()
         if config.plots.directory:
             plt.savefig(f'{config.plots.directory}/{date}.{pconf.file}')
         else:
             plt.show()
-
-def plot_one_day(preds, smooth_df, orig_df, startdate, enddate):
-
-    preds_df = pd.DataFrame(preds, index=smooth_df.index)
-
-    daymask = (orig_df.index > startdate ) & (orig_df.index < enddate)
-
-    plt.figure(figsize=(20, 5))
-    plt.plot(orig_df[daymask], 'g.', label='r0')
-    plt.plot(smooth_df[daymask], 'b.', label='r0 smoothed (15min)')
-    plt.plot(preds_df[daymask], 'r.', label='preds')
-    plt.ylabel('r0')
-    plt.legend()
-    return
