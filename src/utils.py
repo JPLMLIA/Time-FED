@@ -27,6 +27,7 @@ logging.basicConfig(
     datefmt = '%m-%d %H:%M',
     stream  = sys.stdout
 )
+__file__ = 'utils.py'
 Logger = logging.getLogger(os.path.basename(__file__))
 
 # Increase matplotlib's logger to warning to disable the debug spam it makes
@@ -216,7 +217,8 @@ def load_weather(path, interp=False, **interp_args):
     for code, column in tqdm(mappings.items(), desc='Parameters', position=0):
         files = sorted(glob(f'{path}/{code}/**/*'))
         _df = pd.DataFrame()
-        for file in tqdm(files, desc=f'Compiling {column}', position=1):
+        # for file in tqdm(files, desc=f'Compiling {column}', position=1):
+        for file in files:
             _df = pd.concat([
                 _df,
                 pd.read_csv(file, sep='\t', header=None, names=['datetime', column], index_col='datetime', parse_dates=True, dtype={column: float}, na_values='///')
@@ -398,7 +400,7 @@ def load_r0(path, kind, datenum=False, round=True, drop_dups=True, resample=Fals
 
     return df
 
-def compile_datasets(weather=None, bls=None, r0_day=None, r0_night=None, h5=None, resample='median'):
+def compile_datasets(weather, bls, r0_day, r0_night, h5=None, resample='5 min', smooth=['r0', 'r0_day', 'r0_night']):
     """
     Ingests all of the raw data into dataframes then compiles them into a merged
     dataframe.
@@ -416,65 +418,57 @@ def compile_datasets(weather=None, bls=None, r0_day=None, r0_night=None, h5=None
     h5 : str
         Optional path to an h5 to write to
     resample : str
-        If set, resamples the dataframes to 1 minute using the method given
+        The rate to resample the merged dataframe
+    smooth : list of str
+        List of columns to apply smoothing on
     """
-    # Import here to prevent being a package dependency
-    import xarray as xr
+    # Load in the data
+    # data = {
+    #     'r0/day'  : load_r0(r0_day,   kind='day',   round=True, resample=False, datenum=False),
+    #     'r0/night': load_r0(r0_night, kind='night', round=True, resample=False, datenum=False),
+    #     'bls'     : load_bls(bls, round=True, resample=False, datenum=False),
+    #     'weather' : load_weather(weather)
+    # }
+    data = {
+        'r0/day'  : pd.read_hdf(h5, 'r0/day'),
+        'r0/night': pd.read_hdf(h5, 'r0/night'),
+        'bls'     : pd.read_hdf(h5, 'bls'),
+        'weather' : pd.read_hdf(h5, 'weather')
+    }
 
-    data = {}
+    # Postprocess
+    # data['r0/day']['r0'] *= 100 # Convert to centimeters
+    # data['r0/night'].drop(columns='polaris_count', inplace=True)
 
-    if r0_day:
-        data['r0/day']   = load_r0(r0_day,   kind='day',   round=True, resample=False, datenum=False)
-        data['r0/day']['r0'] *= 100
-    if r0_night:
-        data['r0/night'] = load_r0(r0_night, kind='night', round=True, resample=False, datenum=False)
-        data['r0/night'].drop(columns='polaris_count', inplace=True)
-    if weather:
-        data['weather'] = load_weather(weather)
-    if bls:
-        data['bls'] = load_bls(bls, round=True, resample=False, datenum=False)
+    # Save individual frames
+    # if h5:
+    #     for key, df in data.items():
+    #         df.to_hdf(h5, key)
+
+    # Merge the frames together
+    df = pd.merge(data['r0/day'], data['r0/night'], how='outer', suffixes=['_day', '_night'], on=['datetime', 'solar_zenith_angle'])
+    df = pd.merge(df, data['bls'], how='outer', on=['datetime', 'solar_zenith_angle'])
+    df = pd.merge(data['weather'], df, how='outer', on='datetime')
+
+    # Sort the datetime index
+    df.sort_index(inplace=True)
+
+    # Create the r0 column by merging day and night
+    df['r0'] = df.r0_day.combine_first(df.r0_night)
+
+    # Apply smoothing
+    for col in smooth:
+        # hardcoded 10 minute smoothing with a minimum of 20% observations (assuming seconds) 10*60*20%=120
+        df[f'{col}_10T'] = df[col].rolling('10 min', min_periods=120).mean()
 
     # Resample to a minute
-    if resample:
-        for key, df in data.items():
-            if resample == 'median':
-                data[key] = df.resample('1 min').median()
-            elif resample == 'mean':
-                data[key] = df.resample('1 min').mean()
+    df = df.resample(resample).median()
 
-    # Save dataframes
-    if h5:
-        for key, df in data.items():
-            df.to_hdf(h5, key)
-
-    # Convert to xarray
-    for key, df in data.items():
-        data[key] = df.to_xarray()
-
-    # Combine r0 day and night
-    if 'r0/day' in data and 'r0/night' in data:
-        data['r0'] = xr.merge([
-            data['r0/day'],
-            data['r0/night']
-        ])
-        data['r0/day']   = data['r0/day'].rename({'r0': 'r0_day'})
-        data['r0/night'] = data['r0/night'].rename({'r0': 'r0_night'})
-
-    # Reorganize so r0 comes before bls
-    dss = []
-    for key, ds in data.items():
-        if key in ['r0']:
-            dss = [ds] + dss
-        else:
-            dss.append(ds)
-
-    ds = xr.merge(dss, compat='override')
-    df = ds.to_dataframe()
-
+    # Save merged
     if h5:
         df.to_hdf(h5, 'merged')
 
-    return data, dss, df
+    return df
 
 class _Helper:
     """
