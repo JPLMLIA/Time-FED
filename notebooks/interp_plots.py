@@ -112,7 +112,7 @@ def draw_error_plots(data, output, center='mean', error='std', subtitle=''):
                     # )
                     max = data[c, center][_m].max()+data[c, error][_m].max()
                     ax.set_ylim(
-                        ymin=0,
+                        ymin=0,g
                         ymax=max
                     )
                     # ax.set_ylim(ymin=data[c, 'std'][_m].min(), ymax=data[c, 'std'][_m].max())
