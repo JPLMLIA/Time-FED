@@ -400,7 +400,7 @@ def load_r0(path, kind, datenum=False, round=True, drop_dups=True, resample=Fals
 
     return df
 
-def compile_datasets(weather, bls, r0_day, r0_night, h5=None, resample='5 min', smooth=['r0', 'r0_day', 'r0_night']):
+def compile_datasets(weather, bls, r0_day, r0_night, h5='', resample='5 min', smooth=['r0', 'r0_day', 'r0_night']):
     """
     Ingests all of the raw data into dataframes then compiles them into a merged
     dataframe.
@@ -422,29 +422,43 @@ def compile_datasets(weather, bls, r0_day, r0_night, h5=None, resample='5 min', 
     smooth : list of str
         List of columns to apply smoothing on
     """
+    # Check if the incoming h5 has the data already, skip loading from raw
+    has_keys = False
+    if os.path.exists(h5):
+        with h5py.File(h5) as f:
+            has_keys = all([
+                'r0/day'   in f,
+                'r0/night' in f,
+                'bls'      in f,
+                'weather'  in f,
+            ])
+
+    Logger.debug('Loading data')
     # Load in the data
-    # data = {
-    #     'r0/day'  : load_r0(r0_day,   kind='day',   round=True, resample=False, datenum=False),
-    #     'r0/night': load_r0(r0_night, kind='night', round=True, resample=False, datenum=False),
-    #     'bls'     : load_bls(bls, round=True, resample=False, datenum=False),
-    #     'weather' : load_weather(weather)
-    # }
-    data = {
-        'r0/day'  : pd.read_hdf(h5, 'r0/day'),
-        'r0/night': pd.read_hdf(h5, 'r0/night'),
-        'bls'     : pd.read_hdf(h5, 'bls'),
-        'weather' : pd.read_hdf(h5, 'weather')
-    }
+    if has_keys:
+        data = {
+            'r0/day'  : pd.read_hdf(h5, 'r0/day'),
+            'r0/night': pd.read_hdf(h5, 'r0/night'),
+            'bls'     : pd.read_hdf(h5, 'bls'),
+            'weather' : pd.read_hdf(h5, 'weather')
+        }
+    else:
+        data = {
+            'r0/day'  : load_r0(r0_day,   kind='day',   round=True, resample=False, datenum=False),
+            'r0/night': load_r0(r0_night, kind='night', round=True, resample=False, datenum=False),
+            'bls'     : load_bls(bls, round=True, resample=False, datenum=False),
+            'weather' : load_weather(weather)
+        }
+        # Postprocess
+        data['r0/day']['r0'] *= 100 # Convert to centimeters
+        data['r0/night'].drop(columns='polaris_count', inplace=True)
 
-    # Postprocess
-    # data['r0/day']['r0'] *= 100 # Convert to centimeters
-    # data['r0/night'].drop(columns='polaris_count', inplace=True)
+        # Save individual frames
+        if h5:
+            for key, df in data.items():
+                df.to_hdf(h5, key)
 
-    # Save individual frames
-    # if h5:
-    #     for key, df in data.items():
-    #         df.to_hdf(h5, key)
-
+    Logger.debug('Merging dataframes together')
     # Merge the frames together
     df = pd.merge(data['r0/day'], data['r0/night'], how='outer', suffixes=['_day', '_night'], on=['datetime', 'solar_zenith_angle'])
     df = pd.merge(df, data['bls'], how='outer', on=['datetime', 'solar_zenith_angle'])
@@ -458,15 +472,22 @@ def compile_datasets(weather, bls, r0_day, r0_night, h5=None, resample='5 min', 
 
     # Apply smoothing
     for col in smooth:
-        # hardcoded 10 minute smoothing with a minimum of 20% observations (assuming seconds) 10*60*20%=120
-        df[f'{col}_10T'] = df[col].rolling('10 min', min_periods=120).mean()
+        if col in ['Cn2', 'r0_night']:
+            Logger.debug(f'Smoothing {col} with 2 minimum observations')
+            df[f'{col}_10T'] = df[col].rolling('10 min', min_periods=2).median()
+        else:
+            # hardcoded 10 minute smoothing with a minimum of 20% observations (assuming seconds) 10*60*20%=120
+            Logger.debug(f'Smoothing {col} with 120 minimum observations')
+            df[f'{col}_10T'] = df[col].rolling('10 min', min_periods=120).median()
 
-    # Resample to a minute
-    df = df.resample(resample).median()
+    Logger.debug(f'Resampling to {resample}')
+    # Resample with at least 2 observations
+    minobs = lambda s: np.nan if len(s) < 2 else s.median()
+    df = df.resample(resample).median()#.apply(minobs)
 
     # Save merged
-    if h5:
-        df.to_hdf(h5, 'merged')
+    # if h5:
+    #     df.to_hdf(h5, 'merged')
 
     return df
 
