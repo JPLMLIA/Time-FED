@@ -1,8 +1,8 @@
 # Preprocess raw data
 preprocess:
   input:
-    file: /data1/mloc/local/data/v3/r0_features.5mins.5ptwin.historical.OC.h5
-    key: features
+    file: /data1/mloc/local/data/v3/data.h5
+    key: merged
   subselect:
     gte: 2018/05/03
     lt: 2020/12/30
