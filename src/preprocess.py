@@ -85,6 +85,31 @@ def subselect(args, df):
 
     return sub
 
+def calculate_features(df, config):
+    """
+    Calculates new features given a config
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        The dataframe to calculate new features on
+    config : utils.Config
+        Configuration containing which features to calculate
+    """
+    if 'month' in config.calc:
+        df['month'] = df.index.month
+
+    if 'day' in config.calc:
+        df['day']   = df.index.dayofyear
+
+    for feature in config.log:
+        if feature in df:
+            df[f'log_{feature}'] = np.log10(df[feature])
+        else:
+            logger.error(f'Feature not found for log: {feature}')
+
+    return df
+
 def preprocess(config):
     """
     Preprocesses the dataframe with additional features
@@ -104,12 +129,7 @@ def preprocess(config):
     logger.debug(f'df.describe():\n{df.describe()}')
 
     logger.info('Creating new features')
-    if 'month' in config.features:
-        df['month'] = df.index.month
-    if 'day' in config.features:
-        df['day']   = df.index.dayofyear
-    if 'logCn2' in config.features:
-        df['logCn2'] = np.log10(df['Cn2'])
+    df = calculate_features(df)
 
     if config.shift:
         for feature in config.shift:
@@ -153,11 +173,15 @@ if __name__ == '__main__':
                                             metavar  = '/path/to/config.yaml',
                                             help     = 'Path to a config.yaml file'
     )
+    parser.add_argument('-s', '--section',  type     = str,
+                                            default  = 'preprocess'
+                                            help     = 'Section of the config to use'
+    )
 
     args = parser.parse_args()
 
     try:
-        config = utils.Config(args.config, 'preprocess')
+        config = utils.Config(args.config, args.section)
 
         preprocess(config)
 

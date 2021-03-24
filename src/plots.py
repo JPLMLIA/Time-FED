@@ -130,7 +130,7 @@ def errors_in_time(true, pred, config):
     else:
         plt.show()
 
-def _scatter_with_errors(true, pred, error_func, name, config):
+def scatter_with_errors(true, pred, error_func, name, config):
     """
     Creates scatter plots of label predicted vs label actual and label error vs
     label actual
@@ -145,40 +145,6 @@ def _scatter_with_errors(true, pred, error_func, name, config):
         The function to use to calculate the error
     name : str
         Name of the error function to be used in the filename of the plot
-    """
-    # Get the plot configs for this plot
-    pconf = config.plots.scatter_with_errors
-
-    fig, axes = plt.subplots(nrows=1, ncols=2, figsize=pconf.figsize)
-
-    ax = axes[0]
-    x  = np.linspace(true.min(), true.max(), 1000)
-
-    ax.scatter(true, pred, edgecolor='k', c='cornflowerblue', s=pconf.size, alpha=pconf.alpha)
-    ax.plot(x, x, 'r-')
-
-    ax.set_xlabel('Actual r0')
-    ax.set_ylabel('Predicted r0')
-    ax.set_xticks(np.arange(0, 25))
-    ax.set_yticks(np.arange(0, 25))
-
-    ax = axes[1]
-    ax.scatter(true, error_func(true, pred), edgecolor='k', c='forestgreen', s=pconf.size, alpha=pconf.alpha)
-    ax.plot(x, np.zeros(x.shape), 'r-')
-
-    ax.set_xlabel('Actual r0')
-    ax.set_ylabel('Error r0')
-    ax.set_xticks(np.arange(0, 25))
-
-    plt.tight_layout()
-    if config.plots.directory:
-        plt.savefig(f'{config.plots.directory}/{name}.{pconf.file}')
-    else:
-        plt.show()
-
-def scatter_with_errors(true, pred, error_func, name, config):
-    """
-
     """
     def scatter(x, y, ax, label, minx, maxx, miny, maxy, zeroes=True):
         _x = np.linspace(x.min(), x.max(), pconf.samples)
@@ -215,7 +181,7 @@ def scatter_with_errors(true, pred, error_func, name, config):
         else:
             ax.plot(x, x, 'r-')
 
-        image   = ax.contourf(x, y, z, 20)
+        image   = ax.contourf(x, y, z, 20, vmin=0, vmax=1)
         divider = make_axes_locatable(ax)
         colorax = divider.append_axes('right', size='5%', pad=0.05)
 

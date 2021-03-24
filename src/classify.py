@@ -120,11 +120,15 @@ if __name__ == '__main__':
                                             metavar  = '/path/to/config.yaml',
                                             help     = 'Path to a config.yaml file'
     )
+    parser.add_argument('-s', '--section',  type     = str,
+                                            default  = 'classify'
+                                            help     = 'Section of the config to use'
+    )
 
     args = parser.parse_args()
 
     try:
-        config = utils.Config(args.config, 'classify')
+        config = utils.Config(args.config, args.section)
 
         classify(config)
 

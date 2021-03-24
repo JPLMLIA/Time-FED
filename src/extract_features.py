@@ -164,7 +164,7 @@ def process(config):
 
     # Select features
     logger.info('Selecting relevant features')
-    ret = select_features(ret.drop(columns=[config.label]), ret[config.label])
+    ret = select_features(ret.drop(columns=[config.label]), ret[config.label], n_jobs=config.cores, chunksize=100)
 
     if config.output.file:
         logger.info(f'Saving to {config.output.file}')
@@ -181,11 +181,15 @@ if __name__ == '__main__':
                                             metavar  = '/path/to/config.yaml',
                                             help     = 'Path to a config.yaml file'
     )
+    parser.add_argument('-s', '--section',  type     = str,
+                                            default  = 'extract_features'
+                                            help     = 'Section of the config to use'
+    )
 
     args = parser.parse_args()
 
     try:
-        config = utils.Config(args.config, 'extract_features')
+        config = utils.Config(args.config, args.section)
 
         process(config)
 
