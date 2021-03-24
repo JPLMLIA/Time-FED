@@ -27,10 +27,10 @@ extract_features:
   cores: 64
   label: r0_10T
   input:
-    file: /data1/mloc/local/data/v3/r0_features.h5
+    file: /data1/mloc/local/data/v3/r0_features.5mins.5ptwin.historical.OC.h5
     key: preprocess/full
   output:
-    file: /data1/mloc/local/data/v3/r0_features.h5
+    file: /data1/mloc/local/data/v3/r0_features.5mins.5ptwin.historical.OC.h5
     key: features
   prompt:
     features: False
