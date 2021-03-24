@@ -2,7 +2,7 @@
 preprocess:
   input:
     file: /data1/mloc/local/data/v3/data.h5
-    key: features
+    key: merged
   subselect:
     gte: 2018/05/03
     lt: 2020/12/30
