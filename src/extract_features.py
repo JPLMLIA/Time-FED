@@ -164,7 +164,11 @@ def process(config):
 
     # Select features
     logger.info('Selecting relevant features')
-    ret = select_features(ret.drop(columns=[config.label]), ret[config.label], n_jobs=config.cores, chunksize=100)
+    label = ret[config.label]
+    ret   = select_features(ret.drop(columns=[config.label]), label, n_jobs=config.cores, chunksize=100)
+
+    # Add the label column back in
+    ret[config.label] = label
 
     if config.output.file:
         logger.info(f'Saving to {config.output.file}')
