@@ -129,7 +129,7 @@ def preprocess(config):
     logger.debug(f'df.describe():\n{df.describe()}')
 
     logger.info('Creating new features')
-    df = calculate_features(df)
+    df = calculate_features(df, config.features)
 
     if config.shift:
         for feature in config.shift:
