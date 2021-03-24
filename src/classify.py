@@ -121,7 +121,7 @@ if __name__ == '__main__':
                                             help     = 'Path to a config.yaml file'
     )
     parser.add_argument('-s', '--section',  type     = str,
-                                            default  = 'classify'
+                                            default  = 'classify',
                                             help     = 'Section of the config to use'
     )
 
