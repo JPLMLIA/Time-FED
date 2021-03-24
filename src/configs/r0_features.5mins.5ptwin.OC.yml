@@ -21,7 +21,7 @@ preprocess:
 
 # Extract tsfresh features from windows
 extract_features:
-  window: 25 mins
+  window: 25 min
   step: 1
   observations: 5
   cores: 64
