@@ -71,6 +71,9 @@ classify:
   plots:
     enabled: True
     directory: /data1/mloc/local/plots/r0_features.5mins.10ptwin.historical.OC/
+    units:
+      r0_10T: cm
+      datetime: UTC
     errors_in_time:
     scatter_with_errors:
       x:

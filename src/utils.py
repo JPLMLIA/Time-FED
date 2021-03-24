@@ -510,6 +510,9 @@ class _Helper:
     def __iter__(self):
         return iter(self.__dict__.items())
 
+    def __getitem__(self, key):
+        return getattr(self, key)
+
 class Config:
     def __init__(self, file, section):
         """
@@ -535,6 +538,9 @@ class Config:
 
     def __contains__(self, key):
         return hasattr(self, key)
+
+    def __getitem__(self, key):
+        return self.__getattr__(key)
 
 class NoDaemonProcess(mp.Process):
     '''

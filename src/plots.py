@@ -13,6 +13,7 @@ from scipy.stats             import gaussian_kde
 logger = logging.getLogger('mloc/plots.py')
 
 sns.set_context('talk')
+sns.set_style('darkgrid')
 
 def local_synchrony(df, config):
     """
@@ -63,10 +64,10 @@ def histogram_errors(true, pred, error_func, config):
     pconf = config.plots.histogram_errors
 
     # Calculate errors using the function given
-    min   = pconf.min or np.min(true)
-    max   = pconf.max or np.max(true)
-    bins  = pconf.bins or max - min + 1
-    bins  = np.linspace(min, max, bins)
+    # min   = pconf.min or np.min(true)
+    # max   = pconf.max or np.max(true)
+    # bins  = pconf.bins or max - min + 1
+    # bins  = np.linspace(min, max, bins)
 
     df    = pd.DataFrame({'floor': np.floor(true), 'errs': error_func(true, pred)})
     group = df.groupby('floor')
@@ -80,8 +81,9 @@ def histogram_errors(true, pred, error_func, config):
     ax.set_xticks(np.arange(0, np.max(x), 4))
 
     # Set labels
-    ax.set_xlabel(f'{config.label} floor')
+    ax.set_xlabel(f'{config.label} floor ({config.plots.units[config.label]})')
     ax.set_ylabel('% error')
+    ax.set_title(f'Errors per {config.label} binned')
 
     plt.tight_layout()
     if config.plots.directory:
@@ -117,12 +119,12 @@ def errors_in_time(true, pred, config):
     ax = axes[1]
     ax.plot(true.index, true-pred, 'bx')
     ax.set_xlabel('Datetime')
-    ax.set_ylabel(f'Error {config.label}')
+    ax.set_ylabel(f'Error {config.label} ({config.plots.units[config.label]})')
 
     ax = axes[2]
     ax.plot(true.index, (true-pred)/true, 'bx')
     ax.set_xlabel('Datetime')
-    ax.set_ylabel(f'% error {config.label}')
+    ax.set_ylabel(f'% error {config.label} ({config.plots.units[config.label]})')
 
     plt.tight_layout()
     if config.plots.directory:
@@ -150,7 +152,7 @@ def scatter_with_errors(true, pred, error_func, name, config):
         _x = np.linspace(x.min(), x.max(), pconf.samples)
 
         # plot
-        ax.scatter(x, y, edgecolor='k', c='cornflowerblue', s=pconf.size, alpha=pconf.alpha)
+        ax.scatter(x, y, edgecolor='k', c='seagreen', s=pconf.size, alpha=pconf.alpha)
 
         # Draw base line
         if zeroes:
@@ -161,8 +163,8 @@ def scatter_with_errors(true, pred, error_func, name, config):
         # Set limits and labels
         ax.set_xlim([minx, maxx])
         ax.set_ylim([miny, maxy])
-        ax.set_xlabel(f'Actual {config.label}')
-        ax.set_ylabel(f'{label} {config.label}')
+        ax.set_xlabel(f'Actual {config.label} ({config.plots.units[config.label]})')
+        ax.set_ylabel(f'{label} {config.label} ({config.plots.units[config.label]})')
 
     def contour(m1, m2, ax, minx, maxx, miny, maxy, zeroes=True):
         x, y = np.mgrid[
@@ -181,7 +183,7 @@ def scatter_with_errors(true, pred, error_func, name, config):
         else:
             ax.plot(x, x, 'r-')
 
-        image   = ax.contourf(x, y, z, 20, vmin=0, vmax=1)
+        image   = ax.contourf(x, y, z, 20, vmin=pconf.colorscale.min, vmax=pconf.colorscale.max)
         divider = make_axes_locatable(ax)
         colorax = divider.append_axes('right', size='5%', pad=0.05)
 
@@ -302,7 +304,8 @@ def date_range(true, pred, config):
         ax.plot(true_sub, 'g.', label='true')
         ax.plot(pred_sub, 'r.', label='predicted')
         ax.legend()
-        ax.set_ylabel(config.label)
+        ax.set_ylabel(f'{config.label} ({config.plots.units[config.label]})')
+        ax.set_xlabel(f'Month-Day Hour ({config.plots.units.datetime})')
         ax.set_title(f'True vs Predicted between {start} to {end}')
 
         # Save
