@@ -183,7 +183,7 @@ def scatter_with_errors(true, pred, error_func, name, config):
         else:
             ax.plot(x, x, 'r-')
 
-        image   = ax.contourf(x, y, z, 20, vmin=pconf.colorscale.min, vmax=pconf.colorscale.max)
+        image   = ax.contourf(x, y, z, 20)#, vmin=pconf.colorscale.min, vmax=pconf.colorscale.max)
         divider = make_axes_locatable(ax)
         colorax = divider.append_axes('right', size='5%', pad=0.05)
 
