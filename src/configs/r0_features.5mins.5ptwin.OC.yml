@@ -14,7 +14,9 @@ preprocess:
   features:
     calc: [day]
     log: [Cn2_10T]
-  shift: []
+  shift:
+    points: 1
+    features: []
   output:
     file: /data1/mloc/local/data/v3/r0_features.5mins.5ptwin.OC.h5
     key: preprocess

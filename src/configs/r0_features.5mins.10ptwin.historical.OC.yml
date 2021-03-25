@@ -14,9 +14,11 @@ preprocess:
   features:
     calc: [day]
     log: [Cn2_10T]
-  shift: [r0_10T]
+  shift:
+    points: 1
+    features: [r0_10T]
   output:
-    file: /data1/mloc/local/data/v3/r0_features.5mins.10ptwin.historical.OC.h5
+    file: /data1/mloc/local/data/v3/r0_features.5mins.10ptwin.all_historical.OC.h5
     key: preprocess
 
 # Extract tsfresh features from windows
@@ -27,10 +29,10 @@ extract_features:
   cores: 64
   label: r0_10T
   input:
-    file: /data1/mloc/local/data/v3/r0_features.5mins.10ptwin.historical.OC.h5
+    file: /data1/mloc/local/data/v3/r0_features.5mins.10ptwin.all_historical.OC.h5
     key: preprocess/full
   output:
-    file: /data1/mloc/local/data/v3/r0_features.5mins.10ptwin.historical.OC.h5
+    file: /data1/mloc/local/data/v3/r0_features.5mins.10ptwin.all_historical.OC.h5
     key: features
   prompt:
     features: False
@@ -42,7 +44,7 @@ extract_features:
 # Preprocess the extracted features
 preprocess_features:
   input:
-    file: /data1/mloc/local/data/v3/r0_features.5mins.10ptwin.historical.OC.h5
+    file: /data1/mloc/local/data/v3/r0_features.5mins.10ptwin.all_historical.OC.h5
     key: features/select
   subselect:
     gte: 2018/05/03
@@ -57,13 +59,13 @@ preprocess_features:
     log: []
   shift: []
   output:
-    file: /data1/mloc/local/data/v3/r0_features.5mins.10ptwin.historical.OC.h5
+    file: /data1/mloc/local/data/v3/r0_features.5mins.10ptwin.all_historical.OC.h5
     key: features/preprocess
 
 # Train and test a model
 classify:
   input:
-    file: /data1/mloc/local/data/v3/r0_features.5mins.10ptwin.historical.OC.h5
+    file: /data1/mloc/local/data/v3/r0_features.5mins.10ptwin.all_historical.OC.h5
     train: features/preprocess/train
     test: features/preprocess/test
   label: r0_10T
