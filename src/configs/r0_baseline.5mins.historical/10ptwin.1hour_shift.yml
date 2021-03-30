@@ -58,7 +58,9 @@ preprocess_features:
   features:
     calc: []
     log: []
-  shift: []
+  shift:
+    points: 1
+    features: []
   output:
     file: /data1/mloc/local/runs/r0_baseline.5mins.historical/10ptwin.1hour_shift/data.h5
     key: features/preprocess

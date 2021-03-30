@@ -10,7 +10,7 @@ preprocess:
     lte: 2019/12/31
   test:
     gt: 2019/12/31
-  exclude: [r0, r0_day, r0_night, r0_day_10T, r0_night_10T, wind_direction, o(I)_I, Cn2, Cn2_10T]
+  exclude: [r0, r0_day, r0_night, r0_day_10T, r0_night_10T, wind_direction, o(I)_I, Cn2, Cn2_10T, r0_10T, wind_speed, pressure, temperature, relative_humidity, log_Cn2_10T, solar_zenith_angle, day]
   features:
     calc: [day]
     log: [Cn2_10T]
@@ -58,7 +58,9 @@ preprocess_features:
   features:
     calc: []
     log: []
-  shift: []
+  shift:
+    points: 1
+    features: []
   output:
     file: /data1/mloc/local/runs/r0_features.5mins.all_historical/5ptwin.1hour_shift/data.h5
     key: features/preprocess
