@@ -133,13 +133,19 @@ def process(config):
     """
     The main process of TrackWindow
     """
-    # Retrieve features to use
-    features = get_features(
-        whitelist = config.features.whitelist,
-        blacklist = config.features.blacklist,
-        prompt    = config.prompt.features
-    )
-    func = partial(extract, features=features)
+    if config.process == 'tsfresh':
+        # Retrieve features to use
+        features = get_features(
+            whitelist = config.features.whitelist,
+            blacklist = config.features.blacklist,
+            prompt    = config.prompt.features
+        )
+        func = partial(extract, features=features)
+    elif config.process == 'median':
+        func = median
+    else:
+        logger.error(f'Unrecognized process argument: {config.process}')
+        return
 
     # load the data and drop nan values
     df   = pd.read_hdf(config.input.file, config.input.key)
@@ -157,11 +163,8 @@ def process(config):
     )
     extracts = []
     with utils.Pool(processes=config.cores) as pool:
-        if config.process == 'tsfresh':
-            for ret in pool.imap_unordered(func, rolls, chunksize=200):
-                extracts.append(ret)
-        elif config.process == 'median':
-            for ret in pool.imap_unordered(median, rolls, chunksize=200)
+        for ret in pool.imap_unordered(func, rolls, chunksize=200):
+            extracts.append(ret)
 
     logger.info('Concatting the feature frames together')
     ret = pd.concat(extracts)
