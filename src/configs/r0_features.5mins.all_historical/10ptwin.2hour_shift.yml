@@ -10,7 +10,7 @@ preprocess:
     lte: 2019/12/31
   test:
     gt: 2019/12/31
-  exclude: [r0, r0_day, r0_night, r0_day_10T, r0_night_10T, wind_direction, o(I)_I, Cn2, Cn2_10T, r0_10T, wind_speed, pressure, temperature, relative_humidity, log_Cn2_10T, solar_zenith_angle, day]
+  exclude: [r0, r0_day, r0_night, r0_day_10T, r0_night_10T, wind_direction, o(I)_I, Cn2, Cn2_10T, wind_speed, pressure, temperature, relative_humidity, log_Cn2_10T, solar_zenith_angle, day]
   features:
     calc: [day]
     log: [Cn2_10T]
@@ -39,7 +39,7 @@ extract_features:
   features:
     whitelist:
     blacklist:
-  drop: []
+  drop: [r0_10T]
   process: tsfresh
 
 # Preprocess the extracted features
