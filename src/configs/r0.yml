@@ -105,3 +105,4 @@ extract_features:
   features:
     whitelist:
     blacklist:
+  process: tsfresh

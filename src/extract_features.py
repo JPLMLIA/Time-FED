@@ -119,6 +119,15 @@ def extract(df, features=None):
 
     return extract
 
+def median(df):
+    """
+    Extracts the median value from the window as the value
+    """
+    nf = df.median().to_frame().T
+    nf.index = [df.index[-1]]
+
+    return nf
+
 @utils.timeit
 def process(config):
     """
@@ -148,8 +157,11 @@ def process(config):
     )
     extracts = []
     with utils.Pool(processes=config.cores) as pool:
-        for ret in pool.imap_unordered(func, rolls, chunksize=200):
-            extracts.append(ret)
+        if config.process == 'tsfresh':
+            for ret in pool.imap_unordered(func, rolls, chunksize=200):
+                extracts.append(ret)
+        elif config.process == 'median':
+            for ret in pool.imap_unordered(median, rolls, chunksize=200)
 
     logger.info('Concatting the feature frames together')
     ret = pd.concat(extracts)
@@ -163,16 +175,17 @@ def process(config):
         ret.to_hdf(config.output.file, f'{config.output.key}/full')
 
     # Select features
-    logger.info('Selecting relevant features')
-    label = ret[config.label]
-    ret   = select_features(ret.drop(columns=[config.label]), label, n_jobs=config.cores, chunksize=100)
+    if config.process == 'tsfresh':
+        logger.info('Selecting relevant features')
+        label = ret[config.label]
+        ret   = select_features(ret.drop(columns=[config.label]), label, n_jobs=config.cores, chunksize=100)
 
-    # Add the label column back in
-    ret[config.label] = label
+        # Add the label column back in
+        ret[config.label] = label
 
-    if config.output.file:
-        logger.info(f'Saving to {config.output.file}')
-        ret.to_hdf(config.output.file, f'{config.output.key}/select')
+        if config.output.file:
+            logger.info(f'Saving to {config.output.file}')
+            ret.to_hdf(config.output.file, f'{config.output.key}/select')
 
     return ret
 

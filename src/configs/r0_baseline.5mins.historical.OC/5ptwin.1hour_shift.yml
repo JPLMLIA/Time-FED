@@ -10,15 +10,15 @@ preprocess:
     lte: 2019/12/31
   test:
     gt: 2019/12/31
-  exclude: [r0, r0_day, r0_night, r0_day_10T, r0_night_10T, wind_direction, o(I)_I, Cn2, Cn2_10T]
+  exclude: [r0, r0_day, r0_night, r0_day_10T, r0_night_10T, wind_direction, o(I)_I, Cn2, Cn2_10T, wind_direction, wind_speed, pressure, relative_humidity, solar_zenith_angle]
   features:
-    calc: [day]
-    log: [Cn2_10T]
+    calc: []
+    log: []
   shift:
-    points: 24 # 12=1hour, 24=2, 36=3
-    features: [r0_10T, wind_speed, pressure, temperature, relative_humidity, log_Cn2_10T, solar_zenith_angle, day]
+    points: 12 # 12=1hour, 24=2, 36=3
+    features: [r0_10T]
   output:
-    file: /data1/mloc/local/runs/r0_features.5mins.all_historical/5ptwin.2hour_shift/data.h5
+    file: /data1/mloc/local/runs/r0_baseline.5mins.historical/5ptwin.1hour_shift/data.h5
     key: preprocess
 
 # Extract tsfresh features from windows
@@ -29,10 +29,10 @@ extract_features:
   cores: 64
   label: r0_10T
   input:
-    file: /data1/mloc/local/runs/r0_features.5mins.all_historical/5ptwin.2hour_shift/data.h5
+    file: /data1/mloc/local/runs/r0_baseline.5mins.historical/5ptwin.1hour_shift/data.h5
     key: preprocess/full
   output:
-    file: /data1/mloc/local/runs/r0_features.5mins.all_historical/5ptwin.2hour_shift/data.h5
+    file: /data1/mloc/local/runs/r0_baseline.5mins.historical/5ptwin.1hour_shift/data.h5
     key: features
   prompt:
     features: False
@@ -40,13 +40,13 @@ extract_features:
     whitelist:
     blacklist:
   drop: [r0_10T, day, solar_zenith_angle]
-  process: tsfresh
+  process: median
 
 # Preprocess the extracted features
 preprocess_features:
   input:
-    file: /data1/mloc/local/runs/r0_features.5mins.all_historical/5ptwin.2hour_shift/data.h5
-    key: features/select
+    file: /data1/mloc/local/runs/r0_baseline.5mins.historical/5ptwin.1hour_shift/data.h5
+    key: features/full
   subselect:
     gte: 2018/05/03
     lt: 2020/12/30
@@ -60,20 +60,20 @@ preprocess_features:
     log: []
   shift: []
   output:
-    file: /data1/mloc/local/runs/r0_features.5mins.all_historical/5ptwin.2hour_shift/data.h5
+    file: /data1/mloc/local/runs/r0_baseline.5mins.historical/5ptwin.1hour_shift/data.h5
     key: features/preprocess
 
 # Train and test a model
 classify:
   input:
-    file: /data1/mloc/local/runs/r0_features.5mins.all_historical/5ptwin.2hour_shift/data.h5
+    file: /data1/mloc/local/runs/r0_baseline.5mins.historical/5ptwin.1hour_shift/data.h5
     train: features/preprocess/train
     test: features/preprocess/test
   label: r0_10T
   dropna: True
   plots:
     enabled: True
-    directory: /data1/mloc/local/runs/r0_features.5mins.all_historical/5ptwin.2hour_shift/
+    directory: /data1/mloc/local/runs/r0_baseline.5mins.historical/5ptwin.1hour_shift/
     units:
       r0_10T: cm
       datetime: UTC

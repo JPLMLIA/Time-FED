@@ -7,7 +7,7 @@ import os
 # Import utils to set the logger
 import utils
 
-logger = logging.getLogger(os.path.basename(__file__))
+logger = logging.getLogger('mloc/preprocess.py')
 
 def filter(feature, args, df):
     """

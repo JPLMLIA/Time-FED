@@ -27,8 +27,7 @@ logging.basicConfig(
     datefmt = '%m-%d %H:%M',
     stream  = sys.stdout
 )
-__file__ = 'utils.py'
-Logger = logging.getLogger(os.path.basename(__file__))
+Logger = logging.getLogger('mloc/utils.py')
 
 # Increase matplotlib's logger to warning to disable the debug spam it makes
 logging.getLogger('matplotlib').setLevel(logging.WARNING)
@@ -400,7 +399,7 @@ def load_r0(path, kind, datenum=False, round=True, drop_dups=True, resample=Fals
 
     return df
 
-def compile_datasets(weather, bls, r0_day, r0_night, h5='', resample='5 min', smooth=['r0', 'r0_day', 'r0_night']):
+def compile_datasets(weather=None, bls=None, r0_day=None, r0_night=None, h5='', resample='5 min', smooth=['r0', 'r0_day', 'r0_night']):
     """
     Ingests all of the raw data into dataframes then compiles them into a merged
     dataframe.
@@ -425,7 +424,7 @@ def compile_datasets(weather, bls, r0_day, r0_night, h5='', resample='5 min', sm
     # Check if the incoming h5 has the data already, skip loading from raw
     has_keys = False
     if os.path.exists(h5):
-        with h5py.File(h5) as f:
+        with h5py.File(h5, 'r') as f:
             has_keys = all([
                 'r0/day'   in f,
                 'r0/night' in f,
@@ -436,6 +435,7 @@ def compile_datasets(weather, bls, r0_day, r0_night, h5='', resample='5 min', sm
     Logger.debug('Loading data')
     # Load in the data
     if has_keys:
+        Logger.debug('Loading datasets from h5')
         data = {
             'r0/day'  : pd.read_hdf(h5, 'r0/day'),
             'r0/night': pd.read_hdf(h5, 'r0/night'),
@@ -443,6 +443,7 @@ def compile_datasets(weather, bls, r0_day, r0_night, h5='', resample='5 min', sm
             'weather' : pd.read_hdf(h5, 'weather')
         }
     else:
+        Logger.debug('Loading datasets from their raw files')
         data = {
             'r0/day'  : load_r0(r0_day,   kind='day',   round=True, resample=False, datenum=False),
             'r0/night': load_r0(r0_night, kind='night', round=True, resample=False, datenum=False),
@@ -472,7 +473,9 @@ def compile_datasets(weather, bls, r0_day, r0_night, h5='', resample='5 min', sm
 
     # Apply smoothing
     for col in smooth:
-        if col in ['Cn2', 'r0_night']:
+        if col == 'r0':
+            continue # Skip r0 to do separately
+        elif col in ['Cn2', 'r0_night']:
             Logger.debug(f'Smoothing {col} with 2 minimum observations')
             df[f'{col}_10T'] = df[col].rolling('10 min', min_periods=2).median()
         else:
@@ -480,14 +483,26 @@ def compile_datasets(weather, bls, r0_day, r0_night, h5='', resample='5 min', sm
             Logger.debug(f'Smoothing {col} with 120 minimum observations')
             df[f'{col}_10T'] = df[col].rolling('10 min', min_periods=120).median()
 
+    # Smoothed r0 needs to be the merge of the smoothed day and night rather than a smooth on r0 merged
+    #  due to observation requirements causing night to become fully NaN
+    if 'r0' in smooth:
+        Logger.debug('Creating smoothed r0 merged separately')
+        # If already smoothed, use columns otherwise do smoothing
+        if 'r0_day_10T' in df and 'r0_night_10T' in df:
+            df['r0_10T'] = df.r0_day_10T.combine_first(df.r0_night_10T)
+        else:
+            df['r0_10T'] = df['r0_day'].rolling('10 min', min_periods=120).median().combine_first(
+                df['r0_night'].rolling('10 min', min_periods=2).median()
+            )
+
     Logger.debug(f'Resampling to {resample}')
     # Resample with at least 2 observations
     minobs = lambda s: np.nan if len(s) < 2 else s.median()
     df = df.resample(resample).median()#.apply(minobs)
 
     # Save merged
-    # if h5:
-    #     df.to_hdf(h5, 'merged')
+    if h5:
+        df.to_hdf(h5, 'merged')
 
     return df
 

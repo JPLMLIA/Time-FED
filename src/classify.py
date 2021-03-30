@@ -14,7 +14,7 @@ from sklearn.metrics  import (
 import utils
 import plots
 
-logger = logging.getLogger(os.path.basename(__file__))
+logger = logging.getLogger('mloc/classify.py')
 
 def train_and_test(model, train, test, label, features):
     """

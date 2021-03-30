@@ -60,4 +60,5 @@ classify:
   features:
     select:
     exclude: [r0_day, r0_night, Cn2, o(I)_I, month]
+  process: tsfresh
 #

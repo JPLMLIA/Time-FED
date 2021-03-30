@@ -97,3 +97,4 @@ extract_features:
     whitelist:
     blacklist:
   drop: [r0]
+  process: tsfresh
