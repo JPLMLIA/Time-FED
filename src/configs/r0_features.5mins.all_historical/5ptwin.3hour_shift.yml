@@ -39,7 +39,7 @@ extract_features:
   features:
     whitelist:
     blacklist:
-  drop: [r0_10T, day, solar_zenith_angle]
+  drop: []
   process: tsfresh
 
 # Preprocess the extracted features

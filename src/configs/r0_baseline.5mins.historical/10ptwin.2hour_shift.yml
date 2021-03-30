@@ -39,7 +39,7 @@ extract_features:
   features:
     whitelist:
     blacklist:
-  drop: [r0_10T, day, solar_zenith_angle]
+  drop: [r0_10T_shifted, day_shifted, solar_zenith_angle_shifted]
   process: median
 
 # Preprocess the extracted features
