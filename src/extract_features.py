@@ -171,7 +171,8 @@ def process(config):
     ret.sort_index(inplace=True)
 
     # Add back in the original columns
-    ret[df.columns] = df.loc[ret.index]
+    if config.process == 'tsfresh':
+        extract[df.columns] = df.loc[ret.index]
 
     if config.output.file:
         logger.info(f'Saving raw to {config.output.file}')
