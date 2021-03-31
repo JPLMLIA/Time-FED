@@ -174,7 +174,7 @@ def process(config):
     if config.process == 'tsfresh':
         ret[df.columns] = df.loc[ret.index]
     elif config.process == 'median':
-        columns = set(df.columns) - set(ret.columns)
+        columns = list(set(df.columns) - set(ret.columns))
         ret[columns] = df.loc[ret.index]
 
     if config.output.file:
