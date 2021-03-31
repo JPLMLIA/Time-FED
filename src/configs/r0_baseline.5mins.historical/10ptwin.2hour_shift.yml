@@ -12,11 +12,11 @@ preprocess:
     gt: 2019/12/31
   exclude: [r0, r0_day, r0_night, r0_day_10T, r0_night_10T, wind_direction, o(I)_I, Cn2, Cn2_10T, wind_direction, wind_speed, pressure, relative_humidity, solar_zenith_angle]
   features:
-    calc: [day]
-    log: [Cn2_10T]
+    calc: []
+    log: []
   shift:
     points: 24 # 12=1hour, 24=2, 36=3
-    features: [r0_10T, wind_speed, pressure, temperature, relative_humidity, log_Cn2_10T, solar_zenith_angle, day]
+    features: [r0_10T]
   output:
     file: /data1/mloc/local/runs/r0_baseline.5mins.historical/10ptwin.2hour_shift/data.h5
     key: preprocess
