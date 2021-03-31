@@ -172,7 +172,10 @@ def process(config):
 
     # Add back in the original columns
     if config.process == 'tsfresh':
-        extract[df.columns] = df.loc[ret.index]
+        ret[df.columns] = df.loc[ret.index]
+    elif config.process == 'median':
+        columns = set(df.columns) - set(ret.columns)
+        ret[columns] = df.loc[ret.index]
 
     if config.output.file:
         logger.info(f'Saving raw to {config.output.file}')
