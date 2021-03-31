@@ -254,7 +254,7 @@ def importances(model, features, config):
     for i in range(len(features)):
         logger.info(f'- {i+1}. {features[indices[i]]:20} ({imports[indices[i]]})')
 
-    xaxis   = range(pconf.number or len(features))
+    xaxis   = range(min([pconf.number or len(features), len(features)]))
     indices = indices[:len(xaxis)]
 
     # Plot
