@@ -175,7 +175,7 @@ def process(config):
         ret[df.columns] = df.loc[ret.index]
     elif config.process == 'median':
         columns = list(set(df.columns) - set(ret.columns))
-        ret[columns] = df.loc[ret.index]
+        ret[columns] = df[columns].loc[ret.index]
 
     if config.output.file:
         logger.info(f'Saving raw to {config.output.file}')
