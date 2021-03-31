@@ -39,7 +39,7 @@ extract_features:
   features:
     whitelist:
     blacklist:
-  drop: [r0_10T_shifted]
+  drop: [r0_10T]
   process: median
 
 # Preprocess the extracted features
