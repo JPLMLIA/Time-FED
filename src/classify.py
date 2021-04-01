@@ -46,12 +46,12 @@ def train_and_test(model, train, test, label, features):
 
     pred     = model.predict(test[features])
     r2       = r2_score(test[label], pred)
-    rms      = mean_squared_error(test[label], pred, square=False)
+    rms      = mean_squared_error(test[label], pred, squared=False)
     perc_err = mean_absolute_percentage_error(test[label], pred)
 
-    logger.debug(f'r2 score          = {r2}')
-    logger.debug(f'root mean^2 error = {rms}')
-    logger.debug(f'percent error     = {perc_err}')
+    logger.debug(f'r2 score      = {r2}')
+    logger.debug(f'RMS error     = {rms}')
+    logger.debug(f'percent error = {perc_err}')
 
     return pred, {
         'r2'      : r2,
