@@ -110,7 +110,7 @@ classify:
       file: histogram_errors.png
     local_synchrony:
       feature1: r0_10T
-      feature2: log_Cn2_10T
+      feature2: r0_10T
       window_size: 120
       figsize: [30, 6]
       file: local_synchony.png
