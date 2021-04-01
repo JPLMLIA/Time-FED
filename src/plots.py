@@ -305,14 +305,16 @@ def date_range(true, pred, config):
         ax.plot(true_sub, 'g.', label='true')
         ax.plot(pred_sub, 'r.', label='predicted')
 
+        title = f'True vs Predicted between {start} to {end}'
         if 'rms' in pconf.metrics:
             rms = mean_squared_error(true_sub.values, pred_sub.values, squared=False, multioutput='raw_values')
-            ax.plot(true_sub.index, rms, 'b.', label='RMS')
+            title += '\nRMS Error = {rms:.4f}'
+            ax.plot(np.abs(true_sub-pred_sub), 'b.', 'Absolute error')
 
         ax.legend()
         ax.set_ylabel(f'{config.label} ({config.plots.units[config.label]})')
         ax.set_xlabel(f'Month-Day Hour ({config.plots.units.datetime})')
-        ax.set_title(f'True vs Predicted between {start} to {end}')
+        ax.set_title(title)
 
         # Save
         plt.tight_layout()
