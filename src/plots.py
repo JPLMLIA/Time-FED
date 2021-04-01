@@ -307,7 +307,7 @@ def date_range(true, pred, config):
 
         title = f'True vs Predicted between {start} to {end}'
         if 'rms' in pconf.metrics:
-            rms = mean_squared_error(true_sub.values, pred_sub.values, squared=False, multioutput='raw_values')
+            rms = mean_squared_error(true_sub.values, pred_sub.values, squared=False)
             title += f'\nRMS Error = {rms:.4f}'
             ax.plot(np.abs(true_sub-pred_sub), 'b.', 'Absolute error')
 
