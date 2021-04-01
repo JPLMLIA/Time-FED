@@ -309,7 +309,7 @@ def date_range(true, pred, config):
         if 'rms' in pconf.metrics:
             rms = mean_squared_error(true_sub.values, pred_sub.values, squared=False)
             title += f'\nRMS Error = {rms:.4f}'
-            ax.plot(np.abs(true_sub-pred_sub), 'b.', 'Absolute error')
+            ax.plot(np.abs(true_sub-pred_sub), 'b.', label='Absolute error')
 
         ax.legend()
         ax.set_ylabel(f'{config.label} ({config.plots.units[config.label]})')
