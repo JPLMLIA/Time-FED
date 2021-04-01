@@ -9,6 +9,7 @@ import seaborn as sns
 
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy.stats             import gaussian_kde
+from sklearn.metrics         import mean_squared_error
 
 logger = logging.getLogger('mloc/plots.py')
 
@@ -303,6 +304,11 @@ def date_range(true, pred, config):
         fig, ax = plt.subplots(figsize=pconf.figsize)
         ax.plot(true_sub, 'g.', label='true')
         ax.plot(pred_sub, 'r.', label='predicted')
+
+        if 'rms' in pconf.metrics:
+            rms = mean_squared_error(true_sub, pred_sub, squared=False, multioutput='raw_values')
+            ax.plot(rms, 'b.', label='RMS')
+
         ax.legend()
         ax.set_ylabel(f'{config.label} ({config.plots.units[config.label]})')
         ax.set_xlabel(f'Month-Day Hour ({config.plots.units.datetime})')
