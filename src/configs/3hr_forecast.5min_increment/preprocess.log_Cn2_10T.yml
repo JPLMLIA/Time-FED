@@ -29,6 +29,11 @@ preprocess-1:
   shift:
     features:
     - log_Cn2_10T
+    - wind_speed
+    - wind_direction
+    - temperature
+    - pressure
+    - relative_humidity
     points: 1
   subselect:
     gte: 2018/05/03
@@ -68,6 +73,11 @@ preprocess-10:
   shift:
     features:
     - log_Cn2_10T
+    - wind_speed
+    - wind_direction
+    - temperature
+    - pressure
+    - relative_humidity
     points: 10
   subselect:
     gte: 2018/05/03
@@ -107,6 +117,11 @@ preprocess-11:
   shift:
     features:
     - log_Cn2_10T
+    - wind_speed
+    - wind_direction
+    - temperature
+    - pressure
+    - relative_humidity
     points: 11
   subselect:
     gte: 2018/05/03
@@ -146,6 +161,11 @@ preprocess-12:
   shift:
     features:
     - log_Cn2_10T
+    - wind_speed
+    - wind_direction
+    - temperature
+    - pressure
+    - relative_humidity
     points: 12
   subselect:
     gte: 2018/05/03
@@ -185,6 +205,11 @@ preprocess-13:
   shift:
     features:
     - log_Cn2_10T
+    - wind_speed
+    - wind_direction
+    - temperature
+    - pressure
+    - relative_humidity
     points: 13
   subselect:
     gte: 2018/05/03
@@ -224,6 +249,11 @@ preprocess-14:
   shift:
     features:
     - log_Cn2_10T
+    - wind_speed
+    - wind_direction
+    - temperature
+    - pressure
+    - relative_humidity
     points: 14
   subselect:
     gte: 2018/05/03
@@ -263,6 +293,11 @@ preprocess-15:
   shift:
     features:
     - log_Cn2_10T
+    - wind_speed
+    - wind_direction
+    - temperature
+    - pressure
+    - relative_humidity
     points: 15
   subselect:
     gte: 2018/05/03
@@ -302,6 +337,11 @@ preprocess-16:
   shift:
     features:
     - log_Cn2_10T
+    - wind_speed
+    - wind_direction
+    - temperature
+    - pressure
+    - relative_humidity
     points: 16
   subselect:
     gte: 2018/05/03
@@ -341,6 +381,11 @@ preprocess-17:
   shift:
     features:
     - log_Cn2_10T
+    - wind_speed
+    - wind_direction
+    - temperature
+    - pressure
+    - relative_humidity
     points: 17
   subselect:
     gte: 2018/05/03
@@ -380,6 +425,11 @@ preprocess-18:
   shift:
     features:
     - log_Cn2_10T
+    - wind_speed
+    - wind_direction
+    - temperature
+    - pressure
+    - relative_humidity
     points: 18
   subselect:
     gte: 2018/05/03
@@ -419,6 +469,11 @@ preprocess-19:
   shift:
     features:
     - log_Cn2_10T
+    - wind_speed
+    - wind_direction
+    - temperature
+    - pressure
+    - relative_humidity
     points: 19
   subselect:
     gte: 2018/05/03
@@ -458,6 +513,11 @@ preprocess-2:
   shift:
     features:
     - log_Cn2_10T
+    - wind_speed
+    - wind_direction
+    - temperature
+    - pressure
+    - relative_humidity
     points: 2
   subselect:
     gte: 2018/05/03
@@ -497,6 +557,11 @@ preprocess-20:
   shift:
     features:
     - log_Cn2_10T
+    - wind_speed
+    - wind_direction
+    - temperature
+    - pressure
+    - relative_humidity
     points: 20
   subselect:
     gte: 2018/05/03
@@ -536,6 +601,11 @@ preprocess-21:
   shift:
     features:
     - log_Cn2_10T
+    - wind_speed
+    - wind_direction
+    - temperature
+    - pressure
+    - relative_humidity
     points: 21
   subselect:
     gte: 2018/05/03
@@ -575,6 +645,11 @@ preprocess-22:
   shift:
     features:
     - log_Cn2_10T
+    - wind_speed
+    - wind_direction
+    - temperature
+    - pressure
+    - relative_humidity
     points: 22
   subselect:
     gte: 2018/05/03
@@ -614,6 +689,11 @@ preprocess-23:
   shift:
     features:
     - log_Cn2_10T
+    - wind_speed
+    - wind_direction
+    - temperature
+    - pressure
+    - relative_humidity
     points: 23
   subselect:
     gte: 2018/05/03
@@ -653,6 +733,11 @@ preprocess-24:
   shift:
     features:
     - log_Cn2_10T
+    - wind_speed
+    - wind_direction
+    - temperature
+    - pressure
+    - relative_humidity
     points: 24
   subselect:
     gte: 2018/05/03
@@ -692,6 +777,11 @@ preprocess-25:
   shift:
     features:
     - log_Cn2_10T
+    - wind_speed
+    - wind_direction
+    - temperature
+    - pressure
+    - relative_humidity
     points: 25
   subselect:
     gte: 2018/05/03
@@ -731,6 +821,11 @@ preprocess-26:
   shift:
     features:
     - log_Cn2_10T
+    - wind_speed
+    - wind_direction
+    - temperature
+    - pressure
+    - relative_humidity
     points: 26
   subselect:
     gte: 2018/05/03
@@ -770,6 +865,11 @@ preprocess-27:
   shift:
     features:
     - log_Cn2_10T
+    - wind_speed
+    - wind_direction
+    - temperature
+    - pressure
+    - relative_humidity
     points: 27
   subselect:
     gte: 2018/05/03
@@ -809,6 +909,11 @@ preprocess-28:
   shift:
     features:
     - log_Cn2_10T
+    - wind_speed
+    - wind_direction
+    - temperature
+    - pressure
+    - relative_humidity
     points: 28
   subselect:
     gte: 2018/05/03
@@ -848,6 +953,11 @@ preprocess-29:
   shift:
     features:
     - log_Cn2_10T
+    - wind_speed
+    - wind_direction
+    - temperature
+    - pressure
+    - relative_humidity
     points: 29
   subselect:
     gte: 2018/05/03
@@ -887,6 +997,11 @@ preprocess-3:
   shift:
     features:
     - log_Cn2_10T
+    - wind_speed
+    - wind_direction
+    - temperature
+    - pressure
+    - relative_humidity
     points: 3
   subselect:
     gte: 2018/05/03
@@ -926,6 +1041,11 @@ preprocess-30:
   shift:
     features:
     - log_Cn2_10T
+    - wind_speed
+    - wind_direction
+    - temperature
+    - pressure
+    - relative_humidity
     points: 30
   subselect:
     gte: 2018/05/03
@@ -965,6 +1085,11 @@ preprocess-31:
   shift:
     features:
     - log_Cn2_10T
+    - wind_speed
+    - wind_direction
+    - temperature
+    - pressure
+    - relative_humidity
     points: 31
   subselect:
     gte: 2018/05/03
@@ -1004,6 +1129,11 @@ preprocess-32:
   shift:
     features:
     - log_Cn2_10T
+    - wind_speed
+    - wind_direction
+    - temperature
+    - pressure
+    - relative_humidity
     points: 32
   subselect:
     gte: 2018/05/03
@@ -1043,6 +1173,11 @@ preprocess-33:
   shift:
     features:
     - log_Cn2_10T
+    - wind_speed
+    - wind_direction
+    - temperature
+    - pressure
+    - relative_humidity
     points: 33
   subselect:
     gte: 2018/05/03
@@ -1082,6 +1217,11 @@ preprocess-34:
   shift:
     features:
     - log_Cn2_10T
+    - wind_speed
+    - wind_direction
+    - temperature
+    - pressure
+    - relative_humidity
     points: 34
   subselect:
     gte: 2018/05/03
@@ -1121,6 +1261,11 @@ preprocess-35:
   shift:
     features:
     - log_Cn2_10T
+    - wind_speed
+    - wind_direction
+    - temperature
+    - pressure
+    - relative_humidity
     points: 35
   subselect:
     gte: 2018/05/03
@@ -1160,6 +1305,11 @@ preprocess-36:
   shift:
     features:
     - log_Cn2_10T
+    - wind_speed
+    - wind_direction
+    - temperature
+    - pressure
+    - relative_humidity
     points: 36
   subselect:
     gte: 2018/05/03
@@ -1199,6 +1349,11 @@ preprocess-4:
   shift:
     features:
     - log_Cn2_10T
+    - wind_speed
+    - wind_direction
+    - temperature
+    - pressure
+    - relative_humidity
     points: 4
   subselect:
     gte: 2018/05/03
@@ -1238,6 +1393,11 @@ preprocess-5:
   shift:
     features:
     - log_Cn2_10T
+    - wind_speed
+    - wind_direction
+    - temperature
+    - pressure
+    - relative_humidity
     points: 5
   subselect:
     gte: 2018/05/03
@@ -1277,6 +1437,11 @@ preprocess-6:
   shift:
     features:
     - log_Cn2_10T
+    - wind_speed
+    - wind_direction
+    - temperature
+    - pressure
+    - relative_humidity
     points: 6
   subselect:
     gte: 2018/05/03
@@ -1316,6 +1481,11 @@ preprocess-7:
   shift:
     features:
     - log_Cn2_10T
+    - wind_speed
+    - wind_direction
+    - temperature
+    - pressure
+    - relative_humidity
     points: 7
   subselect:
     gte: 2018/05/03
@@ -1355,6 +1525,11 @@ preprocess-8:
   shift:
     features:
     - log_Cn2_10T
+    - wind_speed
+    - wind_direction
+    - temperature
+    - pressure
+    - relative_humidity
     points: 8
   subselect:
     gte: 2018/05/03
@@ -1394,6 +1569,11 @@ preprocess-9:
   shift:
     features:
     - log_Cn2_10T
+    - wind_speed
+    - wind_direction
+    - temperature
+    - pressure
+    - relative_humidity
     points: 9
   subselect:
     gte: 2018/05/03
