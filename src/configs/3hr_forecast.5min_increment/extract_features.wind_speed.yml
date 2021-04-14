@@ -10,12 +10,12 @@ extract_features-1:
     whitelist: null
   input:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/wind_speed/1
+    key: preprocess/wind_speed/1/full
   label: wind_speed
   observations: 10
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: features/wind_speed
+    key: features/wind_speed/1
   process: tsfresh
   prompt:
     features: false
@@ -33,12 +33,12 @@ extract_features-10:
     whitelist: null
   input:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/wind_speed/10
+    key: preprocess/wind_speed/10/full
   label: wind_speed
   observations: 10
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: features/wind_speed
+    key: features/wind_speed/10
   process: tsfresh
   prompt:
     features: false
@@ -56,12 +56,12 @@ extract_features-11:
     whitelist: null
   input:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/wind_speed/11
+    key: preprocess/wind_speed/11/full
   label: wind_speed
   observations: 10
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: features/wind_speed
+    key: features/wind_speed/11
   process: tsfresh
   prompt:
     features: false
@@ -79,12 +79,12 @@ extract_features-12:
     whitelist: null
   input:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/wind_speed/12
+    key: preprocess/wind_speed/12/full
   label: wind_speed
   observations: 10
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: features/wind_speed
+    key: features/wind_speed/12
   process: tsfresh
   prompt:
     features: false
@@ -102,12 +102,12 @@ extract_features-13:
     whitelist: null
   input:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/wind_speed/13
+    key: preprocess/wind_speed/13/full
   label: wind_speed
   observations: 10
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: features/wind_speed
+    key: features/wind_speed/13
   process: tsfresh
   prompt:
     features: false
@@ -125,12 +125,12 @@ extract_features-14:
     whitelist: null
   input:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/wind_speed/14
+    key: preprocess/wind_speed/14/full
   label: wind_speed
   observations: 10
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: features/wind_speed
+    key: features/wind_speed/14
   process: tsfresh
   prompt:
     features: false
@@ -148,12 +148,12 @@ extract_features-15:
     whitelist: null
   input:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/wind_speed/15
+    key: preprocess/wind_speed/15/full
   label: wind_speed
   observations: 10
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: features/wind_speed
+    key: features/wind_speed/15
   process: tsfresh
   prompt:
     features: false
@@ -171,12 +171,12 @@ extract_features-16:
     whitelist: null
   input:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/wind_speed/16
+    key: preprocess/wind_speed/16/full
   label: wind_speed
   observations: 10
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: features/wind_speed
+    key: features/wind_speed/16
   process: tsfresh
   prompt:
     features: false
@@ -194,12 +194,12 @@ extract_features-17:
     whitelist: null
   input:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/wind_speed/17
+    key: preprocess/wind_speed/17/full
   label: wind_speed
   observations: 10
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: features/wind_speed
+    key: features/wind_speed/17
   process: tsfresh
   prompt:
     features: false
@@ -217,12 +217,12 @@ extract_features-18:
     whitelist: null
   input:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/wind_speed/18
+    key: preprocess/wind_speed/18/full
   label: wind_speed
   observations: 10
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: features/wind_speed
+    key: features/wind_speed/18
   process: tsfresh
   prompt:
     features: false
@@ -240,12 +240,12 @@ extract_features-19:
     whitelist: null
   input:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/wind_speed/19
+    key: preprocess/wind_speed/19/full
   label: wind_speed
   observations: 10
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: features/wind_speed
+    key: features/wind_speed/19
   process: tsfresh
   prompt:
     features: false
@@ -263,12 +263,12 @@ extract_features-2:
     whitelist: null
   input:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/wind_speed/2
+    key: preprocess/wind_speed/2/full
   label: wind_speed
   observations: 10
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: features/wind_speed
+    key: features/wind_speed/2
   process: tsfresh
   prompt:
     features: false
@@ -286,12 +286,12 @@ extract_features-20:
     whitelist: null
   input:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/wind_speed/20
+    key: preprocess/wind_speed/20/full
   label: wind_speed
   observations: 10
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: features/wind_speed
+    key: features/wind_speed/20
   process: tsfresh
   prompt:
     features: false
@@ -309,12 +309,12 @@ extract_features-21:
     whitelist: null
   input:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/wind_speed/21
+    key: preprocess/wind_speed/21/full
   label: wind_speed
   observations: 10
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: features/wind_speed
+    key: features/wind_speed/21
   process: tsfresh
   prompt:
     features: false
@@ -332,12 +332,12 @@ extract_features-22:
     whitelist: null
   input:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/wind_speed/22
+    key: preprocess/wind_speed/22/full
   label: wind_speed
   observations: 10
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: features/wind_speed
+    key: features/wind_speed/22
   process: tsfresh
   prompt:
     features: false
@@ -355,12 +355,12 @@ extract_features-23:
     whitelist: null
   input:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/wind_speed/23
+    key: preprocess/wind_speed/23/full
   label: wind_speed
   observations: 10
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: features/wind_speed
+    key: features/wind_speed/23
   process: tsfresh
   prompt:
     features: false
@@ -378,12 +378,12 @@ extract_features-24:
     whitelist: null
   input:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/wind_speed/24
+    key: preprocess/wind_speed/24/full
   label: wind_speed
   observations: 10
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: features/wind_speed
+    key: features/wind_speed/24
   process: tsfresh
   prompt:
     features: false
@@ -401,12 +401,12 @@ extract_features-25:
     whitelist: null
   input:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/wind_speed/25
+    key: preprocess/wind_speed/25/full
   label: wind_speed
   observations: 10
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: features/wind_speed
+    key: features/wind_speed/25
   process: tsfresh
   prompt:
     features: false
@@ -424,12 +424,12 @@ extract_features-26:
     whitelist: null
   input:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/wind_speed/26
+    key: preprocess/wind_speed/26/full
   label: wind_speed
   observations: 10
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: features/wind_speed
+    key: features/wind_speed/26
   process: tsfresh
   prompt:
     features: false
@@ -447,12 +447,12 @@ extract_features-27:
     whitelist: null
   input:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/wind_speed/27
+    key: preprocess/wind_speed/27/full
   label: wind_speed
   observations: 10
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: features/wind_speed
+    key: features/wind_speed/27
   process: tsfresh
   prompt:
     features: false
@@ -470,12 +470,12 @@ extract_features-28:
     whitelist: null
   input:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/wind_speed/28
+    key: preprocess/wind_speed/28/full
   label: wind_speed
   observations: 10
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: features/wind_speed
+    key: features/wind_speed/28
   process: tsfresh
   prompt:
     features: false
@@ -493,12 +493,12 @@ extract_features-29:
     whitelist: null
   input:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/wind_speed/29
+    key: preprocess/wind_speed/29/full
   label: wind_speed
   observations: 10
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: features/wind_speed
+    key: features/wind_speed/29
   process: tsfresh
   prompt:
     features: false
@@ -516,12 +516,12 @@ extract_features-3:
     whitelist: null
   input:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/wind_speed/3
+    key: preprocess/wind_speed/3/full
   label: wind_speed
   observations: 10
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: features/wind_speed
+    key: features/wind_speed/3
   process: tsfresh
   prompt:
     features: false
@@ -539,12 +539,12 @@ extract_features-30:
     whitelist: null
   input:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/wind_speed/30
+    key: preprocess/wind_speed/30/full
   label: wind_speed
   observations: 10
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: features/wind_speed
+    key: features/wind_speed/30
   process: tsfresh
   prompt:
     features: false
@@ -562,12 +562,12 @@ extract_features-31:
     whitelist: null
   input:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/wind_speed/31
+    key: preprocess/wind_speed/31/full
   label: wind_speed
   observations: 10
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: features/wind_speed
+    key: features/wind_speed/31
   process: tsfresh
   prompt:
     features: false
@@ -585,12 +585,12 @@ extract_features-32:
     whitelist: null
   input:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/wind_speed/32
+    key: preprocess/wind_speed/32/full
   label: wind_speed
   observations: 10
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: features/wind_speed
+    key: features/wind_speed/32
   process: tsfresh
   prompt:
     features: false
@@ -608,12 +608,12 @@ extract_features-33:
     whitelist: null
   input:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/wind_speed/33
+    key: preprocess/wind_speed/33/full
   label: wind_speed
   observations: 10
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: features/wind_speed
+    key: features/wind_speed/33
   process: tsfresh
   prompt:
     features: false
@@ -631,12 +631,12 @@ extract_features-34:
     whitelist: null
   input:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/wind_speed/34
+    key: preprocess/wind_speed/34/full
   label: wind_speed
   observations: 10
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: features/wind_speed
+    key: features/wind_speed/34
   process: tsfresh
   prompt:
     features: false
@@ -654,12 +654,12 @@ extract_features-35:
     whitelist: null
   input:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/wind_speed/35
+    key: preprocess/wind_speed/35/full
   label: wind_speed
   observations: 10
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: features/wind_speed
+    key: features/wind_speed/35
   process: tsfresh
   prompt:
     features: false
@@ -677,12 +677,12 @@ extract_features-36:
     whitelist: null
   input:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/wind_speed/36
+    key: preprocess/wind_speed/36/full
   label: wind_speed
   observations: 10
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: features/wind_speed
+    key: features/wind_speed/36
   process: tsfresh
   prompt:
     features: false
@@ -700,12 +700,12 @@ extract_features-4:
     whitelist: null
   input:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/wind_speed/4
+    key: preprocess/wind_speed/4/full
   label: wind_speed
   observations: 10
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: features/wind_speed
+    key: features/wind_speed/4
   process: tsfresh
   prompt:
     features: false
@@ -723,12 +723,12 @@ extract_features-5:
     whitelist: null
   input:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/wind_speed/5
+    key: preprocess/wind_speed/5/full
   label: wind_speed
   observations: 10
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: features/wind_speed
+    key: features/wind_speed/5
   process: tsfresh
   prompt:
     features: false
@@ -746,12 +746,12 @@ extract_features-6:
     whitelist: null
   input:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/wind_speed/6
+    key: preprocess/wind_speed/6/full
   label: wind_speed
   observations: 10
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: features/wind_speed
+    key: features/wind_speed/6
   process: tsfresh
   prompt:
     features: false
@@ -769,12 +769,12 @@ extract_features-7:
     whitelist: null
   input:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/wind_speed/7
+    key: preprocess/wind_speed/7/full
   label: wind_speed
   observations: 10
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: features/wind_speed
+    key: features/wind_speed/7
   process: tsfresh
   prompt:
     features: false
@@ -792,12 +792,12 @@ extract_features-8:
     whitelist: null
   input:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/wind_speed/8
+    key: preprocess/wind_speed/8/full
   label: wind_speed
   observations: 10
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: features/wind_speed
+    key: features/wind_speed/8
   process: tsfresh
   prompt:
     features: false
@@ -815,12 +815,12 @@ extract_features-9:
     whitelist: null
   input:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/wind_speed/9
+    key: preprocess/wind_speed/9/full
   label: wind_speed
   observations: 10
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: features/wind_speed
+    key: features/wind_speed/9
   process: tsfresh
   prompt:
     features: false

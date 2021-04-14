@@ -10,12 +10,12 @@ extract_features-1:
     whitelist: null
   input:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/temperature/1
+    key: preprocess/temperature/1/full
   label: temperature
   observations: 10
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: features/temperature
+    key: features/temperature/1
   process: tsfresh
   prompt:
     features: false
@@ -33,12 +33,12 @@ extract_features-10:
     whitelist: null
   input:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/temperature/10
+    key: preprocess/temperature/10/full
   label: temperature
   observations: 10
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: features/temperature
+    key: features/temperature/10
   process: tsfresh
   prompt:
     features: false
@@ -56,12 +56,12 @@ extract_features-11:
     whitelist: null
   input:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/temperature/11
+    key: preprocess/temperature/11/full
   label: temperature
   observations: 10
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: features/temperature
+    key: features/temperature/11
   process: tsfresh
   prompt:
     features: false
@@ -79,12 +79,12 @@ extract_features-12:
     whitelist: null
   input:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/temperature/12
+    key: preprocess/temperature/12/full
   label: temperature
   observations: 10
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: features/temperature
+    key: features/temperature/12
   process: tsfresh
   prompt:
     features: false
@@ -102,12 +102,12 @@ extract_features-13:
     whitelist: null
   input:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/temperature/13
+    key: preprocess/temperature/13/full
   label: temperature
   observations: 10
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: features/temperature
+    key: features/temperature/13
   process: tsfresh
   prompt:
     features: false
@@ -125,12 +125,12 @@ extract_features-14:
     whitelist: null
   input:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/temperature/14
+    key: preprocess/temperature/14/full
   label: temperature
   observations: 10
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: features/temperature
+    key: features/temperature/14
   process: tsfresh
   prompt:
     features: false
@@ -148,12 +148,12 @@ extract_features-15:
     whitelist: null
   input:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/temperature/15
+    key: preprocess/temperature/15/full
   label: temperature
   observations: 10
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: features/temperature
+    key: features/temperature/15
   process: tsfresh
   prompt:
     features: false
@@ -171,12 +171,12 @@ extract_features-16:
     whitelist: null
   input:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/temperature/16
+    key: preprocess/temperature/16/full
   label: temperature
   observations: 10
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: features/temperature
+    key: features/temperature/16
   process: tsfresh
   prompt:
     features: false
@@ -194,12 +194,12 @@ extract_features-17:
     whitelist: null
   input:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/temperature/17
+    key: preprocess/temperature/17/full
   label: temperature
   observations: 10
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: features/temperature
+    key: features/temperature/17
   process: tsfresh
   prompt:
     features: false
@@ -217,12 +217,12 @@ extract_features-18:
     whitelist: null
   input:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/temperature/18
+    key: preprocess/temperature/18/full
   label: temperature
   observations: 10
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: features/temperature
+    key: features/temperature/18
   process: tsfresh
   prompt:
     features: false
@@ -240,12 +240,12 @@ extract_features-19:
     whitelist: null
   input:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/temperature/19
+    key: preprocess/temperature/19/full
   label: temperature
   observations: 10
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: features/temperature
+    key: features/temperature/19
   process: tsfresh
   prompt:
     features: false
@@ -263,12 +263,12 @@ extract_features-2:
     whitelist: null
   input:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/temperature/2
+    key: preprocess/temperature/2/full
   label: temperature
   observations: 10
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: features/temperature
+    key: features/temperature/2
   process: tsfresh
   prompt:
     features: false
@@ -286,12 +286,12 @@ extract_features-20:
     whitelist: null
   input:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/temperature/20
+    key: preprocess/temperature/20/full
   label: temperature
   observations: 10
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: features/temperature
+    key: features/temperature/20
   process: tsfresh
   prompt:
     features: false
@@ -309,12 +309,12 @@ extract_features-21:
     whitelist: null
   input:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/temperature/21
+    key: preprocess/temperature/21/full
   label: temperature
   observations: 10
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: features/temperature
+    key: features/temperature/21
   process: tsfresh
   prompt:
     features: false
@@ -332,12 +332,12 @@ extract_features-22:
     whitelist: null
   input:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/temperature/22
+    key: preprocess/temperature/22/full
   label: temperature
   observations: 10
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: features/temperature
+    key: features/temperature/22
   process: tsfresh
   prompt:
     features: false
@@ -355,12 +355,12 @@ extract_features-23:
     whitelist: null
   input:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/temperature/23
+    key: preprocess/temperature/23/full
   label: temperature
   observations: 10
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: features/temperature
+    key: features/temperature/23
   process: tsfresh
   prompt:
     features: false
@@ -378,12 +378,12 @@ extract_features-24:
     whitelist: null
   input:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/temperature/24
+    key: preprocess/temperature/24/full
   label: temperature
   observations: 10
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: features/temperature
+    key: features/temperature/24
   process: tsfresh
   prompt:
     features: false
@@ -401,12 +401,12 @@ extract_features-25:
     whitelist: null
   input:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/temperature/25
+    key: preprocess/temperature/25/full
   label: temperature
   observations: 10
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: features/temperature
+    key: features/temperature/25
   process: tsfresh
   prompt:
     features: false
@@ -424,12 +424,12 @@ extract_features-26:
     whitelist: null
   input:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/temperature/26
+    key: preprocess/temperature/26/full
   label: temperature
   observations: 10
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: features/temperature
+    key: features/temperature/26
   process: tsfresh
   prompt:
     features: false
@@ -447,12 +447,12 @@ extract_features-27:
     whitelist: null
   input:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/temperature/27
+    key: preprocess/temperature/27/full
   label: temperature
   observations: 10
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: features/temperature
+    key: features/temperature/27
   process: tsfresh
   prompt:
     features: false
@@ -470,12 +470,12 @@ extract_features-28:
     whitelist: null
   input:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/temperature/28
+    key: preprocess/temperature/28/full
   label: temperature
   observations: 10
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: features/temperature
+    key: features/temperature/28
   process: tsfresh
   prompt:
     features: false
@@ -493,12 +493,12 @@ extract_features-29:
     whitelist: null
   input:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/temperature/29
+    key: preprocess/temperature/29/full
   label: temperature
   observations: 10
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: features/temperature
+    key: features/temperature/29
   process: tsfresh
   prompt:
     features: false
@@ -516,12 +516,12 @@ extract_features-3:
     whitelist: null
   input:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/temperature/3
+    key: preprocess/temperature/3/full
   label: temperature
   observations: 10
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: features/temperature
+    key: features/temperature/3
   process: tsfresh
   prompt:
     features: false
@@ -539,12 +539,12 @@ extract_features-30:
     whitelist: null
   input:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/temperature/30
+    key: preprocess/temperature/30/full
   label: temperature
   observations: 10
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: features/temperature
+    key: features/temperature/30
   process: tsfresh
   prompt:
     features: false
@@ -562,12 +562,12 @@ extract_features-31:
     whitelist: null
   input:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/temperature/31
+    key: preprocess/temperature/31/full
   label: temperature
   observations: 10
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: features/temperature
+    key: features/temperature/31
   process: tsfresh
   prompt:
     features: false
@@ -585,12 +585,12 @@ extract_features-32:
     whitelist: null
   input:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/temperature/32
+    key: preprocess/temperature/32/full
   label: temperature
   observations: 10
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: features/temperature
+    key: features/temperature/32
   process: tsfresh
   prompt:
     features: false
@@ -608,12 +608,12 @@ extract_features-33:
     whitelist: null
   input:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/temperature/33
+    key: preprocess/temperature/33/full
   label: temperature
   observations: 10
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: features/temperature
+    key: features/temperature/33
   process: tsfresh
   prompt:
     features: false
@@ -631,12 +631,12 @@ extract_features-34:
     whitelist: null
   input:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/temperature/34
+    key: preprocess/temperature/34/full
   label: temperature
   observations: 10
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: features/temperature
+    key: features/temperature/34
   process: tsfresh
   prompt:
     features: false
@@ -654,12 +654,12 @@ extract_features-35:
     whitelist: null
   input:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/temperature/35
+    key: preprocess/temperature/35/full
   label: temperature
   observations: 10
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: features/temperature
+    key: features/temperature/35
   process: tsfresh
   prompt:
     features: false
@@ -677,12 +677,12 @@ extract_features-36:
     whitelist: null
   input:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/temperature/36
+    key: preprocess/temperature/36/full
   label: temperature
   observations: 10
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: features/temperature
+    key: features/temperature/36
   process: tsfresh
   prompt:
     features: false
@@ -700,12 +700,12 @@ extract_features-4:
     whitelist: null
   input:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/temperature/4
+    key: preprocess/temperature/4/full
   label: temperature
   observations: 10
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: features/temperature
+    key: features/temperature/4
   process: tsfresh
   prompt:
     features: false
@@ -723,12 +723,12 @@ extract_features-5:
     whitelist: null
   input:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/temperature/5
+    key: preprocess/temperature/5/full
   label: temperature
   observations: 10
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: features/temperature
+    key: features/temperature/5
   process: tsfresh
   prompt:
     features: false
@@ -746,12 +746,12 @@ extract_features-6:
     whitelist: null
   input:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/temperature/6
+    key: preprocess/temperature/6/full
   label: temperature
   observations: 10
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: features/temperature
+    key: features/temperature/6
   process: tsfresh
   prompt:
     features: false
@@ -769,12 +769,12 @@ extract_features-7:
     whitelist: null
   input:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/temperature/7
+    key: preprocess/temperature/7/full
   label: temperature
   observations: 10
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: features/temperature
+    key: features/temperature/7
   process: tsfresh
   prompt:
     features: false
@@ -792,12 +792,12 @@ extract_features-8:
     whitelist: null
   input:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/temperature/8
+    key: preprocess/temperature/8/full
   label: temperature
   observations: 10
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: features/temperature
+    key: features/temperature/8
   process: tsfresh
   prompt:
     features: false
@@ -815,12 +815,12 @@ extract_features-9:
     whitelist: null
   input:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/temperature/9
+    key: preprocess/temperature/9/full
   label: temperature
   observations: 10
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: features/temperature
+    key: features/temperature/9
   process: tsfresh
   prompt:
     features: false
