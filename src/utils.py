@@ -75,19 +75,19 @@ def subselect(args, df):
     sub = df
 
     if 'lt' in args:
-        logger.debug(f'\t< {args.lt}')
+        Logger.debug(f'\t< {args.lt}')
         sub = sub[sub.index < args.lt]
 
     if 'gt' in args:
-        logger.debug(f'\t> {args.gt}')
+        Logger.debug(f'\t> {args.gt}')
         sub = sub[sub.index > args.gt]
 
     if 'lte' in args:
-        logger.debug(f'\t<= {args.lte}')
+        Logger.debug(f'\t<= {args.lte}')
         sub = sub[sub.index <= args.lte]
 
     if 'gte' in args:
-        logger.debug(f'\t>= {args.gte}')
+        Logger.debug(f'\t>= {args.gte}')
         sub = sub[sub.index >= args.gte]
 
     return sub
