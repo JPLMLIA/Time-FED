@@ -71,6 +71,24 @@ def roll(df, window, step=1, observations=None, drop=None):
 
 def get_features(whitelist=None, blacklist=None, prompt=False):
     """
+    Retrieves the dictionary of tsfresh features to use and their arguments.
+    Can be used in an interactive mode or configured via the configuration file.
+
+    Parameters
+    ----------
+    whitelist : list
+        List of feature names to only include for calculations
+    blacklist : list
+        List of feature names to exclude from calculations
+    prompt : bool
+        Enables interactive mode for this function, printing the features list
+        to screen and prompting for a list to use for calculations
+
+    Returns
+    -------
+    features : dictionary
+        Dictionary of {feature_name: feature_arguments} for tsfresh to use
+        during feature extraction
     """
     features = ComprehensiveFCParameters()
 
@@ -99,7 +117,6 @@ def get_features(whitelist=None, blacklist=None, prompt=False):
 def extract(df, features=None):
     """
     """
-    columns     = df.columns
     df['_ID']   = np.full(len(df), 0)
     df['_TIME'] = df.index
     extract = extract_features(
@@ -127,6 +144,41 @@ def median(df):
     nf.index = [df.index[-1]]
 
     return nf
+
+def select(df, config, shift=None):
+    """
+    Selects relevant features from a tsfresh dataframe of features for a target
+    label
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        A dataframe containing extracted features from tsfresh
+    config : utils.Config
+        Configuration object
+    """
+    # Select only on the train subset
+    train = utils.subselect(config.train, df)
+    test  = utils.subselect(config.test,  df)
+
+    # Select features
+    label = train[config.label]
+    train = select_features(train.drop(columns=[config.label]), label, n_jobs=config.cores, chunksize=100)
+
+    # Add the label column back in
+    train[config.label] = label
+
+    # Only keep the same features in test as train
+    test = test[train.columns]
+
+    if config.output.file:
+        logger.info(f'Saving to {config.output.file}')
+        if shift:
+            train.to_hdf(config.output.file, f'{config.output.key}/train/historical_{shift}_min')
+            test.to_hdf(config.output.file, f'{config.output.key}/test/historical_{shift}_min')
+        else:
+            train.to_hdf(config.output.file, f'{config.output.key}/train')
+            test.to_hdf(config.output.file, f'{config.output.key}/test')
 
 @utils.timeit
 def process(config):
@@ -183,28 +235,29 @@ def process(config):
 
     # Select features
     if config.process == 'tsfresh':
-        logger.info('Selecting relevant features')
+        if config.label in ret:
+            for length in config.historical:
+                logger.info(f'Selecting relevant features for historical length {length} minutes')
+                ## Shift by the historical length
+                # Copy the original
+                shift = ret.copy()
+                label = ret[config.label]
 
-        # Select only on the train subset
-        train = utils.subselect(config.train, ret)
-        test  = utils.subselect(config.test,  ret)
+                # Create a copy of the label column and drop the label
+                shift[f'{config.label}_H{length}'] = label
+                shift = shift.drop(columns=[label])
 
-        # Select features
-        label = train[config.label]
-        train = select_features(train.drop(columns=[config.label]), label, n_jobs=config.cores, chunksize=100)
+                # Shift the index by the length amount in minutes, add label back in
+                shift.index += pd.Timedelta('{length} min')
+                shift[config.label] = label
 
-        # Add the label column back in
-        train[config.label] = label
-
-        # Only keep the same features in test as train
-        test = test[train.columns]
-
-        if config.output.file:
-            logger.info(f'Saving to {config.output.file}')
-            train.to_hdf(config.output.file, f'{config.output.key}/train')
-            test.to_hdf(config.output.file, f'{config.output.key}/test')
+                select(shift, config, shift=length)
+        else:
+            logger.info('Selecting relevant features')
+            select(ret, config)
 
     return True
+
 
 
 if __name__ == '__main__':
