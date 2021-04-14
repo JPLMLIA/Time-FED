@@ -1,0 +1,828 @@
+extract_features-1:
+  cores: 64
+  drop:
+  - pressure_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/pressure/1
+  label: pressure
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/pressure
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-10:
+  cores: 64
+  drop:
+  - pressure_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/pressure/10
+  label: pressure
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/pressure
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-11:
+  cores: 64
+  drop:
+  - pressure_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/pressure/11
+  label: pressure
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/pressure
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-12:
+  cores: 64
+  drop:
+  - pressure_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/pressure/12
+  label: pressure
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/pressure
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-13:
+  cores: 64
+  drop:
+  - pressure_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/pressure/13
+  label: pressure
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/pressure
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-14:
+  cores: 64
+  drop:
+  - pressure_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/pressure/14
+  label: pressure
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/pressure
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-15:
+  cores: 64
+  drop:
+  - pressure_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/pressure/15
+  label: pressure
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/pressure
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-16:
+  cores: 64
+  drop:
+  - pressure_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/pressure/16
+  label: pressure
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/pressure
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-17:
+  cores: 64
+  drop:
+  - pressure_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/pressure/17
+  label: pressure
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/pressure
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-18:
+  cores: 64
+  drop:
+  - pressure_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/pressure/18
+  label: pressure
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/pressure
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-19:
+  cores: 64
+  drop:
+  - pressure_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/pressure/19
+  label: pressure
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/pressure
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-2:
+  cores: 64
+  drop:
+  - pressure_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/pressure/2
+  label: pressure
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/pressure
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-20:
+  cores: 64
+  drop:
+  - pressure_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/pressure/20
+  label: pressure
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/pressure
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-21:
+  cores: 64
+  drop:
+  - pressure_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/pressure/21
+  label: pressure
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/pressure
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-22:
+  cores: 64
+  drop:
+  - pressure_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/pressure/22
+  label: pressure
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/pressure
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-23:
+  cores: 64
+  drop:
+  - pressure_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/pressure/23
+  label: pressure
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/pressure
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-24:
+  cores: 64
+  drop:
+  - pressure_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/pressure/24
+  label: pressure
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/pressure
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-25:
+  cores: 64
+  drop:
+  - pressure_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/pressure/25
+  label: pressure
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/pressure
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-26:
+  cores: 64
+  drop:
+  - pressure_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/pressure/26
+  label: pressure
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/pressure
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-27:
+  cores: 64
+  drop:
+  - pressure_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/pressure/27
+  label: pressure
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/pressure
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-28:
+  cores: 64
+  drop:
+  - pressure_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/pressure/28
+  label: pressure
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/pressure
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-29:
+  cores: 64
+  drop:
+  - pressure_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/pressure/29
+  label: pressure
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/pressure
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-3:
+  cores: 64
+  drop:
+  - pressure_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/pressure/3
+  label: pressure
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/pressure
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-30:
+  cores: 64
+  drop:
+  - pressure_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/pressure/30
+  label: pressure
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/pressure
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-31:
+  cores: 64
+  drop:
+  - pressure_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/pressure/31
+  label: pressure
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/pressure
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-32:
+  cores: 64
+  drop:
+  - pressure_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/pressure/32
+  label: pressure
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/pressure
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-33:
+  cores: 64
+  drop:
+  - pressure_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/pressure/33
+  label: pressure
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/pressure
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-34:
+  cores: 64
+  drop:
+  - pressure_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/pressure/34
+  label: pressure
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/pressure
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-35:
+  cores: 64
+  drop:
+  - pressure_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/pressure/35
+  label: pressure
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/pressure
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-36:
+  cores: 64
+  drop:
+  - pressure_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/pressure/36
+  label: pressure
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/pressure
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-4:
+  cores: 64
+  drop:
+  - pressure_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/pressure/4
+  label: pressure
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/pressure
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-5:
+  cores: 64
+  drop:
+  - pressure_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/pressure/5
+  label: pressure
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/pressure
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-6:
+  cores: 64
+  drop:
+  - pressure_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/pressure/6
+  label: pressure
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/pressure
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-7:
+  cores: 64
+  drop:
+  - pressure_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/pressure/7
+  label: pressure
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/pressure
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-8:
+  cores: 64
+  drop:
+  - pressure_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/pressure/8
+  label: pressure
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/pressure
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-9:
+  cores: 64
+  drop:
+  - pressure_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/pressure/9
+  label: pressure
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/pressure
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min

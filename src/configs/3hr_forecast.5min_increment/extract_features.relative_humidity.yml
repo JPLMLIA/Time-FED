@@ -1,0 +1,828 @@
+extract_features-1:
+  cores: 64
+  drop:
+  - relative_humidity_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/relative_humidity/1
+  label: relative_humidity
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/relative_humidity
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-10:
+  cores: 64
+  drop:
+  - relative_humidity_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/relative_humidity/10
+  label: relative_humidity
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/relative_humidity
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-11:
+  cores: 64
+  drop:
+  - relative_humidity_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/relative_humidity/11
+  label: relative_humidity
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/relative_humidity
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-12:
+  cores: 64
+  drop:
+  - relative_humidity_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/relative_humidity/12
+  label: relative_humidity
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/relative_humidity
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-13:
+  cores: 64
+  drop:
+  - relative_humidity_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/relative_humidity/13
+  label: relative_humidity
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/relative_humidity
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-14:
+  cores: 64
+  drop:
+  - relative_humidity_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/relative_humidity/14
+  label: relative_humidity
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/relative_humidity
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-15:
+  cores: 64
+  drop:
+  - relative_humidity_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/relative_humidity/15
+  label: relative_humidity
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/relative_humidity
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-16:
+  cores: 64
+  drop:
+  - relative_humidity_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/relative_humidity/16
+  label: relative_humidity
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/relative_humidity
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-17:
+  cores: 64
+  drop:
+  - relative_humidity_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/relative_humidity/17
+  label: relative_humidity
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/relative_humidity
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-18:
+  cores: 64
+  drop:
+  - relative_humidity_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/relative_humidity/18
+  label: relative_humidity
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/relative_humidity
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-19:
+  cores: 64
+  drop:
+  - relative_humidity_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/relative_humidity/19
+  label: relative_humidity
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/relative_humidity
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-2:
+  cores: 64
+  drop:
+  - relative_humidity_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/relative_humidity/2
+  label: relative_humidity
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/relative_humidity
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-20:
+  cores: 64
+  drop:
+  - relative_humidity_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/relative_humidity/20
+  label: relative_humidity
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/relative_humidity
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-21:
+  cores: 64
+  drop:
+  - relative_humidity_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/relative_humidity/21
+  label: relative_humidity
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/relative_humidity
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-22:
+  cores: 64
+  drop:
+  - relative_humidity_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/relative_humidity/22
+  label: relative_humidity
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/relative_humidity
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-23:
+  cores: 64
+  drop:
+  - relative_humidity_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/relative_humidity/23
+  label: relative_humidity
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/relative_humidity
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-24:
+  cores: 64
+  drop:
+  - relative_humidity_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/relative_humidity/24
+  label: relative_humidity
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/relative_humidity
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-25:
+  cores: 64
+  drop:
+  - relative_humidity_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/relative_humidity/25
+  label: relative_humidity
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/relative_humidity
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-26:
+  cores: 64
+  drop:
+  - relative_humidity_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/relative_humidity/26
+  label: relative_humidity
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/relative_humidity
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-27:
+  cores: 64
+  drop:
+  - relative_humidity_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/relative_humidity/27
+  label: relative_humidity
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/relative_humidity
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-28:
+  cores: 64
+  drop:
+  - relative_humidity_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/relative_humidity/28
+  label: relative_humidity
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/relative_humidity
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-29:
+  cores: 64
+  drop:
+  - relative_humidity_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/relative_humidity/29
+  label: relative_humidity
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/relative_humidity
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-3:
+  cores: 64
+  drop:
+  - relative_humidity_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/relative_humidity/3
+  label: relative_humidity
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/relative_humidity
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-30:
+  cores: 64
+  drop:
+  - relative_humidity_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/relative_humidity/30
+  label: relative_humidity
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/relative_humidity
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-31:
+  cores: 64
+  drop:
+  - relative_humidity_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/relative_humidity/31
+  label: relative_humidity
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/relative_humidity
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-32:
+  cores: 64
+  drop:
+  - relative_humidity_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/relative_humidity/32
+  label: relative_humidity
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/relative_humidity
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-33:
+  cores: 64
+  drop:
+  - relative_humidity_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/relative_humidity/33
+  label: relative_humidity
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/relative_humidity
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-34:
+  cores: 64
+  drop:
+  - relative_humidity_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/relative_humidity/34
+  label: relative_humidity
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/relative_humidity
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-35:
+  cores: 64
+  drop:
+  - relative_humidity_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/relative_humidity/35
+  label: relative_humidity
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/relative_humidity
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-36:
+  cores: 64
+  drop:
+  - relative_humidity_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/relative_humidity/36
+  label: relative_humidity
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/relative_humidity
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-4:
+  cores: 64
+  drop:
+  - relative_humidity_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/relative_humidity/4
+  label: relative_humidity
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/relative_humidity
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-5:
+  cores: 64
+  drop:
+  - relative_humidity_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/relative_humidity/5
+  label: relative_humidity
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/relative_humidity
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-6:
+  cores: 64
+  drop:
+  - relative_humidity_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/relative_humidity/6
+  label: relative_humidity
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/relative_humidity
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-7:
+  cores: 64
+  drop:
+  - relative_humidity_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/relative_humidity/7
+  label: relative_humidity
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/relative_humidity
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-8:
+  cores: 64
+  drop:
+  - relative_humidity_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/relative_humidity/8
+  label: relative_humidity
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/relative_humidity
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-9:
+  cores: 64
+  drop:
+  - relative_humidity_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/relative_humidity/9
+  label: relative_humidity
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/relative_humidity
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min

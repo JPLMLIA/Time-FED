@@ -9,6 +9,11 @@ preprocess-1:
   - o(I)_I
   - Cn2
   - Cn2_10T
+  - wind_direction
+  - temperature
+  - pressure
+  - relative_humidity
+  - log_Cn2_10T
   features:
     calc:
     - day
@@ -20,7 +25,7 @@ preprocess-1:
     key: merged
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/1
+    key: preprocess/wind_speed/1
   shift:
     features:
     - log_Cn2_10T
@@ -43,6 +48,11 @@ preprocess-10:
   - o(I)_I
   - Cn2
   - Cn2_10T
+  - wind_direction
+  - temperature
+  - pressure
+  - relative_humidity
+  - log_Cn2_10T
   features:
     calc:
     - day
@@ -54,7 +64,7 @@ preprocess-10:
     key: merged
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/10
+    key: preprocess/wind_speed/10
   shift:
     features:
     - log_Cn2_10T
@@ -77,6 +87,11 @@ preprocess-11:
   - o(I)_I
   - Cn2
   - Cn2_10T
+  - wind_direction
+  - temperature
+  - pressure
+  - relative_humidity
+  - log_Cn2_10T
   features:
     calc:
     - day
@@ -88,7 +103,7 @@ preprocess-11:
     key: merged
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/11
+    key: preprocess/wind_speed/11
   shift:
     features:
     - log_Cn2_10T
@@ -111,6 +126,11 @@ preprocess-12:
   - o(I)_I
   - Cn2
   - Cn2_10T
+  - wind_direction
+  - temperature
+  - pressure
+  - relative_humidity
+  - log_Cn2_10T
   features:
     calc:
     - day
@@ -122,7 +142,7 @@ preprocess-12:
     key: merged
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/12
+    key: preprocess/wind_speed/12
   shift:
     features:
     - log_Cn2_10T
@@ -145,6 +165,11 @@ preprocess-13:
   - o(I)_I
   - Cn2
   - Cn2_10T
+  - wind_direction
+  - temperature
+  - pressure
+  - relative_humidity
+  - log_Cn2_10T
   features:
     calc:
     - day
@@ -156,7 +181,7 @@ preprocess-13:
     key: merged
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/13
+    key: preprocess/wind_speed/13
   shift:
     features:
     - log_Cn2_10T
@@ -179,6 +204,11 @@ preprocess-14:
   - o(I)_I
   - Cn2
   - Cn2_10T
+  - wind_direction
+  - temperature
+  - pressure
+  - relative_humidity
+  - log_Cn2_10T
   features:
     calc:
     - day
@@ -190,7 +220,7 @@ preprocess-14:
     key: merged
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/14
+    key: preprocess/wind_speed/14
   shift:
     features:
     - log_Cn2_10T
@@ -213,6 +243,11 @@ preprocess-15:
   - o(I)_I
   - Cn2
   - Cn2_10T
+  - wind_direction
+  - temperature
+  - pressure
+  - relative_humidity
+  - log_Cn2_10T
   features:
     calc:
     - day
@@ -224,7 +259,7 @@ preprocess-15:
     key: merged
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/15
+    key: preprocess/wind_speed/15
   shift:
     features:
     - log_Cn2_10T
@@ -247,6 +282,11 @@ preprocess-16:
   - o(I)_I
   - Cn2
   - Cn2_10T
+  - wind_direction
+  - temperature
+  - pressure
+  - relative_humidity
+  - log_Cn2_10T
   features:
     calc:
     - day
@@ -258,7 +298,7 @@ preprocess-16:
     key: merged
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/16
+    key: preprocess/wind_speed/16
   shift:
     features:
     - log_Cn2_10T
@@ -281,6 +321,11 @@ preprocess-17:
   - o(I)_I
   - Cn2
   - Cn2_10T
+  - wind_direction
+  - temperature
+  - pressure
+  - relative_humidity
+  - log_Cn2_10T
   features:
     calc:
     - day
@@ -292,7 +337,7 @@ preprocess-17:
     key: merged
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/17
+    key: preprocess/wind_speed/17
   shift:
     features:
     - log_Cn2_10T
@@ -315,6 +360,11 @@ preprocess-18:
   - o(I)_I
   - Cn2
   - Cn2_10T
+  - wind_direction
+  - temperature
+  - pressure
+  - relative_humidity
+  - log_Cn2_10T
   features:
     calc:
     - day
@@ -326,7 +376,7 @@ preprocess-18:
     key: merged
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/18
+    key: preprocess/wind_speed/18
   shift:
     features:
     - log_Cn2_10T
@@ -349,6 +399,11 @@ preprocess-19:
   - o(I)_I
   - Cn2
   - Cn2_10T
+  - wind_direction
+  - temperature
+  - pressure
+  - relative_humidity
+  - log_Cn2_10T
   features:
     calc:
     - day
@@ -360,7 +415,7 @@ preprocess-19:
     key: merged
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/19
+    key: preprocess/wind_speed/19
   shift:
     features:
     - log_Cn2_10T
@@ -383,6 +438,11 @@ preprocess-2:
   - o(I)_I
   - Cn2
   - Cn2_10T
+  - wind_direction
+  - temperature
+  - pressure
+  - relative_humidity
+  - log_Cn2_10T
   features:
     calc:
     - day
@@ -394,7 +454,7 @@ preprocess-2:
     key: merged
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/2
+    key: preprocess/wind_speed/2
   shift:
     features:
     - log_Cn2_10T
@@ -417,6 +477,11 @@ preprocess-20:
   - o(I)_I
   - Cn2
   - Cn2_10T
+  - wind_direction
+  - temperature
+  - pressure
+  - relative_humidity
+  - log_Cn2_10T
   features:
     calc:
     - day
@@ -428,7 +493,7 @@ preprocess-20:
     key: merged
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/20
+    key: preprocess/wind_speed/20
   shift:
     features:
     - log_Cn2_10T
@@ -451,6 +516,11 @@ preprocess-21:
   - o(I)_I
   - Cn2
   - Cn2_10T
+  - wind_direction
+  - temperature
+  - pressure
+  - relative_humidity
+  - log_Cn2_10T
   features:
     calc:
     - day
@@ -462,7 +532,7 @@ preprocess-21:
     key: merged
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/21
+    key: preprocess/wind_speed/21
   shift:
     features:
     - log_Cn2_10T
@@ -485,6 +555,11 @@ preprocess-22:
   - o(I)_I
   - Cn2
   - Cn2_10T
+  - wind_direction
+  - temperature
+  - pressure
+  - relative_humidity
+  - log_Cn2_10T
   features:
     calc:
     - day
@@ -496,7 +571,7 @@ preprocess-22:
     key: merged
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/22
+    key: preprocess/wind_speed/22
   shift:
     features:
     - log_Cn2_10T
@@ -519,6 +594,11 @@ preprocess-23:
   - o(I)_I
   - Cn2
   - Cn2_10T
+  - wind_direction
+  - temperature
+  - pressure
+  - relative_humidity
+  - log_Cn2_10T
   features:
     calc:
     - day
@@ -530,7 +610,7 @@ preprocess-23:
     key: merged
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/23
+    key: preprocess/wind_speed/23
   shift:
     features:
     - log_Cn2_10T
@@ -553,6 +633,11 @@ preprocess-24:
   - o(I)_I
   - Cn2
   - Cn2_10T
+  - wind_direction
+  - temperature
+  - pressure
+  - relative_humidity
+  - log_Cn2_10T
   features:
     calc:
     - day
@@ -564,7 +649,7 @@ preprocess-24:
     key: merged
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/24
+    key: preprocess/wind_speed/24
   shift:
     features:
     - log_Cn2_10T
@@ -587,6 +672,11 @@ preprocess-25:
   - o(I)_I
   - Cn2
   - Cn2_10T
+  - wind_direction
+  - temperature
+  - pressure
+  - relative_humidity
+  - log_Cn2_10T
   features:
     calc:
     - day
@@ -598,7 +688,7 @@ preprocess-25:
     key: merged
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/25
+    key: preprocess/wind_speed/25
   shift:
     features:
     - log_Cn2_10T
@@ -621,6 +711,11 @@ preprocess-26:
   - o(I)_I
   - Cn2
   - Cn2_10T
+  - wind_direction
+  - temperature
+  - pressure
+  - relative_humidity
+  - log_Cn2_10T
   features:
     calc:
     - day
@@ -632,7 +727,7 @@ preprocess-26:
     key: merged
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/26
+    key: preprocess/wind_speed/26
   shift:
     features:
     - log_Cn2_10T
@@ -655,6 +750,11 @@ preprocess-27:
   - o(I)_I
   - Cn2
   - Cn2_10T
+  - wind_direction
+  - temperature
+  - pressure
+  - relative_humidity
+  - log_Cn2_10T
   features:
     calc:
     - day
@@ -666,7 +766,7 @@ preprocess-27:
     key: merged
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/27
+    key: preprocess/wind_speed/27
   shift:
     features:
     - log_Cn2_10T
@@ -689,6 +789,11 @@ preprocess-28:
   - o(I)_I
   - Cn2
   - Cn2_10T
+  - wind_direction
+  - temperature
+  - pressure
+  - relative_humidity
+  - log_Cn2_10T
   features:
     calc:
     - day
@@ -700,7 +805,7 @@ preprocess-28:
     key: merged
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/28
+    key: preprocess/wind_speed/28
   shift:
     features:
     - log_Cn2_10T
@@ -723,6 +828,11 @@ preprocess-29:
   - o(I)_I
   - Cn2
   - Cn2_10T
+  - wind_direction
+  - temperature
+  - pressure
+  - relative_humidity
+  - log_Cn2_10T
   features:
     calc:
     - day
@@ -734,7 +844,7 @@ preprocess-29:
     key: merged
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/29
+    key: preprocess/wind_speed/29
   shift:
     features:
     - log_Cn2_10T
@@ -757,6 +867,11 @@ preprocess-3:
   - o(I)_I
   - Cn2
   - Cn2_10T
+  - wind_direction
+  - temperature
+  - pressure
+  - relative_humidity
+  - log_Cn2_10T
   features:
     calc:
     - day
@@ -768,7 +883,7 @@ preprocess-3:
     key: merged
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/3
+    key: preprocess/wind_speed/3
   shift:
     features:
     - log_Cn2_10T
@@ -791,6 +906,11 @@ preprocess-30:
   - o(I)_I
   - Cn2
   - Cn2_10T
+  - wind_direction
+  - temperature
+  - pressure
+  - relative_humidity
+  - log_Cn2_10T
   features:
     calc:
     - day
@@ -802,7 +922,7 @@ preprocess-30:
     key: merged
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/30
+    key: preprocess/wind_speed/30
   shift:
     features:
     - log_Cn2_10T
@@ -825,6 +945,11 @@ preprocess-31:
   - o(I)_I
   - Cn2
   - Cn2_10T
+  - wind_direction
+  - temperature
+  - pressure
+  - relative_humidity
+  - log_Cn2_10T
   features:
     calc:
     - day
@@ -836,7 +961,7 @@ preprocess-31:
     key: merged
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/31
+    key: preprocess/wind_speed/31
   shift:
     features:
     - log_Cn2_10T
@@ -859,6 +984,11 @@ preprocess-32:
   - o(I)_I
   - Cn2
   - Cn2_10T
+  - wind_direction
+  - temperature
+  - pressure
+  - relative_humidity
+  - log_Cn2_10T
   features:
     calc:
     - day
@@ -870,7 +1000,7 @@ preprocess-32:
     key: merged
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/32
+    key: preprocess/wind_speed/32
   shift:
     features:
     - log_Cn2_10T
@@ -893,6 +1023,11 @@ preprocess-33:
   - o(I)_I
   - Cn2
   - Cn2_10T
+  - wind_direction
+  - temperature
+  - pressure
+  - relative_humidity
+  - log_Cn2_10T
   features:
     calc:
     - day
@@ -904,7 +1039,7 @@ preprocess-33:
     key: merged
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/33
+    key: preprocess/wind_speed/33
   shift:
     features:
     - log_Cn2_10T
@@ -927,6 +1062,11 @@ preprocess-34:
   - o(I)_I
   - Cn2
   - Cn2_10T
+  - wind_direction
+  - temperature
+  - pressure
+  - relative_humidity
+  - log_Cn2_10T
   features:
     calc:
     - day
@@ -938,7 +1078,7 @@ preprocess-34:
     key: merged
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/34
+    key: preprocess/wind_speed/34
   shift:
     features:
     - log_Cn2_10T
@@ -961,6 +1101,11 @@ preprocess-35:
   - o(I)_I
   - Cn2
   - Cn2_10T
+  - wind_direction
+  - temperature
+  - pressure
+  - relative_humidity
+  - log_Cn2_10T
   features:
     calc:
     - day
@@ -972,7 +1117,7 @@ preprocess-35:
     key: merged
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/35
+    key: preprocess/wind_speed/35
   shift:
     features:
     - log_Cn2_10T
@@ -995,6 +1140,11 @@ preprocess-36:
   - o(I)_I
   - Cn2
   - Cn2_10T
+  - wind_direction
+  - temperature
+  - pressure
+  - relative_humidity
+  - log_Cn2_10T
   features:
     calc:
     - day
@@ -1006,7 +1156,7 @@ preprocess-36:
     key: merged
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/36
+    key: preprocess/wind_speed/36
   shift:
     features:
     - log_Cn2_10T
@@ -1029,6 +1179,11 @@ preprocess-4:
   - o(I)_I
   - Cn2
   - Cn2_10T
+  - wind_direction
+  - temperature
+  - pressure
+  - relative_humidity
+  - log_Cn2_10T
   features:
     calc:
     - day
@@ -1040,7 +1195,7 @@ preprocess-4:
     key: merged
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/4
+    key: preprocess/wind_speed/4
   shift:
     features:
     - log_Cn2_10T
@@ -1063,6 +1218,11 @@ preprocess-5:
   - o(I)_I
   - Cn2
   - Cn2_10T
+  - wind_direction
+  - temperature
+  - pressure
+  - relative_humidity
+  - log_Cn2_10T
   features:
     calc:
     - day
@@ -1074,7 +1234,7 @@ preprocess-5:
     key: merged
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/5
+    key: preprocess/wind_speed/5
   shift:
     features:
     - log_Cn2_10T
@@ -1097,6 +1257,11 @@ preprocess-6:
   - o(I)_I
   - Cn2
   - Cn2_10T
+  - wind_direction
+  - temperature
+  - pressure
+  - relative_humidity
+  - log_Cn2_10T
   features:
     calc:
     - day
@@ -1108,7 +1273,7 @@ preprocess-6:
     key: merged
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/6
+    key: preprocess/wind_speed/6
   shift:
     features:
     - log_Cn2_10T
@@ -1131,6 +1296,11 @@ preprocess-7:
   - o(I)_I
   - Cn2
   - Cn2_10T
+  - wind_direction
+  - temperature
+  - pressure
+  - relative_humidity
+  - log_Cn2_10T
   features:
     calc:
     - day
@@ -1142,7 +1312,7 @@ preprocess-7:
     key: merged
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/7
+    key: preprocess/wind_speed/7
   shift:
     features:
     - log_Cn2_10T
@@ -1165,6 +1335,11 @@ preprocess-8:
   - o(I)_I
   - Cn2
   - Cn2_10T
+  - wind_direction
+  - temperature
+  - pressure
+  - relative_humidity
+  - log_Cn2_10T
   features:
     calc:
     - day
@@ -1176,7 +1351,7 @@ preprocess-8:
     key: merged
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/8
+    key: preprocess/wind_speed/8
   shift:
     features:
     - log_Cn2_10T
@@ -1199,6 +1374,11 @@ preprocess-9:
   - o(I)_I
   - Cn2
   - Cn2_10T
+  - wind_direction
+  - temperature
+  - pressure
+  - relative_humidity
+  - log_Cn2_10T
   features:
     calc:
     - day
@@ -1210,7 +1390,7 @@ preprocess-9:
     key: merged
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    key: preprocess/9
+    key: preprocess/wind_speed/9
   shift:
     features:
     - log_Cn2_10T

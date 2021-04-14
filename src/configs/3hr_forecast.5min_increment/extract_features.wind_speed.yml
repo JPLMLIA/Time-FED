@@ -1,0 +1,828 @@
+extract_features-1:
+  cores: 64
+  drop:
+  - wind_speed_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/wind_speed/1
+  label: wind_speed
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/wind_speed
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-10:
+  cores: 64
+  drop:
+  - wind_speed_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/wind_speed/10
+  label: wind_speed
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/wind_speed
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-11:
+  cores: 64
+  drop:
+  - wind_speed_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/wind_speed/11
+  label: wind_speed
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/wind_speed
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-12:
+  cores: 64
+  drop:
+  - wind_speed_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/wind_speed/12
+  label: wind_speed
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/wind_speed
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-13:
+  cores: 64
+  drop:
+  - wind_speed_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/wind_speed/13
+  label: wind_speed
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/wind_speed
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-14:
+  cores: 64
+  drop:
+  - wind_speed_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/wind_speed/14
+  label: wind_speed
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/wind_speed
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-15:
+  cores: 64
+  drop:
+  - wind_speed_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/wind_speed/15
+  label: wind_speed
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/wind_speed
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-16:
+  cores: 64
+  drop:
+  - wind_speed_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/wind_speed/16
+  label: wind_speed
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/wind_speed
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-17:
+  cores: 64
+  drop:
+  - wind_speed_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/wind_speed/17
+  label: wind_speed
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/wind_speed
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-18:
+  cores: 64
+  drop:
+  - wind_speed_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/wind_speed/18
+  label: wind_speed
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/wind_speed
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-19:
+  cores: 64
+  drop:
+  - wind_speed_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/wind_speed/19
+  label: wind_speed
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/wind_speed
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-2:
+  cores: 64
+  drop:
+  - wind_speed_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/wind_speed/2
+  label: wind_speed
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/wind_speed
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-20:
+  cores: 64
+  drop:
+  - wind_speed_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/wind_speed/20
+  label: wind_speed
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/wind_speed
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-21:
+  cores: 64
+  drop:
+  - wind_speed_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/wind_speed/21
+  label: wind_speed
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/wind_speed
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-22:
+  cores: 64
+  drop:
+  - wind_speed_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/wind_speed/22
+  label: wind_speed
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/wind_speed
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-23:
+  cores: 64
+  drop:
+  - wind_speed_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/wind_speed/23
+  label: wind_speed
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/wind_speed
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-24:
+  cores: 64
+  drop:
+  - wind_speed_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/wind_speed/24
+  label: wind_speed
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/wind_speed
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-25:
+  cores: 64
+  drop:
+  - wind_speed_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/wind_speed/25
+  label: wind_speed
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/wind_speed
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-26:
+  cores: 64
+  drop:
+  - wind_speed_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/wind_speed/26
+  label: wind_speed
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/wind_speed
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-27:
+  cores: 64
+  drop:
+  - wind_speed_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/wind_speed/27
+  label: wind_speed
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/wind_speed
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-28:
+  cores: 64
+  drop:
+  - wind_speed_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/wind_speed/28
+  label: wind_speed
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/wind_speed
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-29:
+  cores: 64
+  drop:
+  - wind_speed_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/wind_speed/29
+  label: wind_speed
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/wind_speed
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-3:
+  cores: 64
+  drop:
+  - wind_speed_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/wind_speed/3
+  label: wind_speed
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/wind_speed
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-30:
+  cores: 64
+  drop:
+  - wind_speed_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/wind_speed/30
+  label: wind_speed
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/wind_speed
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-31:
+  cores: 64
+  drop:
+  - wind_speed_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/wind_speed/31
+  label: wind_speed
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/wind_speed
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-32:
+  cores: 64
+  drop:
+  - wind_speed_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/wind_speed/32
+  label: wind_speed
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/wind_speed
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-33:
+  cores: 64
+  drop:
+  - wind_speed_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/wind_speed/33
+  label: wind_speed
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/wind_speed
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-34:
+  cores: 64
+  drop:
+  - wind_speed_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/wind_speed/34
+  label: wind_speed
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/wind_speed
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-35:
+  cores: 64
+  drop:
+  - wind_speed_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/wind_speed/35
+  label: wind_speed
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/wind_speed
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-36:
+  cores: 64
+  drop:
+  - wind_speed_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/wind_speed/36
+  label: wind_speed
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/wind_speed
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-4:
+  cores: 64
+  drop:
+  - wind_speed_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/wind_speed/4
+  label: wind_speed
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/wind_speed
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-5:
+  cores: 64
+  drop:
+  - wind_speed_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/wind_speed/5
+  label: wind_speed
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/wind_speed
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-6:
+  cores: 64
+  drop:
+  - wind_speed_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/wind_speed/6
+  label: wind_speed
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/wind_speed
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-7:
+  cores: 64
+  drop:
+  - wind_speed_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/wind_speed/7
+  label: wind_speed
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/wind_speed
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-8:
+  cores: 64
+  drop:
+  - wind_speed_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/wind_speed/8
+  label: wind_speed
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/wind_speed
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
+extract_features-9:
+  cores: 64
+  drop:
+  - wind_speed_shifted
+  - solar_zenith_angle
+  - day
+  - minute
+  features:
+    blacklist: null
+    whitelist: null
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: preprocess/wind_speed/9
+  label: wind_speed
+  observations: 10
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: features/wind_speed
+  process: tsfresh
+  prompt:
+    features: false
+  step: 1
+  window: 50 min
