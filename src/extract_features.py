@@ -184,17 +184,27 @@ def process(config):
     # Select features
     if config.process == 'tsfresh':
         logger.info('Selecting relevant features')
-        label = ret[config.label]
-        ret   = select_features(ret.drop(columns=[config.label]), label, n_jobs=config.cores, chunksize=100)
+
+        # Select only on the train subset
+        train = utils.subselect(config.train, ret)
+        test  = utils.subselect(config.test,  ret)
+
+        # Select features
+        label = train[config.label]
+        train = select_features(train.drop(columns=[config.label]), label, n_jobs=config.cores, chunksize=100)
 
         # Add the label column back in
-        ret[config.label] = label
+        train[config.label] = label
+
+        # Only keep the same features in test as train
+        test = test[train.columns]
 
         if config.output.file:
             logger.info(f'Saving to {config.output.file}')
-            ret.to_hdf(config.output.file, f'{config.output.key}/select')
+            train.to_hdf(config.output.file, f'{config.output.key}/train')
+            test.to_hdf(config.output.file, f'{config.output.key}/test')
 
-    return ret
+    return True
 
 
 if __name__ == '__main__':

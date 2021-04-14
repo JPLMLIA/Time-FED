@@ -55,6 +55,43 @@ def timeit(func):
     _wrap.__doc__ = func.__doc__
     return _wrap
 
+def subselect(args, df):
+    """
+    Subselects from a dataframe between dates
+
+    Parameters
+    ----------
+    args : utils.Config
+        Config object defining arguments for subselecting
+    df : pandas.DataFrame
+        The dataframe to subselect from
+
+    Returns
+    -------
+    sub : pandas.DataFrame
+        The subselected dataframe
+    """
+    # Take a view of the dataframe
+    sub = df
+
+    if 'lt' in args:
+        logger.debug(f'\t< {args.lt}')
+        sub = sub[sub.index < args.lt]
+
+    if 'gt' in args:
+        logger.debug(f'\t> {args.gt}')
+        sub = sub[sub.index > args.gt]
+
+    if 'lte' in args:
+        logger.debug(f'\t<= {args.lte}')
+        sub = sub[sub.index <= args.lte]
+
+    if 'gte' in args:
+        logger.debug(f'\t>= {args.gte}')
+        sub = sub[sub.index >= args.gte]
+
+    return sub
+
 def cadence(df, limit='30 min', dropna=True):
     """
     Utility statistics function to provide the time deltas that are above and
