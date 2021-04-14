@@ -44,7 +44,7 @@ extract_features:
   features:
     whitelist:
     blacklist:
-  drop: [r0_10T, solar_zenith_angle, day, minute]
+  drop: [solar_zenith_angle, day, minute]
   process: tsfresh
 
 # Train and test a model
