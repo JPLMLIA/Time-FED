@@ -10,7 +10,7 @@ preprocess:
     lte: 2019/12/31
   test:
     gt: 2019/12/31
-  exclude: [r0, r0_day, r0_night, r0_day_10T, r0_night_10T, o(I)_I, Cn2, Cn2_10T]
+  exclude: [r0_10T, r0, r0_day, r0_night, r0_day_10T, r0_night_10T, o(I)_I, Cn2, Cn2_10T]
   features:
     calc: [day, minute]
     log: [Cn2]
