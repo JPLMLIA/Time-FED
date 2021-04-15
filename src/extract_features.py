@@ -245,7 +245,7 @@ def process(config):
 
                 # Create a copy of the label column and drop the label
                 shift[f'{config.label}_H{length}'] = label
-                shift = shift.drop(columns=[label])
+                shift = shift.drop(columns=[config.label])
 
                 # Shift the index by the length amount in minutes, add label back in
                 shift.index += pd.Timedelta('{length} min')
