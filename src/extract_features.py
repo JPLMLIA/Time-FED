@@ -174,8 +174,8 @@ def select(df, config, shift=None):
     if config.output.file:
         logger.info(f'Saving to {config.output.file}')
         if shift:
-            train.to_hdf(config.output.file, f'{config.output.key}/train/historical_{shift}_min')
-            test.to_hdf(config.output.file, f'{config.output.key}/test/historical_{shift}_min')
+            train.to_hdf(config.output.file, f'{config.output.key}/historical_{shift}_min/train')
+            test.to_hdf(config.output.file, f'{config.output.key}/historical_{shift}_min/test')
         else:
             train.to_hdf(config.output.file, f'{config.output.key}/train')
             test.to_hdf(config.output.file, f'{config.output.key}/test')
@@ -250,6 +250,9 @@ def process(config):
                 # Shift the index by the length amount in minutes, add label back in
                 shift.index += pd.Timedelta(f'{length} min')
                 shift[config.label] = label
+
+                # Make sure there are no nans
+                shift = shift.dropna()
 
                 select(shift, config, shift=length)
         else:

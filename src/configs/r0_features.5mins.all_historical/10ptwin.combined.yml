@@ -51,8 +51,8 @@ extract_features:
 classify-1:
   input:
     file: /data1/mloc/local/runs/r0_features.5mins.all_historical/10ptwin.combined/data.h5
-    train: features/60/train
-    test: features/60/test
+    train: features/historical_60_min/train
+    test: features/historical_60_min/test
   label: r0_10T
   dropna: True
   plots:
@@ -132,8 +132,8 @@ classify-1:
 classify-2:
   input:
     file: /data1/mloc/local/runs/r0_features.5mins.all_historical/10ptwin.combined/data.h5
-    train: features/120/train
-    test: features/120/test
+    train: features/historical_120_min/train
+    test: features/historical_120_min/test
   label: r0_10T
   dropna: True
   plots:
@@ -213,8 +213,8 @@ classify-2:
 classify-3:
   input:
     file: /data1/mloc/local/runs/r0_features.5mins.all_historical/10ptwin.combined/data.h5
-    train: features/180/train
-    test: features/180/test
+    train: features/historical_180_min/train
+    test: features/historical_180_min/test
   label: r0_10T
   dropna: True
   plots:
