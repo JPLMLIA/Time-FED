@@ -241,14 +241,14 @@ def process(config):
                 ## Shift by the historical length
                 # Copy the original
                 shift = ret.copy()
-                label = ret[config.label]
+                label = shift[config.label]
 
                 # Create a copy of the label column and drop the label
                 shift[f'{config.label}_H{length}'] = label
                 shift = shift.drop(columns=[config.label])
 
                 # Shift the index by the length amount in minutes, add label back in
-                shift.index += pd.Timedelta('{length} min')
+                shift.index += pd.Timedelta(f'{length} min')
                 shift[config.label] = label
 
                 select(shift, config, shift=length)
