@@ -1,6 +1,6 @@
 import argparse
 import logging
-import os
+import numpy as np
 import pandas as pd
 
 from sklearn.ensemble import RandomForestRegressor
@@ -170,14 +170,3 @@ if __name__ == '__main__':
         logger.info('Finished successfully')
     except Exception as e:
         logger.exception('Failed to complete')
-
-#%%
-
-import pandas as pd
-
-
-d = {'a': 1, 'b': 2}
-df = pd.DataFrame(d, index=['score'])
-
-
-df
