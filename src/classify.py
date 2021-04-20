@@ -39,7 +39,10 @@ def train_and_test(model, train, test, label, features):
     r2 : float
         The r2 score of the model
     """
-    logger.debug(f'Using features {features}')
+    if len(features) > 20:
+        logger.debug(f'Using features {features[:20]} + {len(features)-20} more')
+    else:
+        logger.debug(f'Using features {features}')
     logger.debug(f'Using label {label}')
 
     model.fit(train[features], train[label])
@@ -92,7 +95,7 @@ def build_model(config, shift=None):
         test  =  test[ ~test.isnull().any(axis=1)]
 
     # Train and test the model
-    pred, scores = train_and_test(model, train, test, config.label, features)
+    return train_and_test(model, train, test, config.label, features)
 
 @utils.timeit
 def classify(config):
