@@ -3,14 +3,11 @@ import logging
 import numpy  as np
 import pandas as pd
 import re
+import tsfresh
 
 from functools import partial
 from tqdm      import tqdm
 
-from tsfresh import (
-    extract_features,
-    select_features
-)
 from tsfresh.feature_extraction            import ComprehensiveFCParameters
 from tsfresh.utilities.dataframe_functions import impute
 
@@ -119,7 +116,7 @@ def extract(df, features=None):
     """
     df['_ID']   = np.full(len(df), 0)
     df['_TIME'] = df.index
-    extract = extract_features(
+    extract = tsfresh.extract_features(
         df,
         column_id    = '_ID',
         column_sort  = '_TIME',
@@ -145,7 +142,7 @@ def median(df):
 
     return nf
 
-def select(df, config, shift=None):
+def select_features(df, config, shift=None):
     """
     Selects relevant features from a tsfresh dataframe of features for a target
     label
@@ -163,7 +160,7 @@ def select(df, config, shift=None):
 
     # Select features
     label = train[config.label]
-    train = select_features(train.drop(columns=[config.label]), label, n_jobs=config.cores, chunksize=100)
+    train = tsfresh.select_features(train.drop(columns=[config.label]), label, n_jobs=config.cores, chunksize=100)
 
     # Add the label column back in
     train[config.label] = label
@@ -179,6 +176,34 @@ def select(df, config, shift=None):
         else:
             train.to_hdf(config.output.file, f'{config.output.key}/train')
             test.to_hdf(config.output.file, f'{config.output.key}/test')
+
+def select(df, config):
+    """
+    Performs feature selection process
+    """
+    if config.label in df:
+        for length in config.historical:
+            logger.info(f'Selecting relevant features for historical length {length} minutes')
+            ## Shift by the historical length
+            # Copy the original
+            shift = df.copy()
+            label = shift[config.label]
+
+            # Create a copy of the label column and drop the label
+            shift[f'{config.label}_H{length}'] = label
+            shift = shift.drop(columns=[config.label])
+
+            # Shift the index by the length amount in minutes, add label back in
+            shift.index += pd.Timedelta(f'{length} min')
+            shift[config.label] = label
+
+            # Make sure there are no nans
+            shift = shift.dropna()
+
+            select_features(shift, config, shift=length)
+    else:
+        logger.info('Selecting relevant features')
+        select_features(df, config)
 
 @utils.timeit
 def process(config):
@@ -235,32 +260,9 @@ def process(config):
 
     # Select features
     if config.process == 'tsfresh':
-        if config.label in ret:
-            for length in config.historical:
-                logger.info(f'Selecting relevant features for historical length {length} minutes')
-                ## Shift by the historical length
-                # Copy the original
-                shift = ret.copy()
-                label = shift[config.label]
-
-                # Create a copy of the label column and drop the label
-                shift[f'{config.label}_H{length}'] = label
-                shift = shift.drop(columns=[config.label])
-
-                # Shift the index by the length amount in minutes, add label back in
-                shift.index += pd.Timedelta(f'{length} min')
-                shift[config.label] = label
-
-                # Make sure there are no nans
-                shift = shift.dropna()
-
-                select(shift, config, shift=length)
-        else:
-            logger.info('Selecting relevant features')
-            select(ret, config)
+        select(ret, config)
 
     return True
-
 
 
 if __name__ == '__main__':
@@ -275,13 +277,21 @@ if __name__ == '__main__':
                                             default  = 'extract_features',
                                             help     = 'Section of the config to use'
     )
+    parser.add_argument('-se', '--select',  action   = 'store_true',
+                                            help     = 'Performs the selection process only'
+    )
 
     args = parser.parse_args()
 
     try:
         config = utils.Config(args.config, args.section)
 
-        process(config)
+        if args.select:
+            df = pd.read_hdf(config.output.file, f'{config.output.key}/full')
+
+            select(df, config)
+        else:
+            process(config)
 
         logger.info('Finished successfully')
     except Exception as e:
