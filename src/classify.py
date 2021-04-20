@@ -54,23 +54,20 @@ def train_and_test(model, train, test, label, features):
     logger.debug(f'percent error = {perc_err}')
 
     return pred, {
-        'r2'      : r2,
-        'rms'     : rms,
-        'perc_err': perc_err
+        'R2'  : r2,
+        'RMSE': rms,
+        'MAPE': perc_err
     }
 
-@utils.timeit
-def classify(config):
+def build_model(config, shift=None):
     """
-    Builds a model, trains and tests against it, then creates plots for the run.
-
-    Parameters
-    ----------
-    config : utils.Config
-        Config object defining arguments for classify
     """
-    train = pd.read_hdf(config.input.file, f'{config.input.train}')
-    test  = pd.read_hdf(config.input.file, f'{config.input.test}')
+    if shift:
+        train = pd.read_hdf(config.input.file, f'{config.input.key}/historical_{shift}_min/train')
+        test  = pd.read_hdf(config.input.file, f'{config.input.key}/historical_{shift}_min/train')
+    else:
+        train = pd.read_hdf(config.input.file, f'{config.input.key}/train')
+        test  = pd.read_hdf(config.input.file, f'{config.input.key}/test')
 
     logger.info('Creating, training, and testing the model')
 
@@ -96,6 +93,41 @@ def classify(config):
 
     # Train and test the model
     pred, scores = train_and_test(model, train, test, config.label, features)
+
+@utils.timeit
+def classify(config):
+    """
+    Builds a model, trains and tests against it, then creates plots for the run.
+
+    Parameters
+    ----------
+    config : utils.Config
+        Config object defining arguments for classify
+    """
+    if config.input.historical:
+        # Disable plot generation when multiple models are being built
+        config.plots.enabled = False
+
+        # Create the scores dataframe
+        df = pd.DataFrame(index=config.input.historical)
+        df.index.name = 'Forecast'
+
+        for shift in config.input.historical:
+            logger.debug(f'Building model with historical shift {shift}')
+            pred, scores = build_model(config, shift=shift)
+
+            # Save scores in dataframe
+            for score, value in scores.items():
+                if score not in df:
+                    df[score] = np.nan
+                df[score][shift] = value
+    else:
+        pred, scores = build_model(config)
+        df = pd.DataFrame(scores, index=['Score'])
+
+    # Save scores
+    if config.output:
+        df.to_hdf(config.output.file, config.output.key)
 
     # If plotting is enabled, run the functions and save output if given
     if config.plots.enabled:
@@ -135,3 +167,14 @@ if __name__ == '__main__':
         logger.info('Finished successfully')
     except Exception as e:
         logger.exception('Failed to complete')
+
+#%%
+
+import pandas as pd
+
+
+d = {'a': 1, 'b': 2}
+df = pd.DataFrame(d, index=['score'])
+
+
+df

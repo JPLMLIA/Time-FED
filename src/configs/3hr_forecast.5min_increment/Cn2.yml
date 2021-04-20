@@ -51,8 +51,11 @@ extract_features:
 classify:
   input:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
-    train: features/log_Cn2/train
-    test: features/log_Cn2/test
+    key: features/log_Cn2
+    historical: [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 155, 160, 165, 170, 175, 180]
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    key: scores/log_Cn2
   label: log_Cn2
   dropna: True
   plots:
