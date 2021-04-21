@@ -154,16 +154,18 @@ def select_features(df, config, label=None, shift=None):
     config : utils.Config
         Configuration object
     """
+    label = label or config.label
+
     # Select only on the train subset
     train = utils.subselect(config.train, df)
     test  = utils.subselect(config.test,  df)
 
     # Select features
-    label = train[config.label]
-    train = tsfresh.select_features(train.drop(columns=[config.label]), label, n_jobs=config.cores, chunksize=100)
+    lbl   = train[label]
+    train = tsfresh.select_features(train.drop(columns=[label]), lbl, n_jobs=config.cores, chunksize=100)
 
     # Add the label column back in
-    train[config.label] = label
+    train[label] = lbl
 
     # Only keep the same features in test as train
     test = test[train.columns]
@@ -171,8 +173,8 @@ def select_features(df, config, label=None, shift=None):
     if config.output.file:
         logger.info(f'Saving to {config.output.file}')
         if shift:
-            train.to_hdf(config.output.file, f'{config.output.key}/{label or config.label}/historical_{shift}_min/train')
-            test.to_hdf(config.output.file, f'{config.output.key}/{label or config.label}/historical_{shift}_min/test')
+            train.to_hdf(config.output.file, f'{config.output.key}/{label}/historical_{shift}_min/train')
+            test.to_hdf(config.output.file, f'{config.output.key}/{label}/historical_{shift}_min/test')
         else:
             train.to_hdf(config.output.file, f'{config.output.key}/train')
             test.to_hdf(config.output.file, f'{config.output.key}/test')
@@ -183,7 +185,7 @@ def select(df, label, config):
     """
     if label in df:
         for length in config.historical:
-            logger.info(f'Selecting relevant features for historical length {length} minutes for {label} label')
+            logger.info(f'Selecting relevant features for historical length {length} minutes for label{label}')
             ## Shift by the historical length
             # Copy the original
             shift = df.copy()
