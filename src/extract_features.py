@@ -142,7 +142,7 @@ def median(df):
 
     return nf
 
-def select_features(df, config, shift=None):
+def select_features(df, config, label=None, shift=None):
     """
     Selects relevant features from a tsfresh dataframe of features for a target
     label
@@ -171,36 +171,42 @@ def select_features(df, config, shift=None):
     if config.output.file:
         logger.info(f'Saving to {config.output.file}')
         if shift:
-            train.to_hdf(config.output.file, f'{config.output.key}/historical_{shift}_min/train')
-            test.to_hdf(config.output.file, f'{config.output.key}/historical_{shift}_min/test')
+            train.to_hdf(config.output.file, f'{config.output.key}/{label or config.label}/historical_{shift}_min/train')
+            test.to_hdf(config.output.file, f'{config.output.key}/{label or config.label}/historical_{shift}_min/test')
         else:
             train.to_hdf(config.output.file, f'{config.output.key}/train')
             test.to_hdf(config.output.file, f'{config.output.key}/test')
 
-def select(df, config):
+def select(df, label, config):
     """
     Performs feature selection process
     """
-    if config.label in df:
+    if label in df:
         for length in config.historical:
             logger.info(f'Selecting relevant features for historical length {length} minutes')
             ## Shift by the historical length
             # Copy the original
             shift = df.copy()
-            label = shift[config.label]
+            lbl   = shift[label]
 
             # Create a copy of the label column and drop the label
-            shift[f'{config.label}_H{length}'] = label
-            shift = shift.drop(columns=[config.label])
+            shift[f'{label}_H{length}'] = lbl
+            shift = shift.drop(columns=[label]+config.static)
+
+            # Remove the static columns
+            static = shift[config.static]
 
             # Shift the index by the length amount in minutes, add label back in
             shift.index += pd.Timedelta(f'{length} min')
-            shift[config.label] = label
+            shift[label] = lbl
+
+            # Add static columns back in
+            shift[config.static] = static
 
             # Make sure there are no nans
             shift = shift.dropna()
 
-            select_features(shift, config, shift=length)
+            select_features(shift, config, label=label, shift=length)
     else:
         logger.info('Selecting relevant features')
         select_features(df, config)
@@ -260,7 +266,11 @@ def process(config):
 
     # Select features
     if config.process == 'tsfresh':
-        select(ret, config)
+        if isinstance(config.label, list):
+            for label in config.label:
+                select(ret, label, config)
+        else:
+            select(ret, config.label, config)
 
     return True
 
@@ -289,7 +299,9 @@ if __name__ == '__main__':
         if args.select:
             df = pd.read_hdf(config.output.file, f'{config.output.key}/full')
 
-            select(df, config)
+            if isinstance(config.label, list):
+                for label in config.label:
+                    select(ret, label, config)
         else:
             process(config)
 
