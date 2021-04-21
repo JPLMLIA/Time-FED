@@ -301,9 +301,9 @@ if __name__ == '__main__':
 
             if isinstance(config.label, list):
                 for label in config.label:
-                    select(ret, label, config)
+                    select(df, label, config)
             else:
-                select(ret, config.label, config)
+                select(df, config.label, config)
         else:
             process(config)
 
