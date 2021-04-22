@@ -9,8 +9,11 @@ cd /data1/mloc/src/
 
 exec 2>&1 | tee /data1/mloc/local/runs/3hr_forecast.5min_increment/weather/run.log
 
-python preprocess.py       -c configs/3hr_forecast.5min_increment/weather.yml -s preprocess
-python extract_features.py -c configs/3hr_forecast.5min_increment/weather.yml -s extract_features
-# python classify.py         -c configs/3hr_forecast.5min_increment/wind_speed.yml -s classify
+# python preprocess.py       -c configs/3hr_forecast.5min_increment/weather.yml -s preprocess
+# python extract_features.py -c configs/3hr_forecast.5min_increment/weather.yml -s extract_features
+python classify.py         -c configs/3hr_forecast.5min_increment/weather.yml -s classify-temperature
+python classify.py         -c configs/3hr_forecast.5min_increment/weather.yml -s classify-pressure
+python classify.py         -c configs/3hr_forecast.5min_increment/weather.yml -s classify-relative_humidity
+python classify.py         -c configs/3hr_forecast.5min_increment/weather.yml -s classify-wind_speed
 
 echo 'DONE'
