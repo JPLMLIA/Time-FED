@@ -11,8 +11,7 @@ from sklearn.metrics  import (
 )
 
 # Import utils first to set the logger
-from utils import save_pkl
-
+import utils
 import plots
 
 logger = logging.getLogger('mloc/classify.py')
@@ -112,7 +111,7 @@ def build_model(config, shift=None):
             output += f'_H{shift}_min'
 
         output += '.pkl'
-        save_pkl(output, model)
+        utils.save_pkl(output, model)
 
     return pred, scores
 
