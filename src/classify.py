@@ -107,7 +107,7 @@ def build_model(config, shift=None):
         pred.to_hdf(config.out.file, key)
 
         # Save model via pickle
-        output = f'{config.out.models}/{config.label}'
+        output = f'{config.output.models}/{config.label}'
         if shift:
             output += f'_H{shift}_min'
 
