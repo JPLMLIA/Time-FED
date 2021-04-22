@@ -11,7 +11,8 @@ from sklearn.metrics  import (
 )
 
 # Import utils first to set the logger
-import utils
+from utils import save_pickle
+
 import plots
 
 logger = logging.getLogger('mloc/classify.py')
@@ -95,7 +96,25 @@ def build_model(config, shift=None):
         test  =  test[ ~test.isnull().any(axis=1)]
 
     # Train and test the model
-    return train_and_test(model, train, test, config.label, features)
+    pred, scores = train_and_test(model, train, test, config.label, features)
+
+    # Save predictions and model
+    if config.output:
+        key = config.output.keys.forecasts
+        if shift:
+            key += '/H{shift}'
+
+        pred.to_hdf(config.out.file, key)
+
+        # Save model via pickle
+        output = f'{config.out.models}/{config.label}'
+        if shift:
+            output += f'_H{shift}_min'
+
+        output += '.pkl'
+        save_pickle(output, model)
+
+    return pred, scores
 
 @utils.timeit
 def classify(config):
@@ -130,7 +149,7 @@ def classify(config):
 
     # Save scores
     if config.output:
-        df.to_hdf(config.output.file, config.output.key)
+        df.to_hdf(config.output.file, config.output.keys.scores)
 
     # If plotting is enabled, run the functions and save output if given
     if config.plots.enabled:

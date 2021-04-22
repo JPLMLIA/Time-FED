@@ -185,7 +185,7 @@ def select(df, label, config):
     """
     if label in df:
         for length in config.historical:
-            logger.info(f'Selecting relevant features for historical length {length} minutes for label{label}')
+            logger.info(f'Selecting relevant features for historical length {length} minutes for label {label}')
             ## Shift by the historical length
             # Copy the original
             shift = df.copy()

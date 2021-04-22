@@ -9,6 +9,7 @@ import multiprocessing.pool as mp_pool
 import numpy  as np
 import os
 import pandas as pd
+import pickle
 import seaborn as sns
 import sys
 import yaml
@@ -54,6 +55,13 @@ def timeit(func):
     # Need to pass the docs on for sphinx to generate properly
     _wrap.__doc__ = func.__doc__
     return _wrap
+
+def save_pkl(file, data):
+    """
+    Saves data to a file via pickle
+    """
+    with open(file, 'wb') as file:
+        pickle.dump(data, file)
 
 def subselect(args, df):
     """
