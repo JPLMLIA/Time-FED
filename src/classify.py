@@ -104,7 +104,7 @@ def build_model(config, shift=None):
             key += '/H{shift}'
 
         preds = pd.Series(index=test.index, data=pred)
-        preds.to_hdf(config.out.file, key)
+        preds.to_hdf(config.output.file, key)
 
         # Save model via pickle
         output = f'{config.output.models}/{config.label}'
