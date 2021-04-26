@@ -248,7 +248,7 @@ def process(config):
     )
     extracts = []
     with utils.Pool(processes=config.cores) as pool:
-        for ret in pool.imap_unordered(func, rolls, chunksize=200):
+        for ret in pool.imap_unordered(func, rolls, chunksize=100):
             extracts.append(ret)
 
     logger.info('Concatting the feature frames together')

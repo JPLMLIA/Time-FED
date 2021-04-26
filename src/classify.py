@@ -101,7 +101,7 @@ def build_model(config, shift=None):
     if config.output:
         key = config.output.keys.forecasts
         if shift:
-            key += '/H{shift}'
+            key += f'/H{shift}'
 
         preds = pd.Series(index=test.index, data=pred)
         preds.to_hdf(config.output.file, key)
