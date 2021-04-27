@@ -162,7 +162,7 @@ def select_features(df, config, label=None, shift=None):
 
     # Select features
     lbl   = train[label]
-    train = tsfresh.select_features(train.drop(columns=[label]), lbl, n_jobs=config.cores, chunksize=100)
+    train = tsfresh.select_features(train.drop(columns=[label]), lbl, n_jobs=config.cores, chunksize=64)
 
     # Add the label column back in
     train[label] = lbl
