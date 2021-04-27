@@ -114,7 +114,7 @@ def build_model(config, shift=None):
         output += '.pkl'
         utils.save_pkl(output, model)
 
-    return pred, scores
+    return train, test, pred, scores
 
 @utils.timeit
 def classify(config):
@@ -136,7 +136,7 @@ def classify(config):
 
         for shift in config.input.historical:
             logger.debug(f'Building model with historical shift {shift}')
-            pred, scores = build_model(config, shift=shift)
+            train, test, pred, scores = build_model(config, shift=shift)
 
             # Save scores in dataframe
             for score, value in scores.items():
@@ -144,7 +144,7 @@ def classify(config):
                     df[score] = np.nan
                 df[score][shift] = value
     else:
-        pred, scores = build_model(config)
+        train, test, pred, scores = build_model(config)
         df = pd.DataFrame(scores, index=['Score'])
 
     # Save scores
