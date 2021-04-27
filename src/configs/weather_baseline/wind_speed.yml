@@ -68,7 +68,7 @@ preprocess_features:
 # Train and test a model
 classify:
   input:
-    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/data.h5
+    file: /data1/mloc/local/runs/weather_baseline/wind_speed/data.h5
     key: features/preprocess
     historical:
   output:
@@ -80,7 +80,7 @@ classify:
     enabled: True
     directory: /data1/mloc/local/runs/weather_baseline/wind_speed/
     units:
-      wind_speed: cm
+      wind_speed: mph
       datetime: UTC
     errors_in_time:
     scatter_with_errors:
