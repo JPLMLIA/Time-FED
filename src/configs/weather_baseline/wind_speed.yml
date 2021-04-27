@@ -73,7 +73,10 @@ classify:
     historical:
   output:
     file: /data1/mloc/local/runs/weather_baseline/wind_speed/data.h5
-    key: scores
+    models: /data1/mloc/local/runs/weather_baseline/wind_speed/
+    keys:
+      scores: scores
+      forecasts: forecasts
   label: wind_speed
   dropna: True
   plots:
