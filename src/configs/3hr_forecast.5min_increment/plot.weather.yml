@@ -366,7 +366,7 @@ relative_humidity-5:
     enabled: True
     directory: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather/relative_humidity/H5/
     units:
-      relative_humidity: %
+      relative_humidity: percent
       datetime: UTC
     errors_in_time:
     scatter_with_errors:
@@ -453,7 +453,7 @@ relative_humidity-180:
     enabled: True
     directory: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather/relative_humidity/H180/
     units:
-      relative_humidity: %
+      relative_humidity: percent
       datetime: UTC
     errors_in_time:
     scatter_with_errors:
