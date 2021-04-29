@@ -13,7 +13,7 @@ classify-5:
   label: r0_10T # temperature_H5
   dropna: True
   plots:
-    enabled: False
+    enabled: True
     directory: /data1/mloc/local/runs/3hr_forecast.5min_increment/r0_cn2_weather/H5/
     units:
       r0_10T: cm
@@ -100,7 +100,7 @@ classify-180:
   label: r0_10T # temperature_H5
   dropna: True
   plots:
-    enabled: False
+    enabled: True
     directory: /data1/mloc/local/runs/3hr_forecast.5min_increment/r0_cn2_weather/H180/
     units:
       r0_10T: cm
