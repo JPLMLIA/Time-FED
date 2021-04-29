@@ -1,0 +1,699 @@
+# Train and test a model
+temperature-5:
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather_data.h5
+    key: features/temperature/
+    historical: [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 155, 160, 165, 170, 175, 180]
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather_data_data.h5
+    models: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather_data/
+    keys:
+      scores: scores/temperature
+      forecasts: forecasts/temperature
+  label: temperature # temperature_H5
+  dropna: True
+  plots:
+    enabled: True
+    directory: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather_data/temperature/H5/
+    units:
+      temperature: C
+      datetime: UTC
+    errors_in_time:
+    scatter_with_errors:
+      x:
+        min: 0
+        max: 20
+      y:
+        min: 0
+        max: 20
+      colorscale:
+        min: 0
+        max: .5
+      step_length: !!python/complex 100j
+      samples: 1000
+      size: 25
+      alpha: .4
+      figsize: [10, 10]
+      file: scatter_errors.png
+    importances:
+      figsize: [20, 30]
+      number: 20
+      labelrotation: 90
+      title: Feature Importances
+      file: feature_importances.png
+    histogram_errors:
+      min: 0
+      max: 80
+      bins: 81
+      figsize: [20, 10]
+      file: histogram_errors.png
+    local_synchrony:
+      feature1: pressure
+      feature2: pressure
+      window_size: 120
+      figsize: [30, 6]
+      file: local_synchony.png
+    date_range:
+      figsize: [20, 10]
+      file: date_range.png
+      metrics: [rms]
+      dates:
+        5-25to29-20:
+          start: 2020/05/25 00:00
+          end  : 2020/05/29 23:59
+        8-25to30-20:
+          start: 2020/08/25 00:00
+          end  : 2020/08/30 23:59
+        2-15to20-20:
+          start: 2020/02/15 00:00
+          end  : 2020/02/20 23:59
+        11-15to20-20:
+          start: 2020/11/15 00:00
+          end  : 2020/11/20 23:59
+        7-10to15-20:
+          start: 2020/07/10 00:00
+          end  : 2020/07/15 23:59
+        8-04to07-20:
+          start: 2020/08/04 00:00
+          end  : 2020/08/07 23:59
+        10-12to15-20:
+          start: 2020/10/12 00:00
+          end  : 2020/10/15 23:59
+        12-25to27-20:
+          start: 2020/12/25 00:00
+          end  : 2020/12/27 23:59
+  features:
+    select:
+    exclude:
+
+temperature-180:
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather_data.h5
+    key: features/temperature/
+    historical: [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 155, 160, 165, 170, 175, 180]
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather_data.h5
+    models: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather_data/
+    keys:
+      scores: scores/temperature
+      forecasts: forecasts/temperature
+  label: temperature # temperature_H5
+  dropna: True
+  plots:
+    enabled: True
+    directory: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather_data/temperature/H180/
+    units:
+      temperature: C
+      datetime: UTC
+    errors_in_time:
+    scatter_with_errors:
+      x:
+        min: 0
+        max: 20
+      y:
+        min: 0
+        max: 20
+      colorscale:
+        min: 0
+        max: .5
+      step_length: !!python/complex 100j
+      samples: 1000
+      size: 25
+      alpha: .4
+      figsize: [10, 10]
+      file: scatter_errors.png
+    importances:
+      figsize: [20, 30]
+      number: 20
+      labelrotation: 90
+      title: Feature Importances
+      file: feature_importances.png
+    histogram_errors:
+      min: 0
+      max: 80
+      bins: 81
+      figsize: [20, 10]
+      file: histogram_errors.png
+    local_synchrony:
+      feature1: pressure
+      feature2: pressure
+      window_size: 120
+      figsize: [30, 6]
+      file: local_synchony.png
+    date_range:
+      figsize: [20, 10]
+      file: date_range.png
+      metrics: [rms]
+      dates:
+        5-25to29-20:
+          start: 2020/05/25 00:00
+          end  : 2020/05/29 23:59
+        8-25to30-20:
+          start: 2020/08/25 00:00
+          end  : 2020/08/30 23:59
+        2-15to20-20:
+          start: 2020/02/15 00:00
+          end  : 2020/02/20 23:59
+        11-15to20-20:
+          start: 2020/11/15 00:00
+          end  : 2020/11/20 23:59
+        7-10to15-20:
+          start: 2020/07/10 00:00
+          end  : 2020/07/15 23:59
+        8-04to07-20:
+          start: 2020/08/04 00:00
+          end  : 2020/08/07 23:59
+        10-12to15-20:
+          start: 2020/10/12 00:00
+          end  : 2020/10/15 23:59
+        12-25to27-20:
+          start: 2020/12/25 00:00
+          end  : 2020/12/27 23:59
+  features:
+    select:
+    exclude:
+
+# Train and test a model
+pressure-5:
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather_data.h5
+    key: features/pressure/
+    historical: [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 155, 160, 165, 170, 175, 180]
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather_data_data.h5
+    models: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather_data/
+    keys:
+      scores: scores/pressure
+      forecasts: forecasts/pressure
+  label: pressure # pressure_H5
+  dropna: True
+  plots:
+    enabled: True
+    directory: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather_data/pressure/H5/
+    units:
+      pressure: ?
+      datetime: UTC
+    errors_in_time:
+    scatter_with_errors:
+      x:
+        min: 0
+        max: 20
+      y:
+        min: 0
+        max: 20
+      colorscale:
+        min: 0
+        max: .5
+      step_length: !!python/complex 100j
+      samples: 1000
+      size: 25
+      alpha: .4
+      figsize: [10, 10]
+      file: scatter_errors.png
+    importances:
+      figsize: [20, 30]
+      number: 20
+      labelrotation: 90
+      title: Feature Importances
+      file: feature_importances.png
+    histogram_errors:
+      min: 0
+      max: 80
+      bins: 81
+      figsize: [20, 10]
+      file: histogram_errors.png
+    local_synchrony:
+      feature1: pressure
+      feature2: pressure
+      window_size: 120
+      figsize: [30, 6]
+      file: local_synchony.png
+    date_range:
+      figsize: [20, 10]
+      file: date_range.png
+      metrics: [rms]
+      dates:
+        5-25to29-20:
+          start: 2020/05/25 00:00
+          end  : 2020/05/29 23:59
+        8-25to30-20:
+          start: 2020/08/25 00:00
+          end  : 2020/08/30 23:59
+        2-15to20-20:
+          start: 2020/02/15 00:00
+          end  : 2020/02/20 23:59
+        11-15to20-20:
+          start: 2020/11/15 00:00
+          end  : 2020/11/20 23:59
+        7-10to15-20:
+          start: 2020/07/10 00:00
+          end  : 2020/07/15 23:59
+        8-04to07-20:
+          start: 2020/08/04 00:00
+          end  : 2020/08/07 23:59
+        10-12to15-20:
+          start: 2020/10/12 00:00
+          end  : 2020/10/15 23:59
+        12-25to27-20:
+          start: 2020/12/25 00:00
+          end  : 2020/12/27 23:59
+  features:
+    select:
+    exclude:
+
+pressure-180:
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather_data.h5
+    key: features/pressure/
+    historical: [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 155, 160, 165, 170, 175, 180]
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather_data.h5
+    models: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather_data/
+    keys:
+      scores: scores/pressure
+      forecasts: forecasts/pressure
+  label: pressure # pressure_H5
+  dropna: True
+  plots:
+    enabled: True
+    directory: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather_data/pressure/H180/
+    units:
+      pressure: ?
+      datetime: UTC
+    errors_in_time:
+    scatter_with_errors:
+      x:
+        min: 0
+        max: 20
+      y:
+        min: 0
+        max: 20
+      colorscale:
+        min: 0
+        max: .5
+      step_length: !!python/complex 100j
+      samples: 1000
+      size: 25
+      alpha: .4
+      figsize: [10, 10]
+      file: scatter_errors.png
+    importances:
+      figsize: [20, 30]
+      number: 20
+      labelrotation: 90
+      title: Feature Importances
+      file: feature_importances.png
+    histogram_errors:
+      min: 0
+      max: 80
+      bins: 81
+      figsize: [20, 10]
+      file: histogram_errors.png
+    local_synchrony:
+      feature1: pressure
+      feature2: pressure
+      window_size: 120
+      figsize: [30, 6]
+      file: local_synchony.png
+    date_range:
+      figsize: [20, 10]
+      file: date_range.png
+      metrics: [rms]
+      dates:
+        5-25to29-20:
+          start: 2020/05/25 00:00
+          end  : 2020/05/29 23:59
+        8-25to30-20:
+          start: 2020/08/25 00:00
+          end  : 2020/08/30 23:59
+        2-15to20-20:
+          start: 2020/02/15 00:00
+          end  : 2020/02/20 23:59
+        11-15to20-20:
+          start: 2020/11/15 00:00
+          end  : 2020/11/20 23:59
+        7-10to15-20:
+          start: 2020/07/10 00:00
+          end  : 2020/07/15 23:59
+        8-04to07-20:
+          start: 2020/08/04 00:00
+          end  : 2020/08/07 23:59
+        10-12to15-20:
+          start: 2020/10/12 00:00
+          end  : 2020/10/15 23:59
+        12-25to27-20:
+          start: 2020/12/25 00:00
+          end  : 2020/12/27 23:59
+  features:
+    select:
+    exclude:
+
+# Train and test a model
+relative_humidity-5:
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather_data.h5
+    key: features/relative_humidity/
+    historical: [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 155, 160, 165, 170, 175, 180]
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather_data_data.h5
+    models: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather_data/
+    keys:
+      scores: scores/relative_humidity
+      forecasts: forecasts/relative_humidity
+  label: relative_humidity # relative_humidity_H5
+  dropna: True
+  plots:
+    enabled: True
+    directory: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather_data/relative_humidity/H5/
+    units:
+      relative_humidity: %
+      datetime: UTC
+    errors_in_time:
+    scatter_with_errors:
+      x:
+        min: 0
+        max: 20
+      y:
+        min: 0
+        max: 20
+      colorscale:
+        min: 0
+        max: .5
+      step_length: !!python/complex 100j
+      samples: 1000
+      size: 25
+      alpha: .4
+      figsize: [10, 10]
+      file: scatter_errors.png
+    importances:
+      figsize: [20, 30]
+      number: 20
+      labelrotation: 90
+      title: Feature Importances
+      file: feature_importances.png
+    histogram_errors:
+      min: 0
+      max: 80
+      bins: 81
+      figsize: [20, 10]
+      file: histogram_errors.png
+    local_synchrony:
+      feature1: relative_humidity
+      feature2: relative_humidity
+      window_size: 120
+      figsize: [30, 6]
+      file: local_synchony.png
+    date_range:
+      figsize: [20, 10]
+      file: date_range.png
+      metrics: [rms]
+      dates:
+        5-25to29-20:
+          start: 2020/05/25 00:00
+          end  : 2020/05/29 23:59
+        8-25to30-20:
+          start: 2020/08/25 00:00
+          end  : 2020/08/30 23:59
+        2-15to20-20:
+          start: 2020/02/15 00:00
+          end  : 2020/02/20 23:59
+        11-15to20-20:
+          start: 2020/11/15 00:00
+          end  : 2020/11/20 23:59
+        7-10to15-20:
+          start: 2020/07/10 00:00
+          end  : 2020/07/15 23:59
+        8-04to07-20:
+          start: 2020/08/04 00:00
+          end  : 2020/08/07 23:59
+        10-12to15-20:
+          start: 2020/10/12 00:00
+          end  : 2020/10/15 23:59
+        12-25to27-20:
+          start: 2020/12/25 00:00
+          end  : 2020/12/27 23:59
+  features:
+    select:
+    exclude:
+
+relative_humidity-180:
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather_data.h5
+    key: features/relative_humidity/
+    historical: [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 155, 160, 165, 170, 175, 180]
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather_data.h5
+    models: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather_data/
+    keys:
+      scores: scores/relative_humidity
+      forecasts: forecasts/relative_humidity
+  label: relative_humidity # relative_humidity_H5
+  dropna: True
+  plots:
+    enabled: True
+    directory: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather_data/relative_humidity/H180/
+    units:
+      relative_humidity: %
+      datetime: UTC
+    errors_in_time:
+    scatter_with_errors:
+      x:
+        min: 0
+        max: 20
+      y:
+        min: 0
+        max: 20
+      colorscale:
+        min: 0
+        max: .5
+      step_length: !!python/complex 100j
+      samples: 1000
+      size: 25
+      alpha: .4
+      figsize: [10, 10]
+      file: scatter_errors.png
+    importances:
+      figsize: [20, 30]
+      number: 20
+      labelrotation: 90
+      title: Feature Importances
+      file: feature_importances.png
+    histogram_errors:
+      min: 0
+      max: 80
+      bins: 81
+      figsize: [20, 10]
+      file: histogram_errors.png
+    local_synchrony:
+      feature1: relative_humidity
+      feature2: relative_humidity
+      window_size: 120
+      figsize: [30, 6]
+      file: local_synchony.png
+    date_range:
+      figsize: [20, 10]
+      file: date_range.png
+      metrics: [rms]
+      dates:
+        5-25to29-20:
+          start: 2020/05/25 00:00
+          end  : 2020/05/29 23:59
+        8-25to30-20:
+          start: 2020/08/25 00:00
+          end  : 2020/08/30 23:59
+        2-15to20-20:
+          start: 2020/02/15 00:00
+          end  : 2020/02/20 23:59
+        11-15to20-20:
+          start: 2020/11/15 00:00
+          end  : 2020/11/20 23:59
+        7-10to15-20:
+          start: 2020/07/10 00:00
+          end  : 2020/07/15 23:59
+        8-04to07-20:
+          start: 2020/08/04 00:00
+          end  : 2020/08/07 23:59
+        10-12to15-20:
+          start: 2020/10/12 00:00
+          end  : 2020/10/15 23:59
+        12-25to27-20:
+          start: 2020/12/25 00:00
+          end  : 2020/12/27 23:59
+  features:
+    select:
+    exclude:
+
+# Train and test a model
+wind_speed-5:
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather_data.h5
+    key: features/wind_speed/
+    historical: [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 155, 160, 165, 170, 175, 180]
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather_data_data.h5
+    models: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather_data/
+    keys:
+      scores: scores/wind_speed
+      forecasts: forecasts/wind_speed
+  label: wind_speed # wind_speed_H5
+  dropna: True
+  plots:
+    enabled: True
+    directory: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather_data/wind_speed/H5/
+    units:
+      wind_speed: m/s
+      datetime: UTC
+    errors_in_time:
+    scatter_with_errors:
+      x:
+        min: 0
+        max: 20
+      y:
+        min: 0
+        max: 20
+      colorscale:
+        min: 0
+        max: .5
+      step_length: !!python/complex 100j
+      samples: 1000
+      size: 25
+      alpha: .4
+      figsize: [10, 10]
+      file: scatter_errors.png
+    importances:
+      figsize: [20, 30]
+      number: 20
+      labelrotation: 90
+      title: Feature Importances
+      file: feature_importances.png
+    histogram_errors:
+      min: 0
+      max: 80
+      bins: 81
+      figsize: [20, 10]
+      file: histogram_errors.png
+    local_synchrony:
+      feature1: wind_speed
+      feature2: wind_speed
+      window_size: 120
+      figsize: [30, 6]
+      file: local_synchony.png
+    date_range:
+      figsize: [20, 10]
+      file: date_range.png
+      metrics: [rms]
+      dates:
+        5-25to29-20:
+          start: 2020/05/25 00:00
+          end  : 2020/05/29 23:59
+        8-25to30-20:
+          start: 2020/08/25 00:00
+          end  : 2020/08/30 23:59
+        2-15to20-20:
+          start: 2020/02/15 00:00
+          end  : 2020/02/20 23:59
+        11-15to20-20:
+          start: 2020/11/15 00:00
+          end  : 2020/11/20 23:59
+        7-10to15-20:
+          start: 2020/07/10 00:00
+          end  : 2020/07/15 23:59
+        8-04to07-20:
+          start: 2020/08/04 00:00
+          end  : 2020/08/07 23:59
+        10-12to15-20:
+          start: 2020/10/12 00:00
+          end  : 2020/10/15 23:59
+        12-25to27-20:
+          start: 2020/12/25 00:00
+          end  : 2020/12/27 23:59
+  features:
+    select:
+    exclude:
+
+wind_speed-180:
+  input:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather_data.h5
+    key: features/wind_speed/
+    historical: [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 155, 160, 165, 170, 175, 180]
+  output:
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather_data.h5
+    models: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather_data/
+    keys:
+      scores: scores/wind_speed
+      forecasts: forecasts/wind_speed
+  label: wind_speed # wind_speed_H5
+  dropna: True
+  plots:
+    enabled: True
+    directory: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather_data/wind_speed/H180/
+    units:
+      wind_speed: m/s
+      datetime: UTC
+    errors_in_time:
+    scatter_with_errors:
+      x:
+        min: 0
+        max: 20
+      y:
+        min: 0
+        max: 20
+      colorscale:
+        min: 0
+        max: .5
+      step_length: !!python/complex 100j
+      samples: 1000
+      size: 25
+      alpha: .4
+      figsize: [10, 10]
+      file: scatter_errors.png
+    importances:
+      figsize: [20, 30]
+      number: 20
+      labelrotation: 90
+      title: Feature Importances
+      file: feature_importances.png
+    histogram_errors:
+      min: 0
+      max: 80
+      bins: 81
+      figsize: [20, 10]
+      file: histogram_errors.png
+    local_synchrony:
+      feature1: wind_speed
+      feature2: wind_speed
+      window_size: 120
+      figsize: [30, 6]
+      file: local_synchony.png
+    date_range:
+      figsize: [20, 10]
+      file: date_range.png
+      metrics: [rms]
+      dates:
+        5-25to29-20:
+          start: 2020/05/25 00:00
+          end  : 2020/05/29 23:59
+        8-25to30-20:
+          start: 2020/08/25 00:00
+          end  : 2020/08/30 23:59
+        2-15to20-20:
+          start: 2020/02/15 00:00
+          end  : 2020/02/20 23:59
+        11-15to20-20:
+          start: 2020/11/15 00:00
+          end  : 2020/11/20 23:59
+        7-10to15-20:
+          start: 2020/07/10 00:00
+          end  : 2020/07/15 23:59
+        8-04to07-20:
+          start: 2020/08/04 00:00
+          end  : 2020/08/07 23:59
+        10-12to15-20:
+          start: 2020/10/12 00:00
+          end  : 2020/10/15 23:59
+        12-25to27-20:
+          start: 2020/12/25 00:00
+          end  : 2020/12/27 23:59
+  features:
+    select:
+    exclude:
