@@ -191,7 +191,7 @@ pressure-5:
     enabled: True
     directory: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather_data/pressure/H5/
     units:
-      pressure: ?
+      pressure:
       datetime: UTC
     errors_in_time:
     scatter_with_errors:
@@ -278,7 +278,7 @@ pressure-180:
     enabled: True
     directory: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather_data/pressure/H180/
     units:
-      pressure: ?
+      pressure: 
       datetime: UTC
     errors_in_time:
     scatter_with_errors:

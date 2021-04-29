@@ -16,7 +16,7 @@ classify-5:
     enabled: True
     directory: /data1/mloc/local/runs/3hr_forecast.5min_increment/cn2_weather_data/H5/
     units:
-      log_Cn2_10T: ?
+      log_Cn2_10T:
       datetime: UTC
     errors_in_time:
     scatter_with_errors:
@@ -103,7 +103,7 @@ classify-180:
     enabled: True
     directory: /data1/mloc/local/runs/3hr_forecast.5min_increment/cn2_weather_data/H180/
     units:
-      log_Cn2_10T: ?
+      log_Cn2_10T:
       datetime: UTC
     errors_in_time:
     scatter_with_errors:
