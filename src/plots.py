@@ -393,7 +393,7 @@ if __name__ == '__main__':
     try:
         config = utils.Config(args.config, args.section)
 
-        test = pd.read_hdf(config.input.file, args.inkey)
+        test = pd.read_hdf(config.input.file, args.inkey).dropna()
         pred = pd.read_hdf(config.output.file, args.outkey)
 
         model = None
