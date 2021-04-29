@@ -67,7 +67,7 @@ def build_model(config, shift=None):
     """
     if shift:
         train = pd.read_hdf(config.input.file, f'{config.input.key}/historical_{shift}_min/train')
-        test  = pd.read_hdf(config.input.file, f'{config.input.key}/historical_{shift}_min/train')
+        test  = pd.read_hdf(config.input.file, f'{config.input.key}/historical_{shift}_min/test')
     else:
         train = pd.read_hdf(config.input.file, f'{config.input.key}/train')
         test  = pd.read_hdf(config.input.file, f'{config.input.key}/test')
