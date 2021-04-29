@@ -30,12 +30,12 @@ def protect(func):
         Function to wrap in a try/except
     """
     def wrap(*args, **kwargs):
-        func(*args, **kwargs)
+        try:
+            func(*args, **kwargs)
+        except:
+            logger.exception(f'Failed to generate plot: {func.__name__}')
 
-    try:
-        wrap()
-    except:
-        logger.exception(f'Failed to generate plot: {func.__name__}')
+    return wrap()
 
 @protect
 def local_synchrony(df, config):
