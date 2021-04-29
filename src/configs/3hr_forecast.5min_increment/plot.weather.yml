@@ -5,7 +5,7 @@ temperature-5:
     key: features/temperature/
     historical: [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 155, 160, 165, 170, 175, 180]
   output:
-    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather_data_data.h5
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather_data.h5
     models: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather_data/
     keys:
       scores: scores/temperature
@@ -180,7 +180,7 @@ pressure-5:
     key: features/pressure/
     historical: [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 155, 160, 165, 170, 175, 180]
   output:
-    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather_data_data.h5
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather_data.h5
     models: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather_data/
     keys:
       scores: scores/pressure
@@ -278,7 +278,7 @@ pressure-180:
     enabled: True
     directory: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather_data/pressure/H180/
     units:
-      pressure: 
+      pressure:
       datetime: UTC
     errors_in_time:
     scatter_with_errors:
@@ -355,7 +355,7 @@ relative_humidity-5:
     key: features/relative_humidity/
     historical: [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 155, 160, 165, 170, 175, 180]
   output:
-    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather_data_data.h5
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather_data.h5
     models: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather_data/
     keys:
       scores: scores/relative_humidity
@@ -530,7 +530,7 @@ wind_speed-5:
     key: features/wind_speed/
     historical: [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 155, 160, 165, 170, 175, 180]
   output:
-    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather_data_data.h5
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather_data.h5
     models: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather_data/
     keys:
       scores: scores/wind_speed
