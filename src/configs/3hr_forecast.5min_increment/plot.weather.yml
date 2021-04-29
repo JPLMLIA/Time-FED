@@ -6,7 +6,7 @@ temperature-5:
     historical: [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 155, 160, 165, 170, 175, 180]
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather_data.h5
-    models: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather_data/
+    models: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather/
     keys:
       scores: scores/temperature
       forecasts: forecasts/temperature
@@ -14,7 +14,7 @@ temperature-5:
   dropna: True
   plots:
     enabled: True
-    directory: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather_data/temperature/H5/
+    directory: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather/temperature/H5/
     units:
       temperature: C
       datetime: UTC
@@ -93,7 +93,7 @@ temperature-180:
     historical: [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 155, 160, 165, 170, 175, 180]
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather_data.h5
-    models: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather_data/
+    models: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather/
     keys:
       scores: scores/temperature
       forecasts: forecasts/temperature
@@ -101,7 +101,7 @@ temperature-180:
   dropna: True
   plots:
     enabled: True
-    directory: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather_data/temperature/H180/
+    directory: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather/temperature/H180/
     units:
       temperature: C
       datetime: UTC
@@ -181,7 +181,7 @@ pressure-5:
     historical: [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 155, 160, 165, 170, 175, 180]
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather_data.h5
-    models: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather_data/
+    models: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather/
     keys:
       scores: scores/pressure
       forecasts: forecasts/pressure
@@ -189,7 +189,7 @@ pressure-5:
   dropna: True
   plots:
     enabled: True
-    directory: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather_data/pressure/H5/
+    directory: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather/pressure/H5/
     units:
       pressure:
       datetime: UTC
@@ -268,7 +268,7 @@ pressure-180:
     historical: [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 155, 160, 165, 170, 175, 180]
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather_data.h5
-    models: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather_data/
+    models: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather/
     keys:
       scores: scores/pressure
       forecasts: forecasts/pressure
@@ -276,7 +276,7 @@ pressure-180:
   dropna: True
   plots:
     enabled: True
-    directory: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather_data/pressure/H180/
+    directory: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather/pressure/H180/
     units:
       pressure:
       datetime: UTC
@@ -356,7 +356,7 @@ relative_humidity-5:
     historical: [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 155, 160, 165, 170, 175, 180]
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather_data.h5
-    models: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather_data/
+    models: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather/
     keys:
       scores: scores/relative_humidity
       forecasts: forecasts/relative_humidity
@@ -364,7 +364,7 @@ relative_humidity-5:
   dropna: True
   plots:
     enabled: True
-    directory: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather_data/relative_humidity/H5/
+    directory: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather/relative_humidity/H5/
     units:
       relative_humidity: %
       datetime: UTC
@@ -443,7 +443,7 @@ relative_humidity-180:
     historical: [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 155, 160, 165, 170, 175, 180]
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather_data.h5
-    models: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather_data/
+    models: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather/
     keys:
       scores: scores/relative_humidity
       forecasts: forecasts/relative_humidity
@@ -451,7 +451,7 @@ relative_humidity-180:
   dropna: True
   plots:
     enabled: True
-    directory: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather_data/relative_humidity/H180/
+    directory: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather/relative_humidity/H180/
     units:
       relative_humidity: %
       datetime: UTC
@@ -531,7 +531,7 @@ wind_speed-5:
     historical: [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 155, 160, 165, 170, 175, 180]
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather_data.h5
-    models: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather_data/
+    models: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather/
     keys:
       scores: scores/wind_speed
       forecasts: forecasts/wind_speed
@@ -539,7 +539,7 @@ wind_speed-5:
   dropna: True
   plots:
     enabled: True
-    directory: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather_data/wind_speed/H5/
+    directory: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather/wind_speed/H5/
     units:
       wind_speed: m/s
       datetime: UTC
@@ -618,7 +618,7 @@ wind_speed-180:
     historical: [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 155, 160, 165, 170, 175, 180]
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather_data.h5
-    models: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather_data/
+    models: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather/
     keys:
       scores: scores/wind_speed
       forecasts: forecasts/wind_speed
@@ -626,7 +626,7 @@ wind_speed-180:
   dropna: True
   plots:
     enabled: True
-    directory: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather_data/wind_speed/H180/
+    directory: /data1/mloc/local/runs/3hr_forecast.5min_increment/weather/wind_speed/H180/
     units:
       wind_speed: m/s
       datetime: UTC

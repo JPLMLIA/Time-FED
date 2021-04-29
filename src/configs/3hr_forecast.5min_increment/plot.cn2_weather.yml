@@ -6,7 +6,7 @@ classify-5:
     historical: [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 155, 160, 165, 170, 175, 180]
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/cn2_weather_data.h5
-    models: /data1/mloc/local/runs/3hr_forecast.5min_increment/cn2_weather_data/
+    models: /data1/mloc/local/runs/3hr_forecast.5min_increment/cn2_weather/
     keys:
       scores: scores/log_Cn2_10T
       forecasts: forecasts/log_Cn2_10T
@@ -14,7 +14,7 @@ classify-5:
   dropna: True
   plots:
     enabled: True
-    directory: /data1/mloc/local/runs/3hr_forecast.5min_increment/cn2_weather_data/H5/
+    directory: /data1/mloc/local/runs/3hr_forecast.5min_increment/cn2_weather/H5/
     units:
       log_Cn2_10T:
       datetime: UTC
@@ -93,7 +93,7 @@ classify-180:
     historical: [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 155, 160, 165, 170, 175, 180]
   output:
     file: /data1/mloc/local/runs/3hr_forecast.5min_increment/cn2_weather_data.h5
-    models: /data1/mloc/local/runs/3hr_forecast.5min_increment/cn2_weather_data/
+    models: /data1/mloc/local/runs/3hr_forecast.5min_increment/cn2_weather/
     keys:
       scores: scores/log_Cn2_10T
       forecasts: forecasts/log_Cn2_10T
@@ -101,7 +101,7 @@ classify-180:
   dropna: True
   plots:
     enabled: True
-    directory: /data1/mloc/local/runs/3hr_forecast.5min_increment/cn2_weather_data/H180/
+    directory: /data1/mloc/local/runs/3hr_forecast.5min_increment/cn2_weather/H180/
     units:
       log_Cn2_10T:
       datetime: UTC
