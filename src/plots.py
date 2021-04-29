@@ -351,14 +351,13 @@ def generate_plots(test, pred, model, config):
     """
     Generates all plots
     """
-    scatter_with_errors(test[config.label], pred, lambda a, b: a-b,     name='true_diff', config=config)
-    scatter_with_errors(test[config.label], pred, lambda a, b: (a-b)/a, name='perc_diff', config=config)
+    scatter_with_errors(test[config.label], pred.values, lambda a, b: a-b,     name='true_diff', config=config)
+    scatter_with_errors(test[config.label], pred.values, lambda a, b: (a-b)/a, name='perc_diff', config=config)
 
-    errors_in_time(test[config.label], pred, config=config)
+    errors_in_time(test[config.label], pred.values, config=config)
     importances(model, test.columns, config=config)
 
-    histogram_errors(test[config.label], pred, lambda a, b: (a-b)/a, config=config)
-
+    histogram_errors(test[config.label], pred.values, lambda a, b: (a-b)/a, config=config)
     # local_synchrony(train, config=config)
 
     date_range(test[config.label], pred, config=config)
