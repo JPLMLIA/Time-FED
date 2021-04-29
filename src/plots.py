@@ -355,7 +355,7 @@ def generate_plots(test, pred, model, config):
     scatter_with_errors(test[config.label], pred, lambda a, b: (a-b)/a, name='perc_diff', config=config)
 
     errors_in_time(test[config.label], pred, config=config)
-    importances(model, features, config=config)
+    importances(model, test.columns, config=config)
 
     histogram_errors(test[config.label], pred, lambda a, b: (a-b)/a, config=config)
 
