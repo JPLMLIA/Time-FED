@@ -35,7 +35,7 @@ def protect(func):
         except:
             logger.exception(f'Failed to generate plot: {func.__name__}')
 
-    return wrap()
+    return wrap
 
 @protect
 def local_synchrony(df, config):
