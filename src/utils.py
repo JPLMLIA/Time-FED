@@ -63,6 +63,12 @@ def save_pkl(file, data):
     with open(file, 'wb') as file:
         pickle.dump(data, file)
 
+def load_pkl(file):
+    """
+    Loads data from a pickle
+    """
+    return pickle.load(open(file, 'rb'))
+
 def subselect(args, df):
     """
     Subselects from a dataframe between dates

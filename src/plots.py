@@ -16,6 +16,25 @@ logger = logging.getLogger('mloc/plots.py')
 sns.set_context('talk')
 sns.set_style('darkgrid')
 
+
+def protect(func):
+    """
+    Protects the calling function from any exceptions that may be raised by func
+
+    Parameters
+    ----------
+    func : function
+        Function to wrap in a try/except
+    """
+    def wrap(*args, **kwargs):
+        func(*args, **kwargs)
+
+    try:
+        wrap()
+    except:
+        logger.exception(f'Failed to generate plot: {func.__name__}')
+
+@protect
 def local_synchrony(df, config):
     """
 
@@ -51,6 +70,7 @@ def local_synchrony(df, config):
     else:
         plt.show()
 
+@protect
 def histogram_errors(true, pred, error_func, config):
     """
     Bins the true values of the label column and plots with the error per bin
@@ -92,6 +112,7 @@ def histogram_errors(true, pred, error_func, config):
     else:
         plt.show()
 
+@protect
 def errors_in_time(true, pred, config):
     """
     Plots the errors of the predicted label with the true label
@@ -133,6 +154,7 @@ def errors_in_time(true, pred, config):
     else:
         plt.show()
 
+@protect
 def scatter_with_errors(true, pred, error_func, name, config):
     """
     Creates scatter plots of label predicted vs label actual and label error vs
@@ -232,6 +254,7 @@ def scatter_with_errors(true, pred, error_func, name, config):
     else:
         plt.show()
 
+@protect
 def importances(model, features, config):
     """
     Plots the important features of the given model
@@ -281,14 +304,12 @@ def importances(model, features, config):
     else:
         plt.show()
 
+@protect
 def date_range(true, pred, config):
     """
     """
     # Get the plot configs for this plot type
     pconf = config.plots.date_range
-
-    # Cast to series for easy subselection
-    pred = pd.Series(pred, index=true.index)
 
     # Generate a plot for each date range given
     for date, dconf in pconf.dates:
@@ -322,3 +343,63 @@ def date_range(true, pred, config):
             plt.savefig(f'{config.plots.directory}/{date}.{pconf.file}')
         else:
             plt.show()
+
+def generate_plots(test, pred, model, config):
+    """
+    Generates all plots
+    """
+    scatter_with_errors(test[config.label], pred, lambda a, b: a-b,     name='true_diff', config=config)
+    scatter_with_errors(test[config.label], pred, lambda a, b: (a-b)/a, name='perc_diff', config=config)
+
+    errors_in_time(test[config.label], pred, config=config)
+    importances(model, features, config=config)
+
+    histogram_errors(test[config.label], pred, lambda a, b: (a-b)/a, config=config)
+
+    local_synchrony(train, config=config)
+
+    date_range(test[config.label], pred, config=config)
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
+
+    parser.add_argument('-c', '--config',   type     = str,
+                                            required = True,
+                                            metavar  = '/path/to/config.yaml',
+                                            help     = 'Path to a config.yaml file'
+    )
+    parser.add_argument('-s', '--section',  type     = str,
+                                            default  = 'classify',
+                                            help     = 'Section of the config to use'
+    )
+    parser.add_argument('-ki', '--inkey',   type     = str,
+                                            required = True,
+                                            help     = 'The key for the test dataframe in the file of the input section of the config'
+    )
+    parser.add_argument('-ko', '--outkey',  type     = str,
+                                            required = True,
+                                            help     = 'The key for the forecasted values in the file of the output section of the config'
+    )
+    parser.add_argument('-m', '--model',    type     = str,
+                                            metavar  = '/path/to/model.pkl',
+                                            help     = 'The model to use for feature importance plotting'
+    )
+
+    args = parser.parse_args()
+
+    try:
+        config = utils.Config(args.config, args.section)
+
+        test = pd.read_hdf(config.input.file, args.inkey)
+        pred = pd.read_hdf(config.output.file, args.outkey)
+
+        model = None
+        if args.model:
+            model = utils.load_pkl(args.model)
+
+        generate_plots(test, pred, model, config)
+
+        logger.info('Finished successfully')
+    except Exception as e:
+        logger.exception('Failed to complete')
