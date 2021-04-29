@@ -12,6 +12,8 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy.stats             import gaussian_kde
 from sklearn.metrics         import mean_squared_error
 
+import utils
+
 logger = logging.getLogger('mloc/plots.py')
 
 sns.set_context('talk')
