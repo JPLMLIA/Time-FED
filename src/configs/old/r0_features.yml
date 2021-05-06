@@ -1,0 +1,100 @@
+#
+preprocess:
+  input:
+    file: /Users/jamesmo/projects/mloc/local/data/v2/r0.features.h5
+    key: features
+  subselect:
+    gte: 2018/05/03
+    lt: 2020/12/30
+  train:
+    lte: 2019/12/31
+  test:
+    gt: 2019/12/31
+  exclude: [r0_day, r0_night, Cn2, wind_direction]
+  features: []
+  shift: []
+  output:
+    file: /Users/jamesmo/projects/mloc/local/data/v2/r0.features.h5
+    key: preprocess
+#
+classify:
+  input:
+    file: /Users/jamesmo/projects/mloc/local/data/v2/r0.features.h5
+    train: preprocess/train
+    test: preprocess/test
+  label: r0
+  dropna: True
+  plots:
+    enabled: True
+    directory: /Users/jamesmo/projects/mloc/local/plots/classify/r0_features/
+    errors_in_time:
+    scatter_with_errors:
+      x:
+        min: 0
+        max: 20
+      y:
+        min: 0
+        max: 20
+      step_length: !!python/complex 100j
+      samples: 1000
+      size: 25
+      alpha: .4
+      figsize: [10, 10]
+      file: scatter_errors.png
+    importances:
+      figsize: [20, 30]
+      number: 20
+      labelrotation: 90
+      title: Feature Importances
+      file: feature_importances.png
+    histogram_errors:
+      min: 0
+      max: 80
+      bins: 81
+      figsize: [20, 10]
+      file: histogram_errors.png
+    local_synchrony:
+      feature1: r0
+      feature2: solar_zenith_angle
+      window_size: 120
+      figsize: [30, 6]
+      file: local_synchony.png
+    date_range:
+      figsize: [20, 10]
+      file: date_range.png
+      dates:
+        5-30-20:
+          start: 2020/05/30 00:00
+          end  : 2020/05/30 23:59
+        8-29-20:
+          start: 2020/08/30 00:00
+          end  : 2020/08/30 23:59
+        2-15-20:
+          start: 2020/02/15 00:00
+          end  : 2020/02/15 23:59
+        11-15-20:
+          start: 2020/11/15 00:00
+          end  : 2020/11/15 23:59
+  features:
+    select:
+    exclude: [r0_day, r0_night, Cn2, o(I)_I, wind_direction, month]
+#
+extract_features:
+  window: 5 mins
+  step: 1
+  observations: 5
+  cores: 64
+  label: r0
+  input:
+    file: /Users/jamesmo/projects/mloc/local/data/v2/r0_features.h5
+    key: preprocess/full
+  output:
+    file: /Users/jamesmo/projects/mloc/local/data/v2/r0_features.h5
+    key: classify
+  prompt:
+    features: False
+  features:
+    whitelist:
+    blacklist:
+  drop: [r0]
+  process: tsfresh

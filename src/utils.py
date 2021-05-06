@@ -4,9 +4,12 @@ Various utility functions
 import datetime as dt
 import h5py
 import logging
+import multiprocessing as mp
+import multiprocessing.pool as mp_pool
 import numpy  as np
 import os
 import pandas as pd
+import pickle
 import seaborn as sns
 import sys
 import yaml
@@ -25,7 +28,7 @@ logging.basicConfig(
     datefmt = '%m-%d %H:%M',
     stream  = sys.stdout
 )
-Logger = logging.getLogger(os.path.basename(__file__))
+Logger = logging.getLogger('mloc/utils.py')
 
 # Increase matplotlib's logger to warning to disable the debug spam it makes
 logging.getLogger('matplotlib').setLevel(logging.WARNING)
@@ -52,6 +55,56 @@ def timeit(func):
     # Need to pass the docs on for sphinx to generate properly
     _wrap.__doc__ = func.__doc__
     return _wrap
+
+def save_pkl(file, data):
+    """
+    Saves data to a file via pickle
+    """
+    with open(file, 'wb') as file:
+        pickle.dump(data, file)
+
+def load_pkl(file):
+    """
+    Loads data from a pickle
+    """
+    return pickle.load(open(file, 'rb'))
+
+def subselect(args, df):
+    """
+    Subselects from a dataframe between dates
+
+    Parameters
+    ----------
+    args : utils.Config
+        Config object defining arguments for subselecting
+    df : pandas.DataFrame
+        The dataframe to subselect from
+
+    Returns
+    -------
+    sub : pandas.DataFrame
+        The subselected dataframe
+    """
+    # Take a view of the dataframe
+    sub = df
+
+    if 'lt' in args:
+        Logger.debug(f'\t< {args.lt}')
+        sub = sub[sub.index < args.lt]
+
+    if 'gt' in args:
+        Logger.debug(f'\t> {args.gt}')
+        sub = sub[sub.index > args.gt]
+
+    if 'lte' in args:
+        Logger.debug(f'\t<= {args.lte}')
+        sub = sub[sub.index <= args.lte]
+
+    if 'gte' in args:
+        Logger.debug(f'\t>= {args.gte}')
+        sub = sub[sub.index >= args.gte]
+
+    return sub
 
 def cadence(df, limit='30 min', dropna=True):
     """
@@ -214,7 +267,8 @@ def load_weather(path, interp=False, **interp_args):
     for code, column in tqdm(mappings.items(), desc='Parameters', position=0):
         files = sorted(glob(f'{path}/{code}/**/*'))
         _df = pd.DataFrame()
-        for file in tqdm(files, desc=f'Compiling {column}', position=1):
+        # for file in tqdm(files, desc=f'Compiling {column}', position=1):
+        for file in files:
             _df = pd.concat([
                 _df,
                 pd.read_csv(file, sep='\t', header=None, names=['datetime', column], index_col='datetime', parse_dates=True, dtype={column: float}, na_values='///')
@@ -396,7 +450,7 @@ def load_r0(path, kind, datenum=False, round=True, drop_dups=True, resample=Fals
 
     return df
 
-def compile_datasets(weather=None, bls=None, r0_day=None, r0_night=None, h5=None, resample='median'):
+def compile_datasets(weather=None, bls=None, r0_day=None, r0_night=None, h5='', resample='5 min', smooth=['r0', 'r0_day', 'r0_night']):
     """
     Ingests all of the raw data into dataframes then compiles them into a merged
     dataframe.
@@ -414,65 +468,94 @@ def compile_datasets(weather=None, bls=None, r0_day=None, r0_night=None, h5=None
     h5 : str
         Optional path to an h5 to write to
     resample : str
-        If set, resamples the dataframes to 1 minute using the method given
+        The rate to resample the merged dataframe
+    smooth : list of str
+        List of columns to apply smoothing on
     """
-    # Import here to prevent being a package dependency
-    import xarray as xr
+    # Check if the incoming h5 has the data already, skip loading from raw
+    has_keys = False
+    if os.path.exists(h5):
+        with h5py.File(h5, 'r') as f:
+            has_keys = all([
+                'r0/day'   in f,
+                'r0/night' in f,
+                'bls'      in f,
+                'weather'  in f,
+            ])
 
-    data = {}
-
-    if r0_day:
-        data['r0/day']   = load_r0(r0_day,   kind='day',   round=True, resample=False, datenum=False)
-        data['r0/day']['r0'] *= 100
-    if r0_night:
-        data['r0/night'] = load_r0(r0_night, kind='night', round=True, resample=False, datenum=False)
+    Logger.debug('Loading data')
+    # Load in the data
+    if has_keys:
+        Logger.debug('Loading datasets from h5')
+        data = {
+            'r0/day'  : pd.read_hdf(h5, 'r0/day'),
+            'r0/night': pd.read_hdf(h5, 'r0/night'),
+            'bls'     : pd.read_hdf(h5, 'bls'),
+            'weather' : pd.read_hdf(h5, 'weather')
+        }
+    else:
+        Logger.debug('Loading datasets from their raw files')
+        data = {
+            'r0/day'  : load_r0(r0_day,   kind='day',   round=True, resample=False, datenum=False),
+            'r0/night': load_r0(r0_night, kind='night', round=True, resample=False, datenum=False),
+            'bls'     : load_bls(bls, round=True, resample=False, datenum=False),
+            'weather' : load_weather(weather)
+        }
+        # Postprocess
+        data['r0/day']['r0'] *= 100 # Convert to centimeters
         data['r0/night'].drop(columns='polaris_count', inplace=True)
-    if weather:
-        data['weather'] = load_weather(weather)
-    if bls:
-        data['bls'] = load_bls(bls, round=True, resample=False, datenum=False)
 
-    # Resample to a minute
-    if resample:
-        for key, df in data.items():
-            if resample == 'median':
-                data[key] = df.resample('1 min').median()
-            elif resample == 'mean':
-                data[key] = df.resample('1 min').mean()
+        # Save individual frames
+        if h5:
+            for key, df in data.items():
+                df.to_hdf(h5, key)
 
-    # Save dataframes
-    if h5:
-        for key, df in data.items():
-            df.to_hdf(h5, key)
+    Logger.debug('Merging dataframes together')
+    # Merge the frames together
+    df = pd.merge(data['r0/day'], data['r0/night'], how='outer', suffixes=['_day', '_night'], on=['datetime', 'solar_zenith_angle'])
+    df = pd.merge(df, data['bls'], how='outer', on=['datetime', 'solar_zenith_angle'])
+    df = pd.merge(data['weather'], df, how='outer', on='datetime')
 
-    # Convert to xarray
-    for key, df in data.items():
-        data[key] = df.to_xarray()
+    # Sort the datetime index
+    df.sort_index(inplace=True)
 
-    # Combine r0 day and night
-    if 'r0/day' in data and 'r0/night' in data:
-        data['r0'] = xr.merge([
-            data['r0/day'],
-            data['r0/night']
-        ])
-        data['r0/day']   = data['r0/day'].rename({'r0': 'r0_day'})
-        data['r0/night'] = data['r0/night'].rename({'r0': 'r0_night'})
+    # Create the r0 column by merging day and night
+    df['r0'] = df.r0_day.combine_first(df.r0_night)
 
-    # Reorganize so r0 comes before bls
-    dss = []
-    for key, ds in data.items():
-        if key in ['r0']:
-            dss = [ds] + dss
+    # Apply smoothing
+    for col in smooth:
+        if col == 'r0':
+            continue # Skip r0 to do separately
+        elif col in ['Cn2', 'r0_night']:
+            Logger.debug(f'Smoothing {col} with 2 minimum observations')
+            df[f'{col}_10T'] = df[col].rolling('10 min', min_periods=2).median()
         else:
-            dss.append(ds)
+            # hardcoded 10 minute smoothing with a minimum of 20% observations (assuming seconds) 10*60*20%=120
+            Logger.debug(f'Smoothing {col} with 120 minimum observations')
+            df[f'{col}_10T'] = df[col].rolling('10 min', min_periods=120).median()
 
-    ds = xr.merge(dss, compat='override')
-    df = ds.to_dataframe()
+    # Smoothed r0 needs to be the merge of the smoothed day and night rather than a smooth on r0 merged
+    #  due to observation requirements causing night to become fully NaN
+    if 'r0' in smooth:
+        Logger.debug('Creating smoothed r0 merged separately')
+        # If already smoothed, use columns otherwise do smoothing
+        if 'r0_day_10T' in df and 'r0_night_10T' in df:
+            df['r0_10T'] = df.r0_day_10T.combine_first(df.r0_night_10T)
+        else:
+            df['r0_10T'] = df['r0_day'].rolling('10 min', min_periods=120).median().combine_first(
+                df['r0_night'].rolling('10 min', min_periods=2).median()
+            )
 
+    Logger.debug(f'Resampling to {resample}')
+    # Resample with at least 2 observations
+    minobs = lambda s: np.nan if len(s) < 2 else s.median()
+    df = df.resample(resample).median()#.apply(minobs)
+
+    # Save merged
     if h5:
         df.to_hdf(h5, 'merged')
 
-    return data, dss, df
+    return df
 
 class _Helper:
     """
@@ -480,6 +563,7 @@ class _Helper:
     args
     """
     def __init__(self, data):
+        self.__dict__ = data
         for key, value in data.items():
             if isinstance(value, dict):
                 setattr(self, key, _Helper(value))
@@ -488,6 +572,12 @@ class _Helper:
 
     def __contains__(self, key):
         return hasattr(self, key)
+
+    def __iter__(self):
+        return iter(self.__dict__.items())
+
+    def __getitem__(self, key):
+        return getattr(self, key)
 
 class Config:
     def __init__(self, file, section):
@@ -514,3 +604,35 @@ class Config:
 
     def __contains__(self, key):
         return hasattr(self, key)
+
+    def __getitem__(self, key):
+        return self.__getattr__(key)
+
+class NoDaemonProcess(mp.Process):
+    '''
+    Credit goes to Massimiliano
+    https://stackoverflow.com/questions/6974695/python-process-pool-non-daemonic
+    '''
+    @property
+    def daemon(self):
+        return False
+
+    @daemon.setter
+    def daemon(self, value):
+        pass
+
+class NoDaemonContext(type(mp.get_context())):
+    '''
+    Credit goes to Massimiliano
+    https://stackoverflow.com/questions/6974695/python-process-pool-non-daemonic
+    '''
+    Process = NoDaemonProcess
+
+class Pool(mp_pool.Pool):
+    '''
+    Credit goes to Massimiliano
+    https://stackoverflow.com/questions/6974695/python-process-pool-non-daemonic
+    '''
+    def __init__(self, *args, **kwargs):
+        kwargs['context'] = NoDaemonContext()
+        super().__init__(*args, **kwargs)

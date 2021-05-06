@@ -4,10 +4,12 @@ import pandas as pd
 import numpy  as np
 import os
 
+from pvlib.solarposition import get_solarposition
+
 # Import utils to set the logger
 import utils
 
-logger = logging.getLogger(os.path.basename(__file__))
+logger = logging.getLogger('mloc/preprocess.py')
 
 def filter(feature, args, df):
     """
@@ -48,42 +50,41 @@ def filter(feature, args, df):
 
     return df
 
-def subselect(args, df):
+def calculate_features(df, config):
     """
-    Subselects from a dataframe between dates
+    Calculates new features given a config
 
     Parameters
     ----------
-    args : utils.Config
-        Config object defining arguments for subselecting
     df : pandas.DataFrame
-        The dataframe to subselect from
-
-    Returns
-    -------
-    sub : pandas.DataFrame
-        The subselected dataframe
+        The dataframe to calculate new features on
+    config : utils.Config
+        Configuration containing which features to calculate
     """
-    # Take a view of the dataframe
-    sub = df
+    # Always override the SZA feature (or add it)
+    df['solar_zenith_angle'] = get_solarposition(
+        time      = df.index,
+        latitude  = 34.380000000000003,
+        longitude = -1.176800000000000e+02,
+        altitude  = 2280
+    )
 
-    if 'lt' in args:
-        logger.debug(f'\t< {args.lt}')
-        sub = sub[sub.index < args.lt]
+    if 'month' in config.calc:
+        df['month'] = df.index.month
 
-    if 'gt' in args:
-        logger.debug(f'\t> {args.gt}')
-        sub = sub[sub.index > args.gt]
+    if 'day' in config.calc:
+        df['day']   = df.index.dayofyear
 
-    if 'lte' in args:
-        logger.debug(f'\t<= {args.lte}')
-        sub = sub[sub.index <= args.lte]
+    if 'minute' in config.calc:
+        df['minute'] = df.index.hour * 60 + df.index.minute
 
-    if 'gte' in args:
-        logger.debug(f'\t>= {args.gte}')
-        sub = sub[sub.index >= args.gte]
+    for feature in config.log:
+        if feature in df:
+            df[f'log_{feature}'] = np.log10(df[feature])
+        else:
+            logger.error(f'Feature not found for log: {feature}')
 
-    return sub
+    return df
 
 def preprocess(config):
     """
@@ -99,15 +100,15 @@ def preprocess(config):
 
     if config.subselect:
         logger.info('Subselecting whole dataset')
-        df = subselect(config.subselect, df).copy()
+        df = utils.subselect(config.subselect, df).copy()
 
     logger.debug(f'df.describe():\n{df.describe()}')
 
     logger.info('Creating new features')
-    df['month'] = df.index.month
-    df['day']   = df.index.dayofyear
-    if 'Cn2' in df:
-        df['logCn2'] = np.log10(df['Cn2'])
+    df = calculate_features(df, config.features)
+
+    for feature in config.shift.features:
+        df[f'{feature}_shifted'] = df[feature].shift(config.shift.points)
 
     # Apply filtering
     if config.filter:
@@ -127,14 +128,14 @@ def preprocess(config):
 
     if config.train:
         logger.info('Creating training subset')
-        train = subselect(config.train, df)
+        train = utils.subselect(config.train, df)
         logger.debug(f'Count of non-NaN values for train:\n{(~train.isnull()).sum()}')
         train.to_hdf(config.output.file, f'{config.output.key}/train')
         # Interpolate train only
 
     if config.test:
         logger.info('Creating testing subset')
-        test = subselect(config.test, df)
+        test = utils.subselect(config.test, df)
         logger.debug(f'Count of non-NaN values for test:\n{(~test.isnull()).sum()}')
         test.to_hdf(config.output.file, f'{config.output.key}/test')
 
@@ -147,11 +148,15 @@ if __name__ == '__main__':
                                             metavar  = '/path/to/config.yaml',
                                             help     = 'Path to a config.yaml file'
     )
+    parser.add_argument('-s', '--section',  type     = str,
+                                            default  = 'preprocess',
+                                            help     = 'Section of the config to use'
+    )
 
     args = parser.parse_args()
 
     try:
-        config = utils.Config(args.config, 'preprocess')
+        config = utils.Config(args.config, args.section)
 
         preprocess(config)
 
