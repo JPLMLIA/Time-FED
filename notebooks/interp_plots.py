@@ -48,6 +48,7 @@ t = 45
 method = 'linear'
 
 #%%
+# This is for creating scatter plots of true vs predicted
 
 for c in ndf:
     if c in ['datetime']:
@@ -82,3 +83,64 @@ for c in ndf:
 
     plt.tight_layout()
     plt.savefig(f'local/plots/subs/{c}.{method}.{block}.png')
+
+#%%
+# This code creates the error plots
+# `data` is the dataframe output of window_interpolate.py
+def draw_error_plots(data, output, center='mean', error='std', subtitle=''):
+    m = np.unique(data.index.get_level_values('m'))
+    t = np.unique(data.index.get_level_values('t'))
+    k = np.unique(data.index.get_level_values('kind'))
+
+    ncols = len(k)
+    nrows = len(m)
+
+    for c in np.unique(data.columns.get_level_values(0)):
+        fig, axes = plt.subplots(ncols=ncols, nrows=nrows, figsize=(10*ncols, 10*nrows))
+        for i, _m in enumerate(m):
+            for j, _k in enumerate(k):
+                win = data[c, 'windows'][_m, 5, _k]
+                ax = axes[i][j]
+                ax.set_title(f'{c} | m={_m}, method={_k}, windows={win}\n{subtitle}')
+                ax.set_xlabel('t (minutes)')
+                ax.set_xticks(t)
+                ax.set_ylabel('Error')
+                try:
+                    # ax.set_ylim(
+                    #     ymin=min([0, data[c, center][_m].min()-data[c, error][_m].max()]),
+                    #     ymax=data[c, center][_m].max()+data[c, error][_m].max()
+                    # )
+                    max = data[c, center][_m].max()+data[c, error][_m].max()
+                    ax.set_ylim(
+                        ymin=0,g
+                        ymax=max
+                    )
+                    # ax.set_ylim(ymin=data[c, 'std'][_m].min(), ymax=data[c, 'std'][_m].max())
+                    for _t in t:
+                        color = 'blue'
+                        if data[c, 'windows'][_m, _t, _k] != win:
+                            color = 'orange'
+                        mean = data[c, center][_m, _t, _k]
+                        yerr = data[c, error ][_m, _t, _k]
+                        ax.errorbar(x=_t, y=mean, yerr=yerr, fmt='-o', color=color, ecolor='red')
+                    ax.hlines(0, *ax.get_xlim(), color='green', alpha=.5)
+                except:
+                    pass
+        plt.tight_layout()
+        plt.savefig(f'{output}.{c}.png')
+
+#%%
+# Manually set these; file is the output of window_interpolate.py
+file   = 'local/data/fourday.results.h5'
+
+# this dict is just for creating the filename and subtitles to differentiate the different plots
+blocks = {
+    'spring': '04-01',
+    'summer': '07-01',
+    'fall'  : '10-01',
+    'winter': '12-01'
+}
+subtitle = '12pm to 12am PST'
+for season, date in blocks.items():
+    data = pd.read_hdf(file, season)
+    draw_error_plots(data, f'local/plots/subs/percent/{season}.{date}', subtitle=f'{date} from {subtitle}')

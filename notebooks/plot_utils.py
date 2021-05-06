@@ -121,16 +121,15 @@ def plot_overall_synchrony(feat1, feat2, feat1name, feat2name, r):
     return
 
 def plot_local_synchrony(feat1, feat2, feat1name, feat2name, r_window_size=120):
-    # Compute rolling window synchrony
-    rolling_r = feat1.rolling(window=r_window_size, center=True).corr(feat2)
     f, ax = plt.subplots(3, 1, figsize=(14, 6), sharex=True)
-    ax[0].plot(feat1, label=feat1name)
-    ax[1].plot(feat2, label=feat2name)
-    rolling_r.plot(ax=ax[2])
+    rolled = feat1.rolling(window=r_window_size, center=True).corr(feat2)
+    ax[0].plot(feat1, 'b.', label=feat1name)
+    ax[1].plot(feat2, 'b.', label=feat2name)
     ax[0].set(ylabel=feat1name)
     ax[1].set(ylabel=feat2name)
     ax[2].set(ylabel='Pearson r')
-    plt.suptitle("data and rolling window correlation")
+    ax[2].plot(rolled, 'b.', label=feat2name)
+    plt.suptitle("rolling window correlation")
 
 def print_pearsonr(feat1, feat2):
     r, p = stats.pearsonr(feat1, feat2)
