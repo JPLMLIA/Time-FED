@@ -114,7 +114,7 @@ def build_model(config, shift=None):
         output += '.pkl'
         utils.save_pkl(output, model)
 
-    return train, test, pred, scores
+    return train, test, pred, scores, model
 
 @utils.timeit
 def classify(config):
@@ -136,7 +136,7 @@ def classify(config):
 
         for shift in config.input.historical:
             logger.debug(f'Building model with historical shift {shift}')
-            train, test, pred, scores = build_model(config, shift=shift)
+            train, test, pred, scores, model = build_model(config, shift=shift)
 
             # Save scores in dataframe
             for score, value in scores.items():
@@ -144,7 +144,7 @@ def classify(config):
                     df[score] = np.nan
                 df[score][shift] = value
     else:
-        train, test, pred, scores = build_model(config)
+        train, test, pred, scores, model = build_model(config)
         df = pd.DataFrame(scores, index=['Score'])
 
     # Save scores
@@ -153,17 +153,7 @@ def classify(config):
 
     # If plotting is enabled, run the functions and save output if given
     if config.plots.enabled:
-        plots.scatter_with_errors(test[config.label], pred, lambda a, b: a-b,     name='true_diff', config=config)
-        plots.scatter_with_errors(test[config.label], pred, lambda a, b: (a-b)/a, name='perc_diff', config=config)
-
-        plots.errors_in_time(test[config.label], pred, config=config)
-        plots.importances(model, features, config=config)
-
-        plots.histogram_errors(test[config.label], pred, lambda a, b: (a-b)/a, config=config)
-
-        plots.local_synchrony(train, config=config)
-
-        plots.date_range(test[config.label], pred, config=config)
+        plots.generate_plots(test, pred, model, config)
 
 
 if __name__ == '__main__':
