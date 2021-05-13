@@ -97,14 +97,16 @@ def build_model(config, shift=None):
     # Train and test the model
     pred, scores = train_and_test(model, train, test, config.label, features)
 
+    # Cast predicted values to Series
+    pred = pd.Series(index=test.index, data=pred)
+
     # Save predictions and model
     if config.output:
         key = config.output.keys.forecasts
         if shift:
             key += f'/H{shift}'
 
-        preds = pd.Series(index=test.index, data=pred)
-        preds.to_hdf(config.output.file, key)
+        pred.to_hdf(config.output.file, key)
 
         # Save model via pickle
         output = f'{config.output.models}/{config.label}'
