@@ -278,7 +278,7 @@ def importances(model, features, config):
     indices = np.argsort(imports)[::-1]
 
     logger.info('Feature ranking:')
-    for i in range(len(features)):
+    for i in range(len(indices)):
         logger.info(f'- {i+1}. {features[indices[i]]:20} ({imports[indices[i]]})')
 
     xaxis   = range(min([pconf.number or len(features), len(features)]))
@@ -330,10 +330,11 @@ def date_range(true, pred, config):
         ax.plot(pred_sub, 'r.', label='predicted')
 
         title = f'True vs Predicted between {start} to {end}'
-        if 'rms' in pconf.metrics:
-            rms = mean_squared_error(true_sub.values, pred_sub.values, squared=False)
-            title += f'\nRMS Error = {rms:.4f}'
-            ax.plot(np.abs(true_sub-pred_sub), 'b.', label='Absolute error')
+        if 'metrics' in pconf:
+            if 'rms' in pconf.metrics:
+                rms = mean_squared_error(true_sub.values, pred_sub.values, squared=False)
+                title += f'\nRMS Error = {rms:.4f}'
+                ax.plot(np.abs(true_sub-pred_sub), 'b.', label='Absolute error')
 
         ax.legend()
         ax.set_ylabel(f'{config.label} ({config.plots.units[config.label]})')
