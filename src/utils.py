@@ -483,7 +483,7 @@ def load_pwv(path, datenum=False, round=True, drop_dups=True, resample=False, re
     pandas.DataFrame
         A DataFrame of the r0 data
     """
-    cols = ['datenum', 'water vapor', 'wind direction', 'wind speed', 'temperature', 'humidity', 'wind gust', 'pressure', 'dewpoint']
+    cols = ['datenum', 'water_vapor', 'wind_direction', 'wind_speed', 'temperature', 'humidity', 'wind_gust', 'pressure', 'dewpoint']
 
     df = pd.read_csv(path, names=cols)
 
