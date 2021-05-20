@@ -450,6 +450,68 @@ def load_r0(path, kind, datenum=False, round=True, drop_dups=True, resample=Fals
 
     return df
 
+@timeit
+def load_pwv(path, datenum=False, round=True, drop_dups=True, resample=False, resolution='30 min', interp=False, **interp_args):
+    """
+    Loads the an pwv .txt file
+
+    Parameters
+    ----------
+    path : str
+        Location of PVWwithWeather.txt
+    datenum : bool
+        Retains the datenum column in the return DataFrame, defaults to
+        `False` which will drop the column
+    round : bool
+        Rounds the datetimes that were converted from Matlab datenum to the
+        nearest second
+    drop_dups : bool
+        Drops rows that are complete duplicates, ie. all columns are the same
+        values as another row
+    resample : bool
+        Resamples the data to the provided resolution using the mean
+    resolution : str
+        The resample resolution; uses mean() to downsample
+    interp : bool
+        Enables automatic interpolation of the dataset. Requires resampling the
+        data to 1 minute resolution
+    **interp_args
+        Additionally arguments to pass the the interpolation() function
+
+    Returns
+    -------
+    pandas.DataFrame
+        A DataFrame of the r0 data
+    """
+    cols = ['datenum', 'water vapor', 'wind direction', 'wind speed', 'temperature', 'humidity', 'wind gust', 'pressure', 'dewpoint']
+
+    df = pd.read_csv(path, names=cols)
+
+    # Convert Matlab datenum to Python datetime
+    df['datetime'] = df.datenum.apply(datenum2datetime)
+    df = df.set_index('datetime').sort_index()
+
+    # Round to the nearest second -- cleans up the nanoseconds
+    if round:
+        df.index = df.index.round('1s')
+
+    # Drop duplicates
+    if drop_dups:
+        df = df.drop_duplicates()
+
+    # Drop the datenum column
+    if not datenum:
+        df.drop(columns=['datenum'], inplace=True)
+
+    # Must be resampled if interp is set
+    if resample or interp:
+        df = df.resample(resolution).mean()
+
+    if interp:
+        df = interpolate(df, **interp_args)
+
+    return df
+
 def compile_datasets(weather=None, bls=None, r0_day=None, r0_night=None, h5='', resample='5 min', smooth=['r0', 'r0_day', 'r0_night']):
     """
     Ingests all of the raw data into dataframes then compiles them into a merged
