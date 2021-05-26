@@ -619,6 +619,40 @@ def compile_datasets(weather=None, bls=None, r0_day=None, r0_night=None, h5='', 
 
     return df
 
+def compile_pwv(path, h5=None, resample='30 min'):
+    """
+    Ingests all of the raw data into dataframes then compiles them into a merged
+    dataframe.
+
+    Parameters
+    ----------
+    h5 : str
+        Optional path to an h5 to write to
+    resample : str
+        The rate to resample the merged dataframe
+    smooth : list of str
+        List of columns to apply smoothing on
+    """
+
+    Logger.debug('Loading datasets from their raw files')
+    # Load in the data
+    df = load_pwv(path)
+
+    # Save individual frames
+    if h5 is not None:
+        df.to_hdf(h5, 'pwv')
+
+    # Sort the datetime index
+    df.sort_index(inplace=True)
+
+    Logger.debug(f'Resampling to {resample}')
+    df = df.resample(resample).median()#.apply(minobs)
+
+    # Save merged
+    df.to_hdf(h5, 'pwv')
+
+    return df
+
 class _Helper:
     """
     Helper object for Config to allow for nested dot notation accessing config
