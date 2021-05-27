@@ -1,6 +1,7 @@
 import argparse
 import logging
 import numpy as np
+import os
 import pandas as pd
 
 from sklearn.ensemble import RandomForestRegressor
@@ -129,9 +130,6 @@ def classify(config):
         Config object defining arguments for classify
     """
     if config.input.historical:
-        # Disable plot generation when multiple models are being built
-        config.plots.enabled = False
-
         # Create the scores dataframe
         df = pd.DataFrame(index=config.input.historical)
         df.index.name = 'Forecast'
@@ -145,17 +143,28 @@ def classify(config):
                 if score not in df:
                     df[score] = np.nan
                 df[score][shift] = value
+
+            # If plotting is enabled, run the functions and save output if given
+            if config.plots.enabled:
+                if not os.path.exists(config.plots.directory):
+                    os.mkdir(config.plots.directory)
+                if not os.path.exists(f'{config.plots.directory}/H{shift}'):
+                    os.mkdir(f'{config.plots.directory}/H{shift}')
+                bak = config.plots.directory
+                config.plots.directory += f'/H{shift}'
+                plots.generate_plots(test, pred, model, config)
+                config.plots.directory = bak
     else:
         train, test, pred, scores, model = build_model(config)
         df = pd.DataFrame(scores, index=['Score'])
 
+        # If plotting is enabled, run the functions and save output if given
+        if config.plots.enabled:
+            plots.generate_plots(test, pred, model, config)
+
     # Save scores
     if config.output:
         df.to_hdf(config.output.file, config.output.keys.scores)
-
-    # If plotting is enabled, run the functions and save output if given
-    if config.plots.enabled:
-        plots.generate_plots(test, pred, model, config)
 
 
 if __name__ == '__main__':
