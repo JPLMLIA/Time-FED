@@ -315,13 +315,3 @@ if __name__ == '__main__':
         logger.info('Finished successfully')
     except Exception as e:
         logger.exception('Failed to complete')
-
-file  = '/data1/urebbapr/MLOC/local/runs/pwv/datadroplabel.h5'
-train = pd.read_hdf(file, 'features/train')
-test  = pd.read_hdf(file, 'features/test')
-train.to_hdf(file, 'features/water_vapor/historical_0_min/train')
-test.to_hdf(file, 'features/water_vapor/historical_0_min/test')
-h5 = h5py.File(file)
-del h5['features/train']
-del h5['features/test']
-h5.close()

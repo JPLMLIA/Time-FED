@@ -104,14 +104,14 @@ def build_model(config, shift=None):
     # Save predictions and model
     if config.output:
         key = config.output.keys.forecasts
-        if shift:
+        if shift is not None:
             key += f'/H{shift}'
 
         pred.to_hdf(config.output.file, key)
 
         # Save model via pickle
         output = f'{config.output.models}/{config.label}'
-        if shift:
+        if shift is not None:
             output += f'_H{shift}_min'
 
         output += '.pkl'
