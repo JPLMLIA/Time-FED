@@ -66,7 +66,7 @@ def train_and_test(model, train, test, label, features):
 def build_model(config, shift=None):
     """
     """
-    if shift:
+    if shift is not None:
         train = pd.read_hdf(config.input.file, f'{config.input.key}/historical_{shift}_min/train')
         test  = pd.read_hdf(config.input.file, f'{config.input.key}/historical_{shift}_min/test')
     else:
