@@ -18,7 +18,7 @@ preprocess:
     points: 12 # 12=1hour, 24=2, 36=3
     features: []
   output:
-    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/r0_weather_data.h5
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/r0_weather/data.h5
     key: preprocess
 
 # Extract tsfresh features from windows
@@ -35,10 +35,10 @@ extract_features:
   test:
     gt: 2019/12/31
   input:
-    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/r0_weather_data.h5
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/r0_weather/data.h5
     key: preprocess/full
   output:
-    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/r0_weather_data.h5
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/r0_weather/data.h5
     key: features
   prompt:
     features: False
@@ -51,12 +51,12 @@ extract_features:
 # Train and test a model
 classify:
   input:
-    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/r0_weather_data.h5
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/r0_weather/data.h5
     key: features/r0_10T/
     historical: [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 155, 160, 165, 170, 175, 180]
   output:
-    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/r0_weather_data.h5
-    models: /data1/mloc/local/runs/3hr_forecast.5min_increment/r0_cn2_weather/
+    file: /data1/mloc/local/runs/3hr_forecast.5min_increment/r0_weather/data.h5
+    models: /data1/mloc/local/runs/3hr_forecast.5min_increment/r0_weather/
     keys:
       scores: scores/r0_10T
       forecasts: forecasts/r0_10T
