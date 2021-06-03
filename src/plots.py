@@ -16,7 +16,7 @@ import utils
 
 logger = logging.getLogger('mloc/plots.py')
 
-sns.set_context('talk')
+sns.set_context('poster')
 sns.set_style('darkgrid')
 
 
