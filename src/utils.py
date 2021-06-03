@@ -20,7 +20,7 @@ from mat4py   import loadmat
 from tqdm     import tqdm
 
 # Set context of seaborn
-sns.set_context('talk')
+sns.set_context('poster')
 
 logging.basicConfig(
     level   = logging.DEBUG,
