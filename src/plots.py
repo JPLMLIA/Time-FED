@@ -289,9 +289,8 @@ def importances(model, features, config):
         df.to_csv(f'{config.plots.directory}/{file}')
 
     logger.info('Feature ranking:')
-    for i, rank in enumerate(rankings):
-        feat, imp = rank
-        print(f'- {i+1}. {feat:20} ({imp})')
+    for i, feat in enumerate(rankings):
+        print(f'- {i+1}. {feat:20} ({rankings[feat]})')
 
     xaxis   = range(min([pconf.number or len(features), len(features)]))
     indices = indices[:len(xaxis)]
