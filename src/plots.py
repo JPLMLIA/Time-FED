@@ -272,14 +272,26 @@ def importances(model, features, config):
     # Get the plot configs for this plot type
     pconf = config.plots.importances
 
-    # Retriev the important features
+    # Retrieve the important features
     imports = model.feature_importances_
     stddev  = np.std([est.feature_importances_ for est in model.estimators_], axis=0)
     indices = np.argsort(imports)[::-1]
 
+    # Setup and save the feature importances rankings
+    rankings = {features[indices[i]]: imports[indices[i]] for i in range(len(indices))}
+    if config.plots.directory:
+        df = pd.DataFrame(columns=['feature', 'importance'])
+        df.index.name = 'rank'
+        df.feature    = rankings.keys()
+        df.importance = rankings.values()
+
+        file = pconf.file.split('.')[0] + '.csv'
+        df.to_csv(f'{config.plots.directory}/{file}')
+
     logger.info('Feature ranking:')
-    for i in range(len(indices)):
-        logger.info(f'- {i+1}. {features[indices[i]]:20} ({imports[indices[i]]})')
+    for i, rank in enumerate(rankings):
+        feat, imp = rank
+        print(f'- {i+1}. {feat:20} ({imp})')
 
     xaxis   = range(min([pconf.number or len(features), len(features)]))
     indices = indices[:len(xaxis)]
