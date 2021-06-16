@@ -12,7 +12,7 @@ preprocess:
     gt: 2013/12/31
   exclude: [wind_direction, wind_gust]
   features:
-    calc: [day, minute]
+    calc: [day, minute, solar_zenith_angle]
     log: []
   shift: # deprecated
     points: 12 # 12=1hour, 24=2, 36=3

@@ -2,7 +2,8 @@
 
 conda activate mloc
 
-mkdir /data1/mloc/local/runs/vapor/
+mkdir /data1/mloc/local/runs/vapor
+mkdir /data1/mloc/local/runs/vapor/filtered
 
 cd /data1/mloc/src/
 
