@@ -67,7 +67,7 @@ def calculate_features(df, config):
         latitude  = 34.380000000000003,
         longitude = -1.176800000000000e+02,
         altitude  = 2280
-    )
+    ).zenith
 
     if 'month' in config.calc:
         df['month'] = df.index.month
