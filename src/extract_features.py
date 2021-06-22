@@ -15,7 +15,7 @@ import utils
 
 logger = logging.getLogger('mloc/extract_features.py')
 
-def roll(df, window, step=1, observations=None, drop=None, ignore=None):
+def roll(df, window, step=1, observations=None, drop=None):
     """
     Creates a generator for rolling over a pandas DataFrame with a given window
     size.
@@ -167,6 +167,7 @@ def select_features(df, config, label=None, shift=None):
             key += f'/{label}/historical_{shift}_min'
         key += '/train'
 
+        logger.debug(f'Using features from {config.use_features}, with key {key}')
         # Load features from some key
         features = pd.read_hdf(config.use_features, key).columns
 
