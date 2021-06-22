@@ -47,6 +47,7 @@ extract_features:
     blacklist:
   drop: [solar_zenith_angle, day, minute, r0_10T]
   ignore: [r0_10T]
+  inverse_drop: True
   use_features: /data1/mloc/local/runs/method1/r0/r0.cn2.weather/data.h5
   process: tsfresh # median
 

@@ -253,6 +253,10 @@ def process(config):
     df   = pd.read_hdf(config.input.file, config.input.key)
     orig = df.index.size
     df   = df.dropna(how='any', axis=0, subset=set(df) - set(config.ignore or []))
+
+    if config.inverse_drop:
+        df = df.loc[df[config.label].isnull()]
+
     logger.debug(f'Dropping NaNs reduced the data by {(1-df.index.size/orig)*100:.2f}%')
 
     logger.info('Creating the rolling windows and beginning processing')
