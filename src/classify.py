@@ -17,7 +17,7 @@ import plots
 
 logger = logging.getLogger('mloc/classify.py')
 
-def train_and_test(model, train, test, label, features):
+def train_and_test(model, train, test, label, features, fit=True):
     """
     Trains and tests a model
 
@@ -46,22 +46,28 @@ def train_and_test(model, train, test, label, features):
         logger.debug(f'Using features {features}')
     logger.debug(f'Using label {label}')
 
-    model.fit(train[features], train[label])
+    if fit:
+        model.fit(train[features], train[label])
 
-    pred     = model.predict(test[features])
-    r2       = r2_score(test[label], pred)
-    rms      = mean_squared_error(test[label], pred, squared=False)
-    perc_err = mean_absolute_percentage_error(test[label], pred)
+    pred = model.predict(test[features])
 
-    logger.debug(f'r2 score      = {r2}')
-    logger.debug(f'RMS error     = {rms}')
-    logger.debug(f'percent error = {perc_err}')
+    stats = {}
+    if test[label].all():
+        r2       = r2_score(test[label], pred)
+        rms      = mean_squared_error(test[label], pred, squared=False)
+        perc_err = mean_absolute_percentage_error(test[label], pred)
 
-    return pred, {
-        'R2'  : r2,
-        'RMSE': rms,
-        'MAPE': perc_err
-    }
+        logger.debug(f'r2 score      = {r2}')
+        logger.debug(f'RMS error     = {rms}')
+        logger.debug(f'percent error = {perc_err}')
+
+        stats = {
+            'R2'  : r2,
+            'RMSE': rms,
+            'MAPE': perc_err
+        }
+
+    return pred, stats
 
 def build_model(config, shift=None):
     """
@@ -75,7 +81,20 @@ def build_model(config, shift=None):
 
     logger.info('Creating, training, and testing the model')
 
-    model = RandomForestRegressor(n_estimators=100, random_state=0, n_jobs=-1)
+    # Load model via pickle
+    if config.output:
+        output = f'{config.output.models}/{config.label}'
+        if shift is not None:
+            output += f'_H{shift}_min'
+        output += '.pkl'
+
+        if os.path.exists(output):
+            model = utils.load_pkl(output)
+
+        fit = False
+    else:
+        model = RandomForestRegressor(n_estimators=100, random_state=0, n_jobs=-1)
+        fit = True
 
     # Retrieve features list, exclude the label from it
     features = config.features.select
@@ -95,8 +114,13 @@ def build_model(config, shift=None):
         train = train[~train.isnull().any(axis=1)]
         test  =  test[ ~test.isnull().any(axis=1)]
 
+    # Drop rows that have a label value
+    if config.inverse_drop:
+        train = train.loc[df[config.label].isnull()]
+        test  =  test.loc[df[config.label].isnull()]
+
     # Train and test the model
-    pred, scores = train_and_test(model, train, test, config.label, features)
+    pred, scores = train_and_test(model, train, test, config.label, features, fit)
 
     # Cast predicted values to Series
     pred = pd.Series(index=test.index, data=pred)
@@ -110,11 +134,6 @@ def build_model(config, shift=None):
         pred.to_hdf(config.output.file, key)
 
         # Save model via pickle
-        output = f'{config.output.models}/{config.label}'
-        if shift is not None:
-            output += f'_H{shift}_min'
-
-        output += '.pkl'
         utils.save_pkl(output, model)
 
     return train, test, pred, scores, model
