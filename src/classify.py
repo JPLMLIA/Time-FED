@@ -82,6 +82,8 @@ def build_model(config, shift=None):
     logger.info('Creating, training, and testing the model')
 
     # Load model via pickle
+    model = None
+    fit   = False
     if config.output:
         output = f'{config.output.models}/{config.label}'
         if shift is not None:
@@ -91,10 +93,9 @@ def build_model(config, shift=None):
         if os.path.exists(output):
             model = utils.load_pkl(output)
 
-        fit = False
-    else:
+    if not model:
         model = RandomForestRegressor(n_estimators=100, random_state=0, n_jobs=-1)
-        fit = True
+        fit   = True
 
     # Retrieve features list, exclude the label from it
     features = config.features.select
