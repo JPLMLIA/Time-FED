@@ -15,7 +15,7 @@ import utils
 
 logger = logging.getLogger('mloc/extract_features.py')
 
-def roll(df, window, step=1, observations=None, drop=None):
+def roll(df, window, step=1, observations=None, drop=None, ignore=None):
     """
     Creates a generator for rolling over a pandas DataFrame with a given window
     size.
@@ -23,6 +23,7 @@ def roll(df, window, step=1, observations=None, drop=None):
     Parameters
     ----------
     df : pandas.DataFrame
+        DataFrame to roll over
     window : str or int
         The window size to extract
     step : int
@@ -160,12 +161,24 @@ def select_features(df, config, label=None, shift=None):
     train = utils.subselect(config.train, df)
     test  = utils.subselect(config.test,  df)
 
-    # Select features
-    lbl   = train[label]
-    train = tsfresh.select_features(train.drop(columns=[label]), lbl, n_jobs=config.cores, chunksize=64)
+    if config.use_features:
+        key = config.output.key
+        if shift is not None:
+            key += f'/{label}/historical_{shift}_min'
+        key += '/train'
 
-    # Add the label column back in
-    train[label] = lbl
+        # Load features from some key
+        features = pd.read_hdf(config.use_features, key).columns
+
+        # Select only those features
+        train = train[features]
+    else:
+        # Select features
+        lbl   = train[label]
+        train = tsfresh.select_features(train.drop(columns=[label]), lbl, n_jobs=config.cores, chunksize=64)
+
+        # Add the label column back in
+        train[label] = lbl
 
     # Only keep the same features in test as train
     test = test[train.columns]
@@ -209,7 +222,7 @@ def select(df, label, config):
             shift[config.static] = static
 
             # Make sure there are no nans
-            shift = shift.dropna()
+            shift = shift.dropna(how='any', axis=0, subset=set(shift) - set(config.ignore or []))
 
             select_features(shift, config, label=label, shift=length)
     else:
@@ -238,7 +251,7 @@ def process(config):
     # load the data and drop nan values
     df   = pd.read_hdf(config.input.file, config.input.key)
     orig = df.index.size
-    df   = df.dropna(how='any', axis=0)
+    df   = df.dropna(how='any', axis=0, subset=set(df) - set(config.ignore or []))
     logger.debug(f'Dropping NaNs reduced the data by {(1-df.index.size/orig)*100:.2f}%')
 
     logger.info('Creating the rolling windows and beginning processing')
