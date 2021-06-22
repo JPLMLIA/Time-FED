@@ -116,8 +116,8 @@ def build_model(config, shift=None):
 
     # Drop rows that have a label value
     if config.inverse_drop:
-        train = train.loc[df[config.label].isnull()]
-        test  =  test.loc[df[config.label].isnull()]
+        train = train.loc[train[config.label].isnull()]
+        test  =  test.loc[test[config.label].isnull()]
 
     # Train and test the model
     pred, scores = train_and_test(model, train, test, config.label, features, fit)
