@@ -15,8 +15,8 @@ preprocess:
     calc: [day, minute, solar_zenith_angle]
     log: []
   filter:
-    water_vapor:
-      lt: 0.86
+    humidity:
+      lt: 0.80
   shift: # deprecated
     points: 12 # 12=1hour, 24=2, 36=3
     features: []
