@@ -16,7 +16,7 @@ preprocess:
     log: []
   filter:
     humidity:
-      lt: 0.80
+      lt: 80
   shift: # deprecated
     points: 12 # 12=1hour, 24=2, 36=3
     features: []
