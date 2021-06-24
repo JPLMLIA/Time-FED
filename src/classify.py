@@ -94,6 +94,7 @@ def build_model(config, shift=None):
             model = utils.load_pkl(output)
 
     if not model:
+        logger.debug('Creating new model')
         model = RandomForestRegressor(n_estimators=100, random_state=0, n_jobs=-1)
         fit   = True
 

@@ -233,6 +233,10 @@ def select(df, label, config):
             else:
                 shift = shift.dropna(how='any', axis=0)
 
+            # Drop the shifted column
+            if config.shift_drop:
+                shift = shift.drop(columns=[f'{label}_H{length}'])
+
             logger.debug(f'Shifted {length}:\n{shift}')
             select_features(shift, config, label=label, shift=length)
     else:
