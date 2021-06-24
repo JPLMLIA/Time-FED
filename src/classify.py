@@ -52,7 +52,7 @@ def train_and_test(model, train, test, label, features, fit=True):
     pred = model.predict(test[features])
 
     stats = {}
-    if test[label].all():
+    try:
         r2       = r2_score(test[label], pred)
         rms      = mean_squared_error(test[label], pred, squared=False)
         perc_err = mean_absolute_percentage_error(test[label], pred)
@@ -66,6 +66,8 @@ def train_and_test(model, train, test, label, features, fit=True):
             'RMSE': rms,
             'MAPE': perc_err
         }
+    except:
+        pass
 
     return pred, stats
 
