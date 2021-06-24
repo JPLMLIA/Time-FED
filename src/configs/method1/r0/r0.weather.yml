@@ -46,6 +46,7 @@ extract_features:
     whitelist:
     blacklist:
   drop: [solar_zenith_angle, day, minute, o(I)_I, r0_10T]
+  shift_drop: True
   process: tsfresh # median
 
 # Train and test a model
