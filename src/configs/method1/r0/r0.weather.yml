@@ -10,7 +10,7 @@ preprocess:
     lte: 2019/12/31
   test:
     gt: 2019/12/31
-  exclude: [r0, r0_day, r0_night, r0_day_10T, r0_night_10T, Cn2, Cn2_10T, wind_direction]
+  exclude: [r0, r0_day, r0_night, r0_day_10T, r0_night_10T, Cn2, Cn2_10T, wind_direction, o(I)_I]
   features:
     calc: [day, minute, solar_zenith_angle]
     log: []
