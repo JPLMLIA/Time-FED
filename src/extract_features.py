@@ -228,7 +228,10 @@ def select(df, label, config):
             shift[config.static] = static
 
             # Make sure there are no nans
-            shift = shift.dropna(how='any', axis=0, subset=set(shift) - set(config.ignore or []))
+            if config.ignore:
+                shift = shift.dropna(how='any', axis=0, subset=set(shift) - set(config.ignore+[f'{label}_H{length}']))
+            else:
+                shift = shift.dropna(how='any', axis=0)
 
             logger.debug(f'Shifted {length}:\n{shift}')
             select_features(shift, config, label=label, shift=length)
