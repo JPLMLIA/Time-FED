@@ -201,6 +201,7 @@ def select(df, label, config):
     """
     Performs feature selection process
     """
+    logger.debug(f'Selecting on\n{df}')
     if label in df:
         for length in config.historical:
             logger.info(f'Selecting relevant features for historical length {length} minutes for label {label}')
@@ -229,9 +230,10 @@ def select(df, label, config):
             # Make sure there are no nans
             shift = shift.dropna(how='any', axis=0, subset=set(shift) - set(config.ignore or []))
 
+            logger.debug(f'Shifted {length}:\n{shift}')
             select_features(shift, config, label=label, shift=length)
     else:
-        logger.info('Selecting relevant features')
+        logger.info('Selecting relevant features without historical')
         select_features(df, config)
 
 @utils.timeit
