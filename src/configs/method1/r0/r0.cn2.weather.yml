@@ -45,7 +45,7 @@ extract_features:
   features:
     whitelist:
     blacklist:
-  drop: [solar_zenith_angle, day, minute, o(I)_I, r0_10T]
+  drop: [solar_zenith_angle, day, minute, r0_10T]
   shift_drop: True
   process: tsfresh # median
 
