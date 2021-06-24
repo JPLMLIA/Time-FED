@@ -184,12 +184,16 @@ def select_features(df, config, label=None, shift=None):
     # Only keep the same features in test as train
     test = test[train.columns]
 
+    logger.debug(f'Train:\n{train}')
+    logger.debug(f'Test:\n{test}')
+
     if config.output.file:
-        logger.info(f'Saving to {config.output.file}')
         if shift is not None:
+            logger.info(f'Saving to {config.output.file} under key {config.output.key}/{label}/historical_{shift}_min/')
             train.to_hdf(config.output.file, f'{config.output.key}/{label}/historical_{shift}_min/train')
             test.to_hdf(config.output.file, f'{config.output.key}/{label}/historical_{shift}_min/test')
         else:
+            logger.info(f'Saving to {config.output.file} under key {config.output.key}/')
             train.to_hdf(config.output.file, f'{config.output.key}/train')
             test.to_hdf(config.output.file, f'{config.output.key}/test')
 
