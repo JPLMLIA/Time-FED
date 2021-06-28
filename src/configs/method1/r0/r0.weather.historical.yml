@@ -98,8 +98,8 @@ classify:
       figsize: [20, 10]
       file: histogram_errors.png
     local_synchrony:
-      feature1: pressure
-      feature2: pressure
+      feature1: r0_10T
+      feature2: temperature__fft_coefficient__attr_"abs"__coeff_1
       window_size: 120
       figsize: [30, 6]
       file: local_synchony.png

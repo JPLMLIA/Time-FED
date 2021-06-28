@@ -370,7 +370,7 @@ def generate_plots(test, pred, model, config):
     importances(model, test.columns, config=config)
 
     histogram_errors(test[config.label], pred.values, lambda a, b: (a-b)/a, config=config)
-    # local_synchrony(train, config=config)
+    local_synchrony(train, config=config)
 
     date_range(test[config.label], pred, config=config)
 
