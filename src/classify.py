@@ -175,7 +175,7 @@ def classify(config):
                     os.mkdir(f'{config.plots.directory}/H{shift}')
                 bak = config.plots.directory
                 config.plots.directory += f'/H{shift}'
-                plots.generate_plots(test, pred, model, config)
+                plots.generate_plots(test, pred, model, config, train)
                 config.plots.directory = bak
     else:
         train, test, pred, scores, model = build_model(config)
@@ -183,7 +183,7 @@ def classify(config):
 
         # If plotting is enabled, run the functions and save output if given
         if config.plots.enabled:
-            plots.generate_plots(test, pred, model, config)
+            plots.generate_plots(test, pred, model, config, train)
 
     # Save scores
     if config.output:

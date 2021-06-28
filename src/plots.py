@@ -359,7 +359,7 @@ def date_range(true, pred, config):
         else:
             plt.show()
 
-def generate_plots(test, pred, model, config):
+def generate_plots(test, pred, model, config, train=None):
     """
     Generates all plots
     """
