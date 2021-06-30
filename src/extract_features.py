@@ -158,7 +158,7 @@ def select_features(df, config, label=None, shift=None):
     label = label or config.label
 
     # Select only on the train subset
-    train = utils.subselect(config.train, df)
+    train = utils.subselect(config.train, df).dropna()
     test  = utils.subselect(config.test,  df)
 
     if config.use_features:

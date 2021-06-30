@@ -114,14 +114,13 @@ def build_model(config, shift=None):
         features = list(set(features) - set(config.features.exclude))
 
     # Drop rows that contain a NaN in any column
+    train = train[~train.isnull().any(axis=1)] # Train ALWAYS drops
     if config.dropna:
-        train = train[~train.isnull().any(axis=1)]
-        test  =  test[ ~test.isnull().any(axis=1)]
+        test = test[~test.isnull().any(axis=1)]
 
-    # Drop rows that have a label value
+    # Drop rows that have a value for the label
     if config.inverse_drop:
-        train = train.loc[train[config.label].isnull()]
-        test  =  test.loc[test[config.label].isnull()]
+        test = test.loc[test[config.label].isnull()]
 
     # Train and test the model
     pred, scores = train_and_test(model, train, test, config.label, features, fit)
