@@ -123,6 +123,11 @@ def preprocess(config):
         drop = cols - (cols - set(config.exclude))
         df   = df.drop(columns=drop)
 
+    if config.include:
+        cols = set(df.columns)
+        drop = cols - set(config.include)
+        df   = df.drop(columns=drop)
+
     # Write to output
     df.to_hdf(config.output.file, f'{config.output.key}/full')
 
