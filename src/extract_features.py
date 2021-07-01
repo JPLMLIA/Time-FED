@@ -262,13 +262,15 @@ def process(config):
         logger.error(f'Unrecognized process argument: {config.process}')
         return
 
-    # load the data and drop nan values
+    # load the data
     df   = pd.read_hdf(config.input.file, config.input.key)
     orig = df.index.size
-    df   = df.dropna(how='any', axis=0, subset=set(df) - set(config.ignore or []))
 
     # Shift the label column to make it historical
     df[config.label] = df[config.label].shift(1)
+
+    # Drop nans
+    df = df.dropna(how='any', axis=0, subset=set(df) - set(config.ignore or []))
 
     if config.inverse_drop:
         df = df.loc[df[config.label].isnull()]
