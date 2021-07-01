@@ -55,7 +55,7 @@ def roll(df, window, step=1, observations=None, drop=None):
                         continue
 
                 if drop:
-                    sub = sub.drop(columns=drop)
+                    sub = sub.drop(columns=drop, errors='ignore')
 
                 yield sub
 
@@ -64,7 +64,7 @@ def roll(df, window, step=1, observations=None, drop=None):
             if i < size:
                 sub = df.iloc[i:min(i+window, size)]
                 if drop:
-                    sub = sub.drop(columns=drop)
+                    sub = sub.drop(columns=drop, errors='ignore')
                 yield sub
 
 def get_features(whitelist=None, blacklist=None, prompt=False):
