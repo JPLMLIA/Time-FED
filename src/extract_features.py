@@ -215,14 +215,14 @@ def select(df, label, config):
 
             if not config.exclude_label:
                 # Create a copy of the label column and drop the label
-                shift[f'{label}_H{length}'] = lbl.shift(1)
+                shift[f'{label}_H{length}'] = lbl
                 shift = shift.drop(columns=[label]+config.static)
             else:
                 shift = shift.drop(columns=config.static)
 
             # Shift the index by the length amount in minutes, add label back in
             shift.index += pd.Timedelta(f'{length} min')
-            shift[label] = lbl
+            shift[label] = lbl.shift(-1) # Shift to correct the previous shift pre feature extraction
 
             # Add static columns back in
             shift[config.static] = static
@@ -266,6 +266,9 @@ def process(config):
     df   = pd.read_hdf(config.input.file, config.input.key)
     orig = df.index.size
     df   = df.dropna(how='any', axis=0, subset=set(df) - set(config.ignore or []))
+
+    # Shift the label column to make it historical
+    df[config.label] = df[config.label].shift(1)
 
     if config.inverse_drop:
         df = df.loc[df[config.label].isnull()]

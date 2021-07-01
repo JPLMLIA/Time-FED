@@ -17,7 +17,7 @@ import utils
 logger = logging.getLogger('mloc/plots.py')
 
 sns.set_style('darkgrid')
-sns.set_context('poster')
+sns.set_context('poster', rc={'axes.titlesize': 2.0, 'axes.labelsize': 2.0})
 
 
 def protect(func):
@@ -322,6 +322,8 @@ def importances(model, features, config):
 def date_range(true, pred, config):
     """
     """
+    label = config.plots.replace.get(config.label, config.label)
+
     # Get the plot configs for this plot type
     pconf = config.plots.date_range
 
@@ -348,7 +350,7 @@ def date_range(true, pred, config):
                 ax.plot(np.abs(true_sub-pred_sub), 'b.', label='Absolute error')
 
         ax.legend()
-        ax.set_ylabel(f'{config.label} ({config.plots.units[config.label]})')
+        ax.set_ylabel(f'{label} ({config.plots.units[config.label]})')
         ax.set_xlabel(f'Month-Day Hour ({config.plots.units.datetime})')
         ax.set_title(title)
 
