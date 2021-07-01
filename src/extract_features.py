@@ -215,7 +215,7 @@ def select(df, label, config):
 
             if not config.exclude_label:
                 # Create a copy of the label column and drop the label
-                shift[f'{label}_H{length}'] = lbl
+                shift[f'{label}_H{length}'] = lbl.shift(1)
                 shift = shift.drop(columns=[label]+config.static)
             else:
                 shift = shift.drop(columns=config.static)

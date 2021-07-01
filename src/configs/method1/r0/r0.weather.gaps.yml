@@ -65,7 +65,6 @@ classify:
       forecasts: forecasts/r0_10T
   label: r0_10T # temperature_H5
   dropna: False
-  inverse_drop: True
   plots:
     enabled: True
     directory: /data1/mloc/local/runs/method1/r0/r0.weather.gaps/
