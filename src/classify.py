@@ -93,7 +93,14 @@ def build_model(config, shift=None):
         output += '.pkl'
 
         if os.path.exists(output):
-            model = utils.load_pkl(output)
+            if config.remake is True:
+                pass
+            else:
+                if shift is not None:
+                    if shift not in config.remake:
+                        model = utils.load_pkl(output)
+                elif not config.remake:
+                    model = utils.load_pkl(output)
 
     if not model:
         logger.debug('Creating new model')

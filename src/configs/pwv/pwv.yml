@@ -63,6 +63,7 @@ classify:
       forecasts: forecasts
   label: water_vapor
   dropna: True
+  remake: True
   plots:
     enabled: True
     directory: /data1/mloc/local/runs/vapor/
