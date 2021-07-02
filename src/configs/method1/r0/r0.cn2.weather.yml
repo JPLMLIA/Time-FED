@@ -69,6 +69,8 @@ classify:
     units:
       r0_10T: cm
       datetime: UTC
+    replace:
+      r0_10T: r0
     errors_in_time:
     scatter_with_errors:
       x:
