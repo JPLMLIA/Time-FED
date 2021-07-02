@@ -56,7 +56,7 @@ temperature-5:
     date_range:
       figsize: [20, 10]
       file: date_range.png
-      metrics: [rms]
+      metrics: []
       dates:
         5-25to29-20:
           start: 2020/05/25 00:00
@@ -143,7 +143,7 @@ temperature-180:
     date_range:
       figsize: [20, 10]
       file: date_range.png
-      metrics: [rms]
+      metrics: []
       dates:
         5-25to29-20:
           start: 2020/05/25 00:00
@@ -231,7 +231,7 @@ pressure-5:
     date_range:
       figsize: [20, 10]
       file: date_range.png
-      metrics: [rms]
+      metrics: []
       dates:
         5-25to29-20:
           start: 2020/05/25 00:00
@@ -318,7 +318,7 @@ pressure-180:
     date_range:
       figsize: [20, 10]
       file: date_range.png
-      metrics: [rms]
+      metrics: []
       dates:
         5-25to29-20:
           start: 2020/05/25 00:00
@@ -406,7 +406,7 @@ relative_humidity-5:
     date_range:
       figsize: [20, 10]
       file: date_range.png
-      metrics: [rms]
+      metrics: []
       dates:
         5-25to29-20:
           start: 2020/05/25 00:00
@@ -493,7 +493,7 @@ relative_humidity-180:
     date_range:
       figsize: [20, 10]
       file: date_range.png
-      metrics: [rms]
+      metrics: []
       dates:
         5-25to29-20:
           start: 2020/05/25 00:00
@@ -581,7 +581,7 @@ wind_speed-5:
     date_range:
       figsize: [20, 10]
       file: date_range.png
-      metrics: [rms]
+      metrics: []
       dates:
         5-25to29-20:
           start: 2020/05/25 00:00
@@ -668,7 +668,7 @@ wind_speed-180:
     date_range:
       figsize: [20, 10]
       file: date_range.png
-      metrics: [rms]
+      metrics: []
       dates:
         5-25to29-20:
           start: 2020/05/25 00:00
