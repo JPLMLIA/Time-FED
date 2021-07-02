@@ -1,0 +1,138 @@
+# Preprocess raw data
+preprocess:
+  input:
+    file: /data1/mloc/local/data/v3/data.h5
+    key: merged
+  subselect:
+    gte: 2018/05/03
+    lt: 2020/12/30
+  train:
+    lte: 2019/12/31
+  test:
+    gt: 2019/12/31
+  include: [day, minute, solar_zenith_angle, wind_speed, relative_humidity, pressure, temperature]
+  features:
+    calc: [day, minute, solar_zenith_angle]
+    log: []
+  shift:
+    points: 12 # 12=1hour, 24=2, 36=3
+    features: []
+  output:
+    file: /data1/mloc/local/runs/method1/relative_humidity/full/data.h5
+    key: preprocess
+
+# Extract tsfresh features from windows
+extract_features:
+  window: 50 min
+  step: 1
+  observations: 10
+  cores: 64
+  label: [r0_10T]
+  static: [solar_zenith_angle, day, minute]
+  historical: [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 155, 160, 165, 170, 175, 180] # in minutes
+  train:
+    lte: 2019/12/31
+  test:
+    gt: 2019/12/31
+  input:
+    file: /data1/mloc/local/runs/method1/relative_humidity/full/data.h5
+    key: preprocess/full
+  output:
+    file: /data1/mloc/local/runs/method1/relative_humidity/full/data.h5
+    key: features
+  prompt:
+    features: False
+  features:
+    whitelist:
+    blacklist:
+  drop: [solar_zenith_angle, day, minute]
+  process: tsfresh # median
+
+# Train and test a model
+classify:
+  input:
+    file: /data1/mloc/local/runs/method1/relative_humidity/full/data.h5
+    key: features/
+    historical: [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 155, 160, 165, 170, 175, 180]
+  output:
+    file: /data1/mloc/local/runs/method1/relative_humidity/full/data.h5
+    models: /data1/mloc/local/runs/method1/relative_humidity/full/
+    keys:
+      scores: scores/relative_humidity
+      forecasts: forecasts/relative_humidity
+  label: relative_humidity # relative_humidity_H5
+  dropna: True
+  remake: True
+  plots:
+    enabled: True
+    directory: /data1/mloc/local/runs/method1/relative_humidity/full/
+    units:
+      r0_10T: cm
+      datetime: UTC
+    errors_in_time:
+    scatter_with_errors:
+      x:
+        min: 0
+        max: 20
+      y:
+        min: 0
+        max: 20
+      colorscale:
+        min: 0
+        max: .5
+      step_length: !!python/complex 100j
+      samples: 1000
+      size: 25
+      alpha: .4
+      figsize: [10, 10]
+      file: scatter_errors.png
+    importances:
+      figsize: [20, 30]
+      number: 20
+      labelrotation: 90
+      title: Feature Importances
+      file: feature_importances.png
+    histogram_errors:
+      min: 0
+      max: 80
+      bins: 81
+      figsize: [20, 10]
+      file: histogram_errors.png
+    local_synchrony:
+      feature1: relative_humidity
+      feature2: relative_humidity
+      window_size: 120
+      figsize: [30, 6]
+      file: local_synchony.png
+    date_range:
+      figsize: [20, 10]
+      file: date_range.png
+      metrics: []
+      dates:
+        5-22to29-20:
+          start: 2020/05/22 00:00
+          end  : 2020/05/29 23:59
+        8-23to30-20:
+          start: 2020/08/23 00:00
+          end  : 2020/08/30 23:59
+        2-13to20-20:
+          start: 2020/02/13 00:00
+          end  : 2020/02/20 23:59
+        11-13to20-20:
+          start: 2020/11/13 00:00
+          end  : 2020/11/20 23:59
+        7-10to17-20:
+          start: 2020/07/10 00:00
+          end  : 2020/07/17 23:59
+        8-02to09-20:
+          start: 2020/08/02 00:00
+          end  : 2020/08/09 23:59
+        10-12to19-20:
+          start: 2020/10/12 00:00
+          end  : 2020/10/19 23:59
+        12-20to27-20:
+          start: 2020/12/20 00:00
+          end  : 2020/12/27 23:59
+  features:
+    select:
+    exclude:
