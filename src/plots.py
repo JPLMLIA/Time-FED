@@ -17,7 +17,7 @@ import utils
 logger = logging.getLogger('mloc/plots.py')
 
 sns.set_style('darkgrid')
-sns.set_context('poster', rc={'axes.titlesize': 25, 'axes.labelsize': 20})
+sns.set_context('poster', rc={'axes.titlesize': 35, 'axes.labelsize': 30})
 
 
 def protect(func):

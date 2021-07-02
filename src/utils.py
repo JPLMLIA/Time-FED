@@ -20,7 +20,7 @@ from mat4py   import loadmat
 from tqdm     import tqdm
 
 # Set context of seaborn
-sns.set_context('poster', rc={'axes.titlesize': 25, 'axes.labelsize': 20})
+sns.set_context('poster', rc={'axes.titlesize': 35, 'axes.labelsize': 30})
 
 logging.basicConfig(
     level   = logging.DEBUG,
