@@ -322,7 +322,11 @@ def importances(model, features, config):
 def date_range(true, pred, config):
     """
     """
-    label = config.plots.replace.get(config.label, config.label)
+    label = config.label
+
+    if config.plots.replace:
+        if label in config.plots.replace:
+            label = config.plots.replace[label]
 
     # Get the plot configs for this plot type
     pconf = config.plots.date_range
