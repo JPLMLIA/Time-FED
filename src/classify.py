@@ -17,7 +17,7 @@ import plots
 
 logger = logging.getLogger('mloc/classify.py')
 
-def train_and_test(model, train, test, label, features, fit=True):
+def train_and_test(model, train, test, label, fit=True):
     """
     Trains and tests a model
 
@@ -40,16 +40,16 @@ def train_and_test(model, train, test, label, features, fit=True):
     r2 : float
         The r2 score of the model
     """
-    if len(features) > 20:
-        logger.debug(f'Using features {features[:20]} + {len(features)-20} more')
-    else:
-        logger.debug(f'Using features {features}')
+    # if len(features) > 20:
+    #     logger.debug(f'Using features {features[:20]} + {len(features)-20} more')
+    # else:
+    #     logger.debug(f'Using features {features}')
     logger.debug(f'Using label {label}')
 
     if fit:
-        model.fit(train[features], train[label])
+        model.fit(train.drop(columns=[label]), train[label])
 
-    pred = model.predict(test[features])
+    pred = model.predict(test.drop(columns=[label]))
 
     stats = {}
     try:
@@ -107,18 +107,18 @@ def build_model(config, shift=None):
         model = RandomForestRegressor(n_estimators=100, random_state=0, n_jobs=-1)
         fit   = True
 
-    # Retrieve features list, exclude the label from it
-    features = config.features.select
-    if features is None:
-        features = list(train.columns)
-
-    # Remove the label from the features list
-    if config.label in features:
-        features = list(set(features) - set([config.label]))
-
-    # Exclude certain features
-    if config.features.exclude:
-        features = list(set(features) - set(config.features.exclude))
+    # # Retrieve features list, exclude the label from it
+    # features = config.features.select
+    # if features is None:
+    #     features = list(train.columns)
+    #
+    # # Remove the label from the features list
+    # if config.label in features:
+    #     features = list(set(features) - set([config.label]))
+    #
+    # # Exclude certain features
+    # if config.features.exclude:
+    #     features = list(set(features) - set(config.features.exclude))
 
     # Drop rows that contain a NaN in any column
     train = train[~train.isnull().any(axis=1)] # Train ALWAYS drops
@@ -130,7 +130,7 @@ def build_model(config, shift=None):
         test = test.loc[test[config.label].isnull()]
 
     # Train and test the model
-    pred, scores = train_and_test(model, train, test, config.label, features, fit)
+    pred, scores = train_and_test(model, train, test, config.label, fit)
 
     # Cast predicted values to Series
     pred = pd.Series(index=test.index, data=pred)
