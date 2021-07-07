@@ -66,6 +66,7 @@ classify:
   plots:
     enabled: True
     directory: /data1/mloc/local/runs/method1/pressure/full/
+    watermark: method1/pressure/full
     units:
       pressure:
       r0_10T: cm

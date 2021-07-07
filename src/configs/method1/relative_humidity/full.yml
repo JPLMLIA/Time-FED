@@ -66,6 +66,7 @@ classify:
   plots:
     enabled: True
     directory: /data1/mloc/local/runs/method1/relative_humidity/full/
+    watermark: method1/relative_humidity/full
     units:
       relative_humidity:
       r0_10T: cm

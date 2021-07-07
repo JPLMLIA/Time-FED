@@ -66,6 +66,7 @@ classify:
   plots:
     enabled: True
     directory: /data1/mloc/local/runs/method1/r0/r0.weather.historical/
+    watermark: method1/r0/r0.weather.historical
     units:
       r0_10T: cm
       datetime: UTC
