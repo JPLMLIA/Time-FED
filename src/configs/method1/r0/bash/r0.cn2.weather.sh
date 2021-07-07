@@ -8,8 +8,8 @@ mkdir /data1/mloc/local/runs/method1/r0/r0.cn2.weather
 
 cd /data1/mloc/src/
 
-# python preprocess.py       -c configs/method1/r0/r0.cn2.weather.yml -s preprocess
-# python extract_features.py -c configs/method1/r0/r0.cn2.weather.yml -s extract_features
+python preprocess.py       -c configs/method1/r0/r0.cn2.weather.yml -s preprocess
+python extract_features.py -c configs/method1/r0/r0.cn2.weather.yml -s extract_features
 python classify.py         -c configs/method1/r0/r0.cn2.weather.yml -s classify
 
 echo 'DONE'
