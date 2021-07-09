@@ -107,9 +107,6 @@ def preprocess(config):
     logger.info('Creating new features')
     df = calculate_features(df, config.features)
 
-    for feature in config.shift.features:
-        df[f'{feature}_shifted'] = df[feature].shift(config.shift.points)
-
     # Apply filtering
     if config.filter:
         for feature, args in vars(config.filter).items():
