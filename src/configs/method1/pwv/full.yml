@@ -14,11 +14,8 @@ preprocess:
   features:
     calc: [day, minute, solar_zenith_angle]
     log: []
-  shift: # deprecated
-    points: 12 # 12=1hour, 24=2, 36=3
-    features: []
   output:
-    file: /data1/mloc/local/runs/vapor/datadroplabel.h5
+    file: /data1/mloc/local/runs/method1/pwv/full/data.h5
     key: preprocess
 
 # Extract tsfresh features from windows
@@ -35,10 +32,10 @@ extract_features:
   test:
     gt: 2013/12/31
   input:
-    file: /data1/mloc/local/runs/vapor/datadroplabel.h5
+    file: /data1/mloc/local/runs/method1/pwv/full/data.h5
     key: preprocess/full
   output:
-    file: /data1/mloc/local/runs/vapor/datadroplabel.h5
+    file: /data1/mloc/local/runs/method1/pwv/full/data.h5
     key: features
   prompt:
     features: False
@@ -46,18 +43,18 @@ extract_features:
     whitelist:
     blacklist:
   drop: [day, minute, solar_zenith_angle, water_vapor]
-  exclude_label: True
+  shift_drop: True
   process: tsfresh
 
 # Train and test a model
 classify:
   input:
-    file: /data1/mloc/local/runs/vapor/datadroplabel.h5
+    file: /data1/mloc/local/runs/method1/pwv/full/data.h5
     key: features/water_vapor
     historical: [0, 30, 60, 90, 120, 150, 180]
   output:
-    models: /data1/mloc/local/runs/vapor/
-    file: /data1/mloc/local/runs/vapor/datadroplabel.h5
+    models: /data1/mloc/local/runs/method1/pwv/full/
+    file: /data1/mloc/local/runs/method1/pwv/full/data.h5
     keys:
       scores: scores
       forecasts: forecasts
@@ -66,8 +63,8 @@ classify:
   remake: True
   plots:
     enabled: True
-    directory: /data1/mloc/local/runs/vapor/
-    watermark: runs/vapor
+    directory: /data1/mloc/local/runs/method1/pwv/full/
+    watermark: method1/pwv/full
     units:
       water_vapor: X
       datetime: UTC

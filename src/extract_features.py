@@ -210,15 +210,10 @@ def select(df, label, config):
             shift = df.copy()
             lbl   = shift[label]
 
-            # Remove the static columns
+            # Remove the static columns and create the historical column
+            shift[f'{label}_H{length}'] = lbl
             static = shift[config.static]
-
-            if not config.exclude_label:
-                # Create a copy of the label column and drop the label
-                shift[f'{label}_H{length}'] = lbl
-                shift = shift.drop(columns=[label]+config.static)
-            else:
-                shift = shift.drop(columns=config.static)
+            shift  = shift.drop(columns=[label]+config.static)
 
             # Shift the index by the length amount in minutes, add label back in
             shift.index += pd.Timedelta(f'{length} min')
