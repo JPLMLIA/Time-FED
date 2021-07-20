@@ -221,6 +221,9 @@ def select(df, label, config):
             # Add static columns back in
             shift[[label]+config.static] = static
 
+            if shift.isna().any().any():
+                logger.debug(f'Percent of NaNs in columns that had NaNs:\n{(shift[shift.columns[shift.isna().any()]].isna().sum() / shift.index.size) * 100}')
+
             # Make sure there are no nans
             orig = shift.index.size
             if config.ignore:
@@ -229,8 +232,6 @@ def select(df, label, config):
                 shift = shift.dropna(how='any', axis=0)
 
             logger.debug(f'Dropping NaNs reduced the data by {(1-shift.index.size/orig)*100:.2f}%')
-            if shift.isna().any().any():
-                logger.debug(f'Percent of NaNs in columns that had NaNs:\n{(shift[shift.columns[shift.isna().any()]].isna().sum() / shift.index.size) * 100}')
 
             logger.debug(f'Shifted {length}:\n{shift}')
             select_features(shift, config, label=label, shift=length)
@@ -281,7 +282,7 @@ def process(config):
         window       = config.window,
         step         = config.step,
         observations = config.observations,
-        drop         = config.drop
+        drop         = config.drop + config.label
     )
     extracts = []
     with utils.Pool(processes=config.cores) as pool:
