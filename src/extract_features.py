@@ -263,7 +263,7 @@ def process(config):
 
     # Shift the label column to make it historical
     if config.hist_feat:
-        df[f'historical_feature_{config.label}'] = df[config.label].shift(1)
+        df[f'historical_feature_{config.label[0]}'] = df[config.label].shift(1)
 
     logger.debug(f'Percent of NaNs in each column:\n{(df.isna().sum() / df.index.size) * 100}')
 
