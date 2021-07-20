@@ -121,9 +121,20 @@ def build_model(config, shift=None):
     #     features = list(set(features) - set(config.features.exclude))
 
     # Drop rows that contain a NaN in any column
+    orig = train.index.size
     train = train[~train.isnull().any(axis=1)] # Train ALWAYS drops
+
+    logger.debug(f'Dropping NaNs reduced the data by {(1-train.index.size/orig)*100:.2f}%')
+    if train.isna().any().any():
+        logger.debug(f'Percent of NaNs in columns that had NaNs:\n{(shift[train.columns[train.isna().any()]].isna().sum() / train.index.size) * 100}')
+
     if config.dropna:
+        orig = test.index.size
         test = test[~test.isnull().any(axis=1)]
+
+        logger.debug(f'Dropping NaNs reduced the data by {(1-test.index.size/orig)*100:.2f}%')
+        if test.isna().any().any():
+            logger.debug(f'Percent of NaNs in columns that had NaNs:\n{(shift[test.columns[test.isna().any()]].isna().sum() / test.index.size) * 100}')
 
     # Drop rows that have a value for the label
     if config.inverse_drop:

@@ -211,26 +211,26 @@ def select(df, label, config):
             lbl   = shift[label]
 
             # Remove the static columns and create the historical column
-            shift[f'{label}_H{length}'] = lbl
-            static = shift[config.static]
+            static = shift[[label]+config.static]
             shift  = shift.drop(columns=[label]+config.static)
 
             # Shift the index by the length amount in minutes, add label back in
             shift.index += pd.Timedelta(f'{length} min')
-            shift[label] = lbl.shift(-1) # Shift to correct the previous shift pre feature extraction
+            shift[label] = lbl
 
             # Add static columns back in
             shift[config.static] = static
 
             # Make sure there are no nans
+            orig = shift.index.size
             if config.ignore:
-                shift = shift.dropna(how='any', axis=0, subset=set(shift) - set(config.ignore+[f'{label}_H{length}']))
+                shift = shift.dropna(how='any', axis=0, subset=set(shift) - set(config.ignore+[f'historical_feature_{label}']))
             else:
                 shift = shift.dropna(how='any', axis=0)
 
-            # Drop the shifted column
-            if config.shift_drop:
-                shift = shift.drop(columns=[f'{label}_H{length}'])
+            logger.debug(f'Dropping NaNs reduced the data by {(1-shift.index.size/orig)*100:.2f}%')
+            if shift.isna().any().any():
+                logger.debug(f'Percent of NaNs in columns that had NaNs:\n{(shift[shift.columns[shift.isna().any()]].isna().sum() / shift.index.size) * 100}')
 
             logger.debug(f'Shifted {length}:\n{shift}')
             select_features(shift, config, label=label, shift=length)
@@ -262,7 +262,10 @@ def process(config):
     orig = df.index.size
 
     # Shift the label column to make it historical
-    df[config.label] = df[config.label].shift(1)
+    if config.hist_feat:
+        df[f'historical_feature_{config.label}'] = df[config.label].shift(1)
+
+    logger.debug(f'Percent of NaNs in each column:\n{(df.isna().sum() / df.index.size) * 100}')
 
     # Drop nans
     df = df.dropna(how='any', axis=0, subset=set(df) - set(config.ignore or []))
@@ -295,6 +298,9 @@ def process(config):
     elif config.process == 'median':
         columns = list(set(df.columns) - set(ret.columns))
         ret[columns] = df[columns].loc[ret.index]
+
+    if ret.isna().any().any():
+        logger.debug(f'Percent of NaNs in columns that had NaNs:\n{(ret[ret.columns[ret.isna().any()]].isna().sum() / ret.index.size) * 100}')
 
     if config.output.file:
         logger.info(f'Saving raw to {config.output.file}')
