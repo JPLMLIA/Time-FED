@@ -219,7 +219,7 @@ def select(df, label, config):
             shift[label] = lbl
 
             # Add static columns back in
-            shift[config.static] = static
+            shift[[label]+config.static] = static
 
             # Make sure there are no nans
             orig = shift.index.size
