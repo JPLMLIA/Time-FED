@@ -1,0 +1,137 @@
+# Preprocess raw data
+preprocess:
+  input:
+    file: /data1/urebbapr/MLOC/local/data/v3/pwv.h5
+    key: pwv
+  subselect:
+    gte: 2009/01/01
+    lt: 2016/12/31
+  train:
+    lte: 2013/12/31
+  test:
+    gt: 2013/12/31
+  exclude: [wind_direction, wind_gust, drew_drop] # Verify drew_drop column name
+  features:
+    calc: [day, minute, solar_zenith_angle]
+    log: []
+  output:
+    file: /data1/mloc/local/runs/method1/pwv/sansDD/data.h5
+    key: preprocess
+
+# Extract tsfresh features from windows
+extract_features:
+  static: [day, minute, solar_zenith_angle]
+  window: 300 min
+  step: 1
+  observations: 10
+  cores: 64
+  label: [water_vapor]
+  historical: [0, 30, 60, 90, 120, 150, 180]
+  train:
+    lte: 2013/12/31
+  test:
+    gt: 2013/12/31
+  input:
+    file: /data1/mloc/local/runs/method1/pwv/sansDD/data.h5
+    key: preprocess/sansDD
+  output:
+    file: /data1/mloc/local/runs/method1/pwv/sansDD/data.h5
+    key: features
+  prompt:
+    features: False
+  features:
+    whitelist:
+    blacklist:
+  drop: [day, minute, solar_zenith_angle, water_vapor]
+  shift_drop: True
+  process: tsfresh
+
+# Train and test a model
+classify:
+  input:
+    file: /data1/mloc/local/runs/method1/pwv/sansDD/data.h5
+    key: features/water_vapor
+    historical: [0, 30, 60, 90, 120, 150, 180]
+  output:
+    models: /data1/mloc/local/runs/method1/pwv/sansDD/
+    file: /data1/mloc/local/runs/method1/pwv/sansDD/data.h5
+    keys:
+      scores: scores
+      forecasts: forecasts
+  label: water_vapor
+  dropna: True
+  remake: True
+  plots:
+    enabled: True
+    directory: /data1/mloc/local/runs/method1/pwv/sansDD/
+    watermark: method1/pwv/sansDD
+    units:
+      water_vapor: X
+      datetime: UTC
+    errors_in_time:
+    scatter_with_errors:
+      x:
+        min: 0 # CAN I LET THESE BE FREE?
+        max: 20
+      y:
+        min: 0
+        max: 20
+      colorscale:
+        min: 0
+        max: .5
+      step_length: !!python/complex 100j
+      samples: 1000
+      size: 25
+      alpha: .4
+      figsize: [10, 10]
+      file: scatter_errors.png
+    importances:
+      figsize: [20, 30]
+      number: 20
+      labelrotation: 90
+      title: Feature Importances
+      file: feature_importances.png
+    histogram_errors:
+      min: 0
+      max: 80
+      bins: 81
+      figsize: [20, 10]
+      file: histogram_errors.png
+    local_synchrony: # CAN I TURN OFF THIS PLOT?
+      feature1: water_vapor
+      feature2: water_vapor
+      window_size: 120
+      figsize: [30, 6]
+      file: local_synchony.png
+    date_range:
+      figsize: [20, 10]
+      file: date_range.png
+      metrics: []
+      dates:
+        5-22to29:
+          start: 2014/05/22 00:00
+          end  : 2014/05/29 23:59
+        8-23to30:
+          start: 2014/08/23 00:00
+          end  : 2014/08/30 23:59
+        1-13to20:
+          start: 2014/01/13 00:00
+          end  : 2014/01/20 23:59
+        11-13to20:
+          start: 2014/11/13 00:00
+          end  : 2014/11/20 23:59
+        7-10to17:
+          start: 2014/07/10 00:00
+          end  : 2014/07/17 23:59
+        9-04to11:
+          start: 2014/09/04 00:00
+          end  : 2014/09/11 23:59
+        10-12to19:
+          start: 2014/10/12 00:00
+          end  : 2014/10/19 23:59
+        12-20to27:
+          start: 2014/12/20 00:00
+          end  : 2014/12/27 23:59
+  features:
+    select:
+    exclude:

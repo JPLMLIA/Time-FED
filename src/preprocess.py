@@ -78,6 +78,9 @@ def calculate_features(df, config):
     if 'minute' in config.calc:
         df['minute'] = df.index.hour * 60 + df.index.minute
 
+    if 'reitan' in config.calc:
+        df['reitan'] = df['drew_drop'] * 2 # dummy calc
+
     for feature in config.log:
         if feature in df:
             df[f'log_{feature}'] = np.log10(df[feature])
