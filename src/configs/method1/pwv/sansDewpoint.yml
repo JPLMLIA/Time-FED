@@ -10,12 +10,12 @@ preprocess:
     lte: 2013/12/31
   test:
     gt: 2013/12/31
-  exclude: [wind_direction, wind_gust, drew_drop] # Verify drew_drop column name
+  exclude: [wind_direction, wind_gust, dewpoint]
   features:
     calc: [day, minute, solar_zenith_angle]
     log: []
   output:
-    file: /data1/mloc/local/runs/method1/pwv/sansDD/data.h5
+    file: /data1/mloc/local/runs/method1/pwv/sansDewpoint/data.h5
     key: preprocess
 
 # Extract tsfresh features from windows
@@ -32,10 +32,10 @@ extract_features:
   test:
     gt: 2013/12/31
   input:
-    file: /data1/mloc/local/runs/method1/pwv/sansDD/data.h5
-    key: preprocess/sansDD
+    file: /data1/mloc/local/runs/method1/pwv/sansDewpoint/data.h5
+    key: preprocess/sansDewpoint
   output:
-    file: /data1/mloc/local/runs/method1/pwv/sansDD/data.h5
+    file: /data1/mloc/local/runs/method1/pwv/sansDewpoint/data.h5
     key: features
   prompt:
     features: False
@@ -49,12 +49,12 @@ extract_features:
 # Train and test a model
 classify:
   input:
-    file: /data1/mloc/local/runs/method1/pwv/sansDD/data.h5
+    file: /data1/mloc/local/runs/method1/pwv/sansDewpoint/data.h5
     key: features/water_vapor
     historical: [0, 30, 60, 90, 120, 150, 180]
   output:
-    models: /data1/mloc/local/runs/method1/pwv/sansDD/
-    file: /data1/mloc/local/runs/method1/pwv/sansDD/data.h5
+    models: /data1/mloc/local/runs/method1/pwv/sansDewpoint/
+    file: /data1/mloc/local/runs/method1/pwv/sansDewpoint/data.h5
     keys:
       scores: scores
       forecasts: forecasts
@@ -63,8 +63,8 @@ classify:
   remake: True
   plots:
     enabled: True
-    directory: /data1/mloc/local/runs/method1/pwv/sansDD/
-    watermark: method1/pwv/sansDD
+    directory: /data1/mloc/local/runs/method1/pwv/sansDewpoint/
+    watermark: method1/pwv/sansDewpoint
     units:
       water_vapor: X
       datetime: UTC
