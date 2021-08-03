@@ -33,7 +33,7 @@ extract_features:
     gt: 2013/12/31
   input:
     file: /data1/mloc/local/runs/method1/pwv/reitan/data.h5
-    key: preprocess/reitan
+    key: preprocess/full
   output:
     file: /data1/mloc/local/runs/method1/pwv/reitan/data.h5
     key: features
