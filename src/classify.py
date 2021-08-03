@@ -17,7 +17,7 @@ import plots
 
 logger = logging.getLogger('mloc/classify.py')
 
-def train_and_test(model, train, test, label, features):
+def train_and_test(model, train, test, label, fit=True):
     """
     Trains and tests a model
 
@@ -40,28 +40,36 @@ def train_and_test(model, train, test, label, features):
     r2 : float
         The r2 score of the model
     """
-    if len(features) > 20:
-        logger.debug(f'Using features {features[:20]} + {len(features)-20} more')
-    else:
-        logger.debug(f'Using features {features}')
+    # if len(features) > 20:
+    #     logger.debug(f'Using features {features[:20]} + {len(features)-20} more')
+    # else:
+    #     logger.debug(f'Using features {features}')
     logger.debug(f'Using label {label}')
 
-    model.fit(train[features], train[label])
+    if fit:
+        model.fit(train.drop(columns=[label]), train[label])
 
-    pred     = model.predict(test[features])
-    r2       = r2_score(test[label], pred)
-    rms      = mean_squared_error(test[label], pred, squared=False)
-    perc_err = mean_absolute_percentage_error(test[label], pred)
+    pred = model.predict(test.drop(columns=[label]))
 
-    logger.debug(f'r2 score      = {r2}')
-    logger.debug(f'RMS error     = {rms}')
-    logger.debug(f'percent error = {perc_err}')
+    stats = {}
+    try:
+        r2       = r2_score(test[label], pred)
+        rms      = mean_squared_error(test[label], pred, squared=False)
+        perc_err = mean_absolute_percentage_error(test[label], pred)
 
-    return pred, {
-        'R2'  : r2,
-        'RMSE': rms,
-        'MAPE': perc_err
-    }
+        logger.debug(f'r2 score      = {r2}')
+        logger.debug(f'RMS error     = {rms}')
+        logger.debug(f'percent error = {perc_err}')
+
+        stats = {
+            'R2'  : r2,
+            'RMSE': rms,
+            'MAPE': perc_err
+        }
+    except:
+        pass
+
+    return pred, stats
 
 def build_model(config, shift=None):
     """
@@ -75,28 +83,65 @@ def build_model(config, shift=None):
 
     logger.info('Creating, training, and testing the model')
 
-    model = RandomForestRegressor(n_estimators=100, random_state=0, n_jobs=-1)
+    # Load model via pickle
+    model = None
+    fit   = False
+    if config.output:
+        output = f'{config.output.models}/{config.label}'
+        if shift is not None:
+            output += f'_H{shift}_min'
+        output += '.pkl'
 
-    # Retrieve features list, exclude the label from it
-    features = config.features.select
-    if features is None:
-        features = list(train.columns)
+        if os.path.exists(output):
+            if config.remake is True:
+                pass
+            else:
+                if shift is not None:
+                    if shift not in config.remake:
+                        model = utils.load_pkl(output)
+                elif not config.remake:
+                    model = utils.load_pkl(output)
 
-    # Remove the label from the features list
-    if config.label in features:
-        features = list(set(features) - set([config.label]))
+    if not model:
+        logger.debug('Creating new model')
+        model = RandomForestRegressor(n_estimators=100, random_state=0, n_jobs=-1)
+        fit   = True
 
-    # Exclude certain features
-    if config.features.exclude:
-        features = list(set(features) - set(config.features.exclude))
+    # # Retrieve features list, exclude the label from it
+    # features = config.features.select
+    # if features is None:
+    #     features = list(train.columns)
+    #
+    # # Remove the label from the features list
+    # if config.label in features:
+    #     features = list(set(features) - set([config.label]))
+    #
+    # # Exclude certain features
+    # if config.features.exclude:
+    #     features = list(set(features) - set(config.features.exclude))
 
     # Drop rows that contain a NaN in any column
+    orig = train.index.size
+    train = train[~train.isnull().any(axis=1)] # Train ALWAYS drops
+
+    logger.debug(f'Dropping NaNs reduced the data by {(1-train.index.size/orig)*100:.2f}%')
+    if train.isna().any().any():
+        logger.debug(f'Percent of NaNs in columns that had NaNs:\n{(shift[train.columns[train.isna().any()]].isna().sum() / train.index.size) * 100}')
+
     if config.dropna:
-        train = train[~train.isnull().any(axis=1)]
-        test  =  test[ ~test.isnull().any(axis=1)]
+        orig = test.index.size
+        test = test[~test.isnull().any(axis=1)]
+
+        logger.debug(f'Dropping NaNs reduced the data by {(1-test.index.size/orig)*100:.2f}%')
+        if test.isna().any().any():
+            logger.debug(f'Percent of NaNs in columns that had NaNs:\n{(shift[test.columns[test.isna().any()]].isna().sum() / test.index.size) * 100}')
+
+    # Drop rows that have a value for the label
+    if config.inverse_drop:
+        test = test.loc[test[config.label].isnull()]
 
     # Train and test the model
-    pred, scores = train_and_test(model, train, test, config.label, features)
+    pred, scores = train_and_test(model, train, test, config.label, fit)
 
     # Cast predicted values to Series
     pred = pd.Series(index=test.index, data=pred)
@@ -110,11 +155,6 @@ def build_model(config, shift=None):
         pred.to_hdf(config.output.file, key)
 
         # Save model via pickle
-        output = f'{config.output.models}/{config.label}'
-        if shift is not None:
-            output += f'_H{shift}_min'
-
-        output += '.pkl'
         utils.save_pkl(output, model)
 
     return train, test, pred, scores, model
@@ -152,7 +192,7 @@ def classify(config):
                     os.mkdir(f'{config.plots.directory}/H{shift}')
                 bak = config.plots.directory
                 config.plots.directory += f'/H{shift}'
-                plots.generate_plots(test, pred, model, config)
+                plots.generate_plots(test, pred, model, config, train)
                 config.plots.directory = bak
     else:
         train, test, pred, scores, model = build_model(config)
@@ -160,7 +200,7 @@ def classify(config):
 
         # If plotting is enabled, run the functions and save output if given
         if config.plots.enabled:
-            plots.generate_plots(test, pred, model, config)
+            plots.generate_plots(test, pred, model, config, train)
 
     # Save scores
     if config.output:

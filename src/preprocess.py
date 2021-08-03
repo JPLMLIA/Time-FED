@@ -67,7 +67,7 @@ def calculate_features(df, config):
         latitude  = 34.380000000000003,
         longitude = -1.176800000000000e+02,
         altitude  = 2280
-    )
+    ).zenith
 
     if 'month' in config.calc:
         df['month'] = df.index.month
@@ -77,6 +77,9 @@ def calculate_features(df, config):
 
     if 'minute' in config.calc:
         df['minute'] = df.index.hour * 60 + df.index.minute
+
+    if 'reitan' in config.calc:
+        df['reitan'] = df['drew_drop'] * 2 # dummy calc
 
     for feature in config.log:
         if feature in df:
@@ -107,9 +110,6 @@ def preprocess(config):
     logger.info('Creating new features')
     df = calculate_features(df, config.features)
 
-    for feature in config.shift.features:
-        df[f'{feature}_shifted'] = df[feature].shift(config.shift.points)
-
     # Apply filtering
     if config.filter:
         for feature, args in vars(config.filter).items():
@@ -121,6 +121,11 @@ def preprocess(config):
     if config.exclude:
         cols = set(df.columns)
         drop = cols - (cols - set(config.exclude))
+        df   = df.drop(columns=drop)
+
+    if config.include:
+        cols = set(df.columns)
+        drop = cols - set(config.include)
         df   = df.drop(columns=drop)
 
     # Write to output

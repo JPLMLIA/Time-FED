@@ -16,9 +16,22 @@ import utils
 
 logger = logging.getLogger('mloc/plots.py')
 
-sns.set_context('talk')
 sns.set_style('darkgrid')
+sns.set_context('poster', rc={'axes.titlesize': 35, 'axes.labelsize': 30})
 
+def watermark(ax, mark):
+    """
+    Watermarks a given plot
+    """
+    ax.text(1.005, 0.5, mark,
+        transform = ax.transAxes,
+        fontsize = 10,
+        color = 'gray',
+        alpha = 0.5,
+        ha = 'center',
+        va = 'center',
+        rotation = '270'
+    )
 
 def protect(func):
     """
@@ -53,6 +66,8 @@ def local_synchrony(df, config):
 
     w, h = pconf.figsize
     fig, axes = plt.subplots(3, 1, figsize=(w*1, h*3), sharex=True)
+
+    watermark(axes[1], config.plots.watermark)
 
     ax = axes[0]
     ax.plot(feat1)
@@ -108,6 +123,7 @@ def histogram_errors(true, pred, error_func, config):
     ax.set_xlabel(f'{config.label} floor ({config.plots.units[config.label]})')
     ax.set_ylabel('% error')
     ax.set_title(f'Errors per {config.label} binned')
+    watermark(ax, config.plots.watermark)
 
     plt.tight_layout()
     if config.plots.directory:
@@ -151,6 +167,8 @@ def errors_in_time(true, pred, config):
     ax.set_xlabel('Datetime')
     ax.set_ylabel(f'% error {config.label} ({config.plots.units[config.label]})')
 
+    watermark(ax, config.plots.watermark)
+
     plt.tight_layout()
     if config.plots.directory:
         plt.savefig(f'{config.plots.directory}/errors_in_time.png')
@@ -191,6 +209,7 @@ def scatter_with_errors(true, pred, error_func, name, config):
         ax.set_ylim([miny, maxy])
         ax.set_xlabel(f'Actual {config.label} ({config.plots.units[config.label]})')
         ax.set_ylabel(f'{label} {config.label} ({config.plots.units[config.label]})')
+        watermark(ax, config.plots.watermark)
 
     def contour(m1, m2, ax, minx, maxx, miny, maxy, zeroes=True):
         x, y = np.mgrid[
@@ -215,6 +234,7 @@ def scatter_with_errors(true, pred, error_func, name, config):
 
         ax.set_xlim([minx, maxx])
         ax.set_ylim([miny, maxy])
+        watermark(ax, config.plots.watermark)
 
         fig.colorbar(image, cax=colorax)
 
@@ -272,14 +292,25 @@ def importances(model, features, config):
     # Get the plot configs for this plot type
     pconf = config.plots.importances
 
-    # Retriev the important features
+    # Retrieve the important features
     imports = model.feature_importances_
     stddev  = np.std([est.feature_importances_ for est in model.estimators_], axis=0)
     indices = np.argsort(imports)[::-1]
 
+    # Setup and save the feature importances rankings
+    rankings = {features[indices[i]]: imports[indices[i]] for i in range(len(indices))}
+    if config.plots.directory:
+        df = pd.DataFrame(columns=['feature', 'importance'])
+        df.index.name = 'rank'
+        df.feature    = rankings.keys()
+        df.importance = rankings.values()
+
+        file = pconf.file.split('.')[0] + '.csv'
+        df.to_csv(f'{config.plots.directory}/{file}')
+
     logger.info('Feature ranking:')
-    for i in range(len(indices)):
-        logger.info(f'- {i+1}. {features[indices[i]]:20} ({imports[indices[i]]})')
+    for i, feat in enumerate(rankings):
+        print(f'- {i+1}. {feat:20} ({rankings[feat]})')
 
     xaxis   = range(min([pconf.number or len(features), len(features)]))
     indices = indices[:len(xaxis)]
@@ -300,6 +331,7 @@ def importances(model, features, config):
     # Set labels
     ax.set_xticklabels([features[i] for i in indices])
     ax.set_title(pconf.title)
+    watermark(ax, config.plots.watermark)
 
     plt.tight_layout()
     if config.plots.directory:
@@ -311,6 +343,15 @@ def importances(model, features, config):
 def date_range(true, pred, config):
     """
     """
+    label = config.label
+
+    try:
+        if config.plots.replace:
+            if label in config.plots.replace:
+                label = config.plots.replace[label]
+    except:
+        pass
+
     # Get the plot configs for this plot type
     pconf = config.plots.date_range
 
@@ -337,9 +378,10 @@ def date_range(true, pred, config):
                 ax.plot(np.abs(true_sub-pred_sub), 'b.', label='Absolute error')
 
         ax.legend()
-        ax.set_ylabel(f'{config.label} ({config.plots.units[config.label]})')
+        ax.set_ylabel(f'{label} ({config.plots.units[config.label]})')
         ax.set_xlabel(f'Month-Day Hour ({config.plots.units.datetime})')
         ax.set_title(title)
+        watermark(ax, config.plots.watermark)
 
         # Save
         plt.tight_layout()
@@ -348,7 +390,7 @@ def date_range(true, pred, config):
         else:
             plt.show()
 
-def generate_plots(test, pred, model, config):
+def generate_plots(test, pred, model, config, train=None):
     """
     Generates all plots
     """
@@ -359,7 +401,7 @@ def generate_plots(test, pred, model, config):
     importances(model, test.columns, config=config)
 
     histogram_errors(test[config.label], pred.values, lambda a, b: (a-b)/a, config=config)
-    # local_synchrony(train, config=config)
+    local_synchrony(train, config=config)
 
     date_range(test[config.label], pred, config=config)
 

@@ -23,6 +23,7 @@ def roll(df, window, step=1, observations=None, drop=None):
     Parameters
     ----------
     df : pandas.DataFrame
+        DataFrame to roll over
     window : str or int
         The window size to extract
     step : int
@@ -54,7 +55,7 @@ def roll(df, window, step=1, observations=None, drop=None):
                         continue
 
                 if drop:
-                    sub = sub.drop(columns=drop)
+                    sub = sub.drop(columns=drop, errors='ignore')
 
                 yield sub
 
@@ -63,7 +64,7 @@ def roll(df, window, step=1, observations=None, drop=None):
             if i < size:
                 sub = df.iloc[i:min(i+window, size)]
                 if drop:
-                    sub = sub.drop(columns=drop)
+                    sub = sub.drop(columns=drop, errors='ignore')
                 yield sub
 
 def get_features(whitelist=None, blacklist=None, prompt=False):
@@ -157,25 +158,42 @@ def select_features(df, config, label=None, shift=None):
     label = label or config.label
 
     # Select only on the train subset
-    train = utils.subselect(config.train, df)
+    train = utils.subselect(config.train, df).dropna()
     test  = utils.subselect(config.test,  df)
 
-    # Select features
-    lbl   = train[label]
-    train = tsfresh.select_features(train.drop(columns=[label]), lbl, n_jobs=config.cores, chunksize=64)
+    if config.use_features:
+        key = config.output.key
+        if shift is not None:
+            key += f'/{label}/historical_{shift}_min'
+        key += '/train'
 
-    # Add the label column back in
-    train[label] = lbl
+        logger.debug(f'Using features from {config.use_features}, with key {key}')
+        # Load features from some key
+        features = pd.read_hdf(config.use_features, key).columns
+
+        # Select only those features
+        train = train[features]
+    else:
+        # Select features
+        lbl   = train[label]
+        train = tsfresh.select_features(train.drop(columns=[label]), lbl, n_jobs=config.cores, chunksize=64)
+
+        # Add the label column back in
+        train[label] = lbl
 
     # Only keep the same features in test as train
     test = test[train.columns]
 
+    logger.debug(f'Train:\n{train}')
+    logger.debug(f'Test:\n{test}')
+
     if config.output.file:
-        logger.info(f'Saving to {config.output.file}')
         if shift is not None:
+            logger.info(f'Saving to {config.output.file} under key {config.output.key}/{label}/historical_{shift}_min/')
             train.to_hdf(config.output.file, f'{config.output.key}/{label}/historical_{shift}_min/train')
             test.to_hdf(config.output.file, f'{config.output.key}/{label}/historical_{shift}_min/test')
         else:
+            logger.info(f'Saving to {config.output.file} under key {config.output.key}/')
             train.to_hdf(config.output.file, f'{config.output.key}/train')
             test.to_hdf(config.output.file, f'{config.output.key}/test')
 
@@ -183,6 +201,7 @@ def select(df, label, config):
     """
     Performs feature selection process
     """
+    logger.debug(f'Selecting on\n{df}')
     if label in df:
         for length in config.historical:
             logger.info(f'Selecting relevant features for historical length {length} minutes for label {label}')
@@ -191,29 +210,33 @@ def select(df, label, config):
             shift = df.copy()
             lbl   = shift[label]
 
-            # Remove the static columns
-            static = shift[config.static]
-
-            if not config.exclude_label:
-                # Create a copy of the label column and drop the label
-                shift[f'{label}_H{length}'] = lbl
-                shift = shift.drop(columns=[label]+config.static)
-            else:
-                shift = shift.drop(columns=config.static)
+            # Remove the static columns and create the historical column
+            static = shift[[label]+config.static]
+            shift  = shift.drop(columns=[label]+config.static)
 
             # Shift the index by the length amount in minutes, add label back in
             shift.index += pd.Timedelta(f'{length} min')
             shift[label] = lbl
 
             # Add static columns back in
-            shift[config.static] = static
+            shift[[label]+config.static] = static
+
+            if shift.isna().any().any():
+                logger.debug(f'Percent of NaNs in columns that had NaNs:\n{(shift[shift.columns[shift.isna().any()]].isna().sum() / shift.index.size) * 100}')
 
             # Make sure there are no nans
-            shift = shift.dropna()
+            orig = shift.index.size
+            if config.ignore:
+                shift = shift.dropna(how='any', axis=0, subset=set(shift) - set(config.ignore+[f'historical_feature_{label}']))
+            else:
+                shift = shift.dropna(how='any', axis=0)
 
+            logger.debug(f'Dropping NaNs reduced the data by {(1-shift.index.size/orig)*100:.2f}%')
+
+            logger.debug(f'Shifted {length}:\n{shift}')
             select_features(shift, config, label=label, shift=length)
     else:
-        logger.info('Selecting relevant features')
+        logger.info('Selecting relevant features without historical')
         select_features(df, config)
 
 @utils.timeit
@@ -235,10 +258,22 @@ def process(config):
         logger.error(f'Unrecognized process argument: {config.process}')
         return
 
-    # load the data and drop nan values
+    # load the data
     df   = pd.read_hdf(config.input.file, config.input.key)
     orig = df.index.size
-    df   = df.dropna(how='any', axis=0)
+
+    # Shift the label column to make it historical
+    if config.hist_feat:
+        df[f'historical_feature_{config.label[0]}'] = df[config.label].shift(1)
+
+    logger.debug(f'Percent of NaNs in each column:\n{(df.isna().sum() / df.index.size) * 100}')
+
+    # Drop nans
+    df = df.dropna(how='any', axis=0, subset=set(df) - set(config.ignore or []))
+
+    if config.inverse_drop:
+        df = df.loc[df[config.label].isnull()]
+
     logger.debug(f'Dropping NaNs reduced the data by {(1-df.index.size/orig)*100:.2f}%')
 
     logger.info('Creating the rolling windows and beginning processing')
@@ -247,7 +282,7 @@ def process(config):
         window       = config.window,
         step         = config.step,
         observations = config.observations,
-        drop         = config.drop
+        drop         = config.drop + config.label
     )
     extracts = []
     with utils.Pool(processes=config.cores) as pool:
@@ -264,6 +299,9 @@ def process(config):
     elif config.process == 'median':
         columns = list(set(df.columns) - set(ret.columns))
         ret[columns] = df[columns].loc[ret.index]
+
+    if ret.isna().any().any():
+        logger.debug(f'Percent of NaNs in columns that had NaNs:\n{(ret[ret.columns[ret.isna().any()]].isna().sum() / ret.index.size) * 100}')
 
     if config.output.file:
         logger.info(f'Saving raw to {config.output.file}')
