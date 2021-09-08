@@ -123,7 +123,7 @@ def extract(df, features=None):
         column_sort  = '_TIME',
         column_kind  = None,
         column_value = None,
-        impute_function       = impute,
+        # impute_function       = impute,
         default_fc_parameters = features,
         disable_progressbar   = True,
         n_jobs = 1
@@ -302,6 +302,12 @@ def process(config):
 
     if ret.isna().any().any():
         logger.debug(f'Percent of NaNs in columns that had NaNs:\n{(ret[ret.columns[ret.isna().any()]].isna().sum() / ret.index.size) * 100}')
+
+    logger.debug('Dropping columns with a NaN')
+    orig = ret.index.size
+    ret  = ret.dropna(how='any', axis=1)
+
+    logger.debug(f'{orig - ret.index.size}/{orig} ({(orig - ret.index.size) / orig * 100:.2f}%) columns were dropped')
 
     if config.output.file:
         logger.info(f'Saving raw to {config.output.file}')
