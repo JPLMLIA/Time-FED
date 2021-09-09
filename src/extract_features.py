@@ -304,10 +304,11 @@ def process(config):
         logger.debug(f'Percent of NaNs in columns that had NaNs:\n{(ret[ret.columns[ret.isna().any()]].isna().sum() / ret.index.size) * 100}')
 
     logger.debug('Dropping columns with a NaN')
-    orig = ret.index.size
+    orig = len(ret.columns)
     ret  = ret.dropna(how='any', axis=1)
+    new  = len(ret.columns)
 
-    logger.debug(f'{orig - ret.index.size}/{orig} ({(orig - ret.index.size) / orig * 100:.2f}%) columns were dropped')
+    logger.debug(f'{orig - new}/{orig} ({(orig - new) / orig * 100:.2f}%) columns were dropped')
 
     if config.output.file:
         logger.info(f'Saving raw to {config.output.file}')
