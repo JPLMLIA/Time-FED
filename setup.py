@@ -13,7 +13,7 @@ setuptools.setup(
         'mat4py>=0.4.3',
         'mat73>=0.46',
         'matplotlib>=3.3.2',
-        'numpy>=1.19.1',
+        'numpy<=1.20',
         'pandas>=1.1.3',
         'pvlib>=0.8.1',
         'pyyaml>=5.4.1',

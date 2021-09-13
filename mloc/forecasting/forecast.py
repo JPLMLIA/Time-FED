@@ -533,7 +533,7 @@ Defaults to 3 hours for any cadence in any case.\
     logger = logging.getLogger('mloc/forecast.py')
 
     # Verify the cadence
-    default_cadence = Resolution[case]
+    default_cadence = Resolution[args.case]
     if args.cadence is not None:
         if args.cadence % default_cadence != 0:
             logger.error(f'The --cadence (-c) for {args.case} must be a multiple of {default_cadence}. You gave {args.cadence}')
