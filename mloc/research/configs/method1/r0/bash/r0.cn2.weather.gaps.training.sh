@@ -1,0 +1,15 @@
+#!/bin/bash
+
+conda activate mloc
+
+mkdir /data1/mloc/local/runs/method1
+mkdir /data1/mloc/local/runs/method1/r0
+mkdir /data1/mloc/local/runs/method1/r0/r0.cn2.weather.gaps
+
+cd /data1/mloc/research/
+
+python preprocess.py       -c configs/method1/r0/r0.cn2.weather.gaps.yml -s preprocess
+python extract_features.py -c configs/method1/r0/r0.cn2.weather.gaps.training.yml -s extract_features
+python classify.py         -c configs/method1/r0/r0.cn2.weather.gaps.training.yml -s classify
+
+echo 'DONE'
