@@ -15,14 +15,13 @@ from pvlib.solarposition import get_solarposition
 from tqdm import tqdm
 from glob import glob
 
-from tsfresh.utilities.dataframe_functions import impute
+# from tsfresh.utilities.dataframe_functions import impute
 
 from mloc import utils
 
-DEPLOYDIR = '/data1/mloc/src/deployment'
 
 # Maps the case name to the actual column name in the data
-Names     = {
+Names = {
     'r0' : 'r0_10T',
     'Cn2': 'Cn2_10T',
     'pwv': 'water_vapor',
@@ -42,27 +41,6 @@ Resolution = {
     'wind_speed'       : 5
 }
 
-"""STRUCTURE
-DEPLOYDIR
-|- r0/
- |- _data/
- |- features/
- |- models/
- |- forecasts/
-|- pwv/
- |- _data/
- |- features/
- |- models/
- |- forecasts/
-|- temperature/
- ...
-|- pressure/
- ...
-|- relative_humidity/
- ...
-|- pressure/
- ...
-"""
 
 def roll(df, case):
     """
@@ -222,7 +200,7 @@ def extract(df):
         column_sort  = '_TIME',
         column_kind  = None,
         column_value = None,
-        impute_function     = impute,
+        # impute_function     = impute,
         disable_progressbar = True,
         n_jobs = 1
     )
@@ -237,8 +215,6 @@ def extract(df):
     extract = extract.drop(columns=['_ID', '_TIME'])
 
     return extract
-
-
 
 def extract_features(df, case):
     """
@@ -257,9 +233,11 @@ def extract_features(df, case):
     ret: pandas.DataFrame
         The concatenated and time-sorted frame post-feature extraction
     """
-    # Create the historical column is available
+    # Create the historical column if it is available, shift by the resolution
     if Names[case] in df:
-        df = df.rename(columns={Names[case]: f'historical_feature_{Names[case]}'})
+        # df = df.rename(columns={Names[case]: f'historical_feature_{Names[case]}'})
+        df[f'historical_feature_{Names[case]}'] = df[Names[case]].shift(freq=f'{Resolution[case]} min')
+        df = df.drop(columns=[Names[case]])
         logger.debug(f'Created historical column of {Names[case]}')
 
     logger.debug(f'Percent of NaNs in each column:\n{(df.isna().sum() / df.index.size) * 100}')
@@ -341,18 +319,16 @@ def forecast(case, run, df, forecasts, cadence):
     for i, file in enumerate(files):
         logger.debug(f'- {i:02d}: {file}')
 
-    logger.info(f'Loading models for run {run}')
-    models = {}
-    for i in tqdm(range(forecasts+1), desc='Loading models'):
-        models[i*cadence] = utils.load_pkl(files[i])
-
     logger.info('Loading features for this set')
     features = utils.load_pkl(os.path.join(DEPLOYDIR, case, 'features', f'{run}.pkl'))
 
-    logger.info('Beginning forecasting with all models')
-    fcs = pd.DataFrame(columns=models.keys(), index=df.index)
-    for fc, model in tqdm(models.items(), desc='Forecasting'):
+    logger.info(f'Forecasting for run {run}')
+    fcs = pd.DataFrame(index=df.index)
+    for i in tqdm(range(forecasts+1), desc='Forecasting'):
+        fc      = i*cadence
+        model   = utils.load_pkl(files[i])
         fcs[fc] = model.predict(df[features[fc]])
+        del model
 
     logger.info('Saving forecasts')
     output = os.path.join(DEPLOYDIR, case, 'forecasts', f'{run}.csv')
@@ -365,7 +341,7 @@ def forecast(case, run, df, forecasts, cadence):
 
     fcs.to_csv(output, **flags)
 
-def main(case, forecasts, cadence, input, key, optimize, skip_check):
+def main(case, forecasts, cadence, input, key, nonoptimize, skip_check):
     """
     Main function that handles data loading, stepping through data processing
     functions, and data masking for forecasting.
@@ -382,8 +358,8 @@ def main(case, forecasts, cadence, input, key, optimize, skip_check):
         Path to the input data h5
     key: string
         String key to the data in the input h5
-    optimize: bool
-        Enables mask optimization to only apply the best models for each
+    nonoptimize: bool
+        Disables mask optimization which only applies the best models for each
         timestamp
     skip_check: bool
         Skips the check for a last_window.pkl, effectively forcing a full
@@ -394,9 +370,14 @@ def main(case, forecasts, cadence, input, key, optimize, skip_check):
     bool
         Status of the script. True for success, False for failure.
     """
+    # Load the data in
     try:
-        # Load the data in
-        df = pd.read_hdf(input, key)
+        if input.endswith('.csv'):
+            df = pd.read_csv(input)
+            df.index = pd.DatetimeIndex(df.datetime)
+            df.drop(columns=['datetime'])
+        elif input.endswith('.h5'):
+            df = pd.read_hdf(input, key)
     except:
         logger.exception(f'Unable to load the input data from {input} using key {key}')
         return False
@@ -434,7 +415,7 @@ def main(case, forecasts, cadence, input, key, optimize, skip_check):
         Cn2 = 'log_Cn2_10T' in isvalid
 
         # Optimize only selects the best model for each window
-        if optimize:
+        if not nonoptimize:
             # r0 and Cn2 are present
             if r0 and Cn2:
                 masks['r0.Cn2.weather.historical'] = df[ isvalid['historical_feature_r0_10T'] &  isvalid['log_Cn2_10T']] #  r0 &  Cn2
@@ -452,6 +433,23 @@ def main(case, forecasts, cadence, input, key, optimize, skip_check):
             # Neither r0 nor Cn2 is present
             else:
                 masks['r0.weather']                = df
+
+        # A specific run has been chosen
+        elif isinstance(nonoptimize, str):
+            if nonoptimize == 'r0.Cn2.weather.historical':
+                if r0 and Cn2:
+                    masks['r0.Cn2.weather.historical'] = df[isvalid['historical_feature_r0_10T'] & isvalid['log_Cn2_10T']]
+            elif nonoptimize == 'r0.weather.historical'
+                if r0:
+                    masks['r0.weather.historical'] = df[isvalid['historical_feature_r0_10T']]
+            elif nonoptimize == 'r0.Cn2.weather':
+                if Cn2:
+                    masks['r0.Cn2.weather'] = df[isvalid['log_Cn2_10T']]
+            elif nonoptimize == 'r0.weather':
+                masks['r0.weather'] = df
+            else:
+                logger.error(f'Run {nonoptimize} does not exist for this case ({case}), should be one of: [r0.Cn2.weather.historical, r0.weather.historical, r0.Cn2.weather, r0.weather]')
+
         # Unoptimized selects all windows that each model type could process
         else:
             # r0 and Cn2 are present
@@ -477,7 +475,6 @@ def main(case, forecasts, cadence, input, key, optimize, skip_check):
 
     return True
 
-#%%
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
@@ -488,7 +485,7 @@ if __name__ == '__main__':
     )
     parser.add_argument('-f', '--forecasts',    type     = int,
                                                 help     = '''\
-How far to forecast. This value should be N * cadence <= [r0:180|pwv:300]. Examples:
+How far to forecast. This value should be N * cadence <= [r0,weather=180|pwv=300]. Examples:
 - r0 : With cadence =  5, to forecast 3 hours do 180/5  = 36
 - r0 : With cadence = 10, to forecast 3 hours do 180/10 = 18
 - pwv: With cadence = 30, to forecast 3 hours do 180/30 = 6
@@ -502,14 +499,25 @@ Defaults to 3 hours for any cadence in any case.\
     parser.add_argument('-i', '--input',        type     = str,
                                                 # required = True, TODO: Revert and remove default
                                                 default  = 'deployment/test.h5',
-                                                help     = 'Path to the input h5 file containing a Pandas DataFrame object'
+                                                help     = 'Path to the input data file'
+    )
+    parser.add_argument('-d', '--deploydir',    type     = str,
+                                                default  = os.getenv('MLOC_DEPLOYDIR'),
+                                                help     = 'Sets the deployment directory for this run. If not set, defaults to the environment variable MLOC_DEPLOYDIR'
     )
     parser.add_argument('-k', '--key',          type     = str,
                                                 default  = 'test',
-                                                help     = 'Key to the Pandas DataFrame object in the --input file'
+                                                help     = 'Key to the Pandas DataFrame object in the --input file if it is an H5'
     )
-    parser.add_argument('-o', '--optimize',     action   = 'store_true',
-                                                help     = 'Optimizes forecasting by using the best model for a given forecast'
+    parser.add_argument('-no', '--nonoptimize', type     = str,
+                                                nargs    = '?',
+                                                const    = True,
+                                                default  = False,
+                                                help     = '''\
+Disables optimization of forecasting which selects the best model for a given forecast if multiple cases are available. If disabled, \
+all models will be applied to all forecasts, if viable. If this option is followed by a string with the same name as a run for this case, \
+only the models for that run will be used.
+'''
     )
     parser.add_argument('-p', '--preview',      action   = 'store_true',
                                                 help     = 'Previews the arguments for the user'
@@ -519,6 +527,9 @@ Defaults to 3 hours for any cadence in any case.\
     )
     parser.add_argument('--debug',              action   = 'store_true',
                                                 help     = 'Enables debug logging'
+    )
+    parser.add_argument('--logfile',            type     = str,
+                                                help     = 'Enables logging to a file'
     )
 
     args = parser.parse_args()
@@ -531,6 +542,11 @@ Defaults to 3 hours for any cadence in any case.\
         stream  = sys.stdout
     )
     logger = logging.getLogger('mloc/forecast.py')
+
+    if args.logfile:
+        filehl = logging.FileHandler(args.logfile)
+        filehl.setLevel(logging.DEBUG)
+        logger.addHandler(filehl)
 
     # Verify the cadence
     default_cadence = Resolution[args.case]
@@ -551,6 +567,35 @@ Defaults to 3 hours for any cadence in any case.\
     else:
         args.forecasts = default_fcs
 
+    # Verify the deployment directory
+    if args.deploydir:
+        # Verify the case directory exists
+        if args.case in glob(os.path.join(args.deploydir, '*')):
+            # Check which directories are available
+            folders = glob(os.path.join(args.deploydir, args.case, '*'))
+            for folder in ['_data', 'features', 'models', 'forecasts']:
+                if folder not in folders:
+                    logger.warning(f'Directory {folder} not found in {args.deploydir}/{args.case}/')
+
+                    # Some folders can be generated
+                    if folder in ['_data', 'forecasts']:
+                        os.mkdir(os.path.join(args.deploydir, args.case, folder))
+                        logger.info(f'Created directory {args.deploydir}/{args.case}/{folder}')
+
+                    # features/ and models/ needs to be populated by the user
+                    else:
+                        logger.error(f'Cannot create directory {folder}, it must be manually created and contain the expected contents')
+                        sys.exit(0)
+        else:
+            logger.error(f'Directory for case {args.case} not found in the deployment directory ({args.deploydir}), please create it and add the features and models subdirectories')
+            sys.exit(0)
+    else:
+        logger.error(f'No deployment directory found. Please set it either via the environment variable MLOC_DEPLOYDIR or via -d, --deploydir')
+        sys.exit(0)
+
+    # Set the global
+    DEPLOYDIR = args.deploydir
+
     # Log the arguments
     logger.debug(f'Forecasting case  : {args.case}')
     logger.debug(f'Using forecasts   : {args.forecasts}')
@@ -558,7 +603,7 @@ Defaults to 3 hours for any cadence in any case.\
     logger.info(f'Forecasting {args.case} every {args.cadence} minutes up to {args.forecasts * args.cadence} minutes')
     logger.debug(f'Input file        : {args.input}')
     logger.debug(f'Input key         : {args.key}')
-    logger.debug(f'Optimized         : {args.optimize}')
+    logger.debug(f'Optimized         : {args.nonoptimize}')
     logger.debug(f'Skip Check        : {args.skip_check}')
 
     # If previewing the arguments, exit
@@ -566,7 +611,7 @@ Defaults to 3 hours for any cadence in any case.\
         sys.exit(1)
 
     try:
-        status = main(args.case, args.forecasts, args.cadence, args.input, args.key, args.optimize, args.skip_check)
+        status = main(args.case, args.forecasts, args.cadence, args.input, args.key, args.nonoptimize, args.skip_check)
 
         if status:
             logger.info('Finished successfully')

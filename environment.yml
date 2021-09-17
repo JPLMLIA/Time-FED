@@ -1,4 +1,4 @@
-name: mloc_pip
+name: mloc
 channels:
   - defaults
 dependencies:
