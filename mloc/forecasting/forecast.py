@@ -312,8 +312,9 @@ def forecast(case, run, df, forecasts, cadence):
 
     # Get the models to be used
     files = glob(os.path.join(DEPLOYDIR, case, 'models', run, '*.pkl'))
+    files = sorted(files, key=lambda file: int(file.split('_')[-2][1:])) # Sort by the H#_min
     skip  = int(cadence / Resolution[case])
-    files = [files[i] for i in range(0, forecasts+1, skip)]
+    files = [files[i*skip] for i in range(0, forecasts+1)]
 
     logger.debug('Models to be used:')
     for i, file in enumerate(files):
@@ -339,7 +340,9 @@ def forecast(case, run, df, forecasts, cadence):
             'header': False
         }
 
-    fcs.to_csv(output, **flags)
+    fcs.index.name = 'datetime'
+    fcs = fcs.reset_index()
+    fcs.to_csv(output, index=False, **flags)
 
 def main(case, forecasts, cadence, input, key, nonoptimize, skip_check):
     """
@@ -375,7 +378,7 @@ def main(case, forecasts, cadence, input, key, nonoptimize, skip_check):
         if input.endswith('.csv'):
             df = pd.read_csv(input)
             df.index = pd.DatetimeIndex(df.datetime)
-            df.drop(columns=['datetime'])
+            df = df.drop(columns=['datetime'])
         elif input.endswith('.h5'):
             df = pd.read_hdf(input, key)
     except:
@@ -439,7 +442,7 @@ def main(case, forecasts, cadence, input, key, nonoptimize, skip_check):
             if nonoptimize == 'r0.Cn2.weather.historical':
                 if r0 and Cn2:
                     masks['r0.Cn2.weather.historical'] = df[isvalid['historical_feature_r0_10T'] & isvalid['log_Cn2_10T']]
-            elif nonoptimize == 'r0.weather.historical'
+            elif nonoptimize == 'r0.weather.historical':
                 if r0:
                     masks['r0.weather.historical'] = df[isvalid['historical_feature_r0_10T']]
             elif nonoptimize == 'r0.Cn2.weather':
@@ -469,6 +472,9 @@ def main(case, forecasts, cadence, input, key, nonoptimize, skip_check):
 
     # Predict
     for run, data in masks.items():
+        # Make sure there's data for this run
+        if data.index.size == 0:
+            continue
         logger.info(f'Performing forecasting using model set {run}')
         logger.debug(f'{run} contains {data.index.size / df.index.size * 100:.2f}% of the windows')
         forecast(case, run, data, forecasts, cadence)
@@ -570,21 +576,23 @@ only the models for that run will be used.
     # Verify the deployment directory
     if args.deploydir:
         # Verify the case directory exists
-        if args.case in glob(os.path.join(args.deploydir, '*')):
+        root = os.path.join(args.deploydir, args.case)
+        if root in glob(os.path.join(args.deploydir, '*')):
             # Check which directories are available
-            folders = glob(os.path.join(args.deploydir, args.case, '*'))
+            folders = glob(os.path.join(root, '*'))
             for folder in ['_data', 'features', 'models', 'forecasts']:
-                if folder not in folders:
-                    logger.warning(f'Directory {folder} not found in {args.deploydir}/{args.case}/')
+                path = os.path.join(root, folder)
+                if path not in folders:
+                    logger.warning(f'Directory {path} not found in {root}')
 
                     # Some folders can be generated
                     if folder in ['_data', 'forecasts']:
-                        os.mkdir(os.path.join(args.deploydir, args.case, folder))
-                        logger.info(f'Created directory {args.deploydir}/{args.case}/{folder}')
+                        os.mkdir(path)
+                        logger.info(f'Created directory {path}')
 
                     # features/ and models/ needs to be populated by the user
                     else:
-                        logger.error(f'Cannot create directory {folder}, it must be manually created and contain the expected contents')
+                        logger.error(f'Cannot create directory {path}, it must be manually created and contain the expected contents')
                         sys.exit(0)
         else:
             logger.error(f'Directory for case {args.case} not found in the deployment directory ({args.deploydir}), please create it and add the features and models subdirectories')

@@ -11,7 +11,9 @@ To install with Conda, follow:
 2. Install the MLOC environment via `conda create env -f environment.yml`
 - Windows may use different syntax, such as `conda env create` within the directory containing the `environment.yml` file
 3. Invoke the environment via `conda activate mloc`
-4. Install MLOC via `pip install /path/to/mloc/`
+4. Change directories into the repository where `setup.py` is found
+5. Install MLOC via `pip install .`
+- Windows may raise an error: `ERROR: Could not install packages due to an EnvironmentError`. To get around this, append `--user` to the above command.
 
 The folder structure for the forecasting script is expected to be in this format:
 
@@ -42,13 +44,69 @@ The below table provides a list of the arguments currently supported by `forecas
 |-i|--input|Path to the input data file||`-i /data/mloc/r0/data.csv`
 |-d|--deploydir|Path to the deployment directory|Environment variable `MLOC_DEPLOYDIR`| `-d /proj/mloc/mloc/forecasting/deployment`
 |-k|--key|The key to the Pandas DataFrame object if the --input is an H5 file|`test`|`-k data`
-|-f|--forecasts|How far into the future to forecast. This value should be N * cadence <= [r0,weather=180\|pwv=300]|Defaults to 3 hours in any case|`-f 36`, `-f 18`, `-f 2`
+|-f|--forecasts|* How far into the future to forecast. This value should be N * cadence <= [r0,weather=180\|pwv=300]|Defaults to 3 hours in any case|`-f 36`, `-f 18`, `-f 2`
 |-c|--cadence|The forecasting cadence, ie. how often to forecast. Must be a multiple of the resolution of the input data, eg. r0/weather is a multiple of 5, PWV a multiple of 30|Defaults to the resolution of the input data|`-c 5`, `-c 30`, `-c 60`
 |-o|--optimize|Optimizes forecasting by selecting the best model for a given forecast. Not optimizing will use all models available to forecast.|False|`-o`, `--optimize`
 |-p|--preview|Previews the arguments of the scripts before execution. Useful to ensure arguments are set correctly before committing to execution.|False|`-p`, `--preview`
 ||--skip_check|Skips the check for the last window processed on this input data. May reprocess already processed timestamps.|False|`--skip_check`
 ||--debug|Enables debug logging|False|`--debug`
 
+The formula for calculating the `--forecasts F` value is:
+
+`(F / (C / R)) * R = FC (minutes)`
+
+where
+* `FC` = The forecast distance, in minutes
+* `F` = The forecast distance, in units of the resolution
+* `C` = The cadence of the forecasting
+* `R` = The resolution of the data
+
+Solving for `F`, which is the value to plug in for `--forecasts` would be:
+
+`F = FC / ((C / R) * R)`
+
+### Example Usages
+
+> I want to forecast every 10 minutes up to 3 hours for data with a resolution of 5 minutes (r0, weather)
+
+`python forecast.py r0 -i /path/to/input/data.csv --cadence 10 --forecasts 36`
+* `r0` defines the case
+* `-i` is the path to the input data.csv
+* `--cadence 10` (can be reduced to `-c 10`) defines the frquency of the forecasts, in this case "every 10 minutes"
+* `--forecasts 36` (can be reduced to `-f 36`) sets the forecasting limit to be `forecasts / (cadence / resolution[case])`. In this case, with the resolution of r0 being 5 minutes, the value is `36 / (10 / 5)` = `18`, which can be logically verified as `18 * cadence = 180 minutes` which is 3 hours. This option does not need to be set if the intended forecast distance is 3 hours.
+
+> I want to forecast every 30 minutes up to 2 hours for data with a resolution of 30 minutes (PWV)
+
+`python forecast.py pwv -i /path/to/input/data.csv -c 30 -f 4`
+
+* `-c 30` sets the cadence to 30 minutes, but the resolution of the data is already 30 so this option can be omitted (defaults to 30)
+* `-f 4`, formula `4 / (30 / 30) = 4`, `4 * 30 = 120 minutes` = 2 hours
+
+> I want to forecast r0 every 5 minutes up to 3 hours using all possible models
+
+`python forecast.py r0 -i  /path/to/input/data.csv --nonoptimize`
+
+* `-f` was omitted as the target forecasting distance is 3 hours, which is the default
+* `-c` was omitted as the desired cadence rate is the same as the resolution of the data, 5 minutes. Defaults to the resolution when not provided
+* `--nonoptimize` (optionally shortened to `-no`) disables optimization of model selection and will attempt to apply all models for forecasting, if possible
+
+> I want to forecast r0 every 10 minutes up to 3 hours using only [SET] of models
+
+The r0 case will attempt to optimize which models are used for forecasting by default. To disable this, use the `--nonoptimize` option.
+
+`python forecast.py r0 -i /path/to/input/data.csv -c 10 --nonoptimize [SET]`
+
+* `-f` was omitted as the target forecasting distance is 3 hours, which is the default
+* `--nonoptimize [SET]` this run will _only_ use the set of models from `[SET]` (eg. `r0.Cn2.weather.historical`) to forecast with, if possible.
+
+Subexamples:
+
+* `python forecast.py r0 -i /path/to/input/data.csv -c 10 --no r0.Cn2.weather.historical`
+* `python forecast.py r0 -i /path/to/input/data.csv -c 10 --no r0.Cn2.weather`
+* `python forecast.py r0 -i /path/to/input/data.csv -c 10 --no r0.weather.historical`
+* `python forecast.py r0 -i /path/to/input/data.csv -c 10 --no r0.weather`
+
+NOTE: Models will not be invoked if the data is not viable for the models, ie. there is missing data that the stricter sets of models (`Cn2`, `historical` models) require. If this occurs, the script may not output any forecasts (as there are none).
 
 
 ### Input
@@ -104,6 +162,7 @@ A typical r0 input would look like this:
 
 * !Important: r0 and Cn2 must be smoothed using a 10 minute rolling window. That is, these variables would have each value at timestamp T replaced with the average(T-1, T, T+1)
 * The nowcast is the last timestamp in the table. Therefore, no r0 value would be recorded at this time.
+* Variables `r0_10T` and `Cn2_10T` are not required
 
 To convert this into a CSV file:
 ```
@@ -119,8 +178,32 @@ Appending to this data file will not impact the forecasting script. The script i
 
 ##### PWV
 
-TODO
+PWV expects a time resolution of 30 minutes and contains the following variables: `temperature`, `pressure`, `wind_speed`, `humidity`, `dewpoint`
 
 ##### Weather
 
 Weather looks the exact same as the r0 input but does not include Cn2 or r0. It is expected to have a resolution of 5 minutes.
+
+### Outputs
+
+The script will output to `MLOC_DEPLOYDIR/[case]/forecasts/[run].csv`. If the `case` has multiple runs (eg. `r0.Cn2.weather.historical`, `r0.weather`), then multiple csv files will be present. The header of the file will always be `datetime,int,int,int,...`, where the `ints` are the forecasts, eg. `datetime,0,10,20,30,40,50,60,70,80,90,100,110,120,130,140,150,160,170,180`.
+
+Example output for r0:
+
+```
+datetime,0,10,20,30,40,50,60,70,80,90,100,110,120,130,140,150,160,170,180
+2020-12-30 00:45:00,6.166446180731198,6.214913086052983,5.841368201867026,6.51203835223976,6.525594391549899,6.416350970707881,6.379592944611676,7.268432919298063,6.29127912343241,6.898307691668561,6.87290048519368,6.10958255206236,5.701098580514675,5.57
+6853170761268,5.9321206961965505,5.553276834911012,5.81514875,5.078259283778028,5.4632150077234805
+2020-12-30 00:50:00,6.098215788730273,6.230448437035285,5.8320792093671905,6.158044838892881,6.222005306625386,6.232811770724945,6.070958364828856,7.119622146245678,6.367685623432409,6.786624288243919,6.790664485193681,6.080253597349098,5.656618003806245
+,5.611362920761269,5.834306225404703,5.52028224013463,5.800730749999998,5.059120130725534,5.443479257723479
+2020-12-30 00:55:00,6.055357720845418,6.173675966497019,5.937593101114508,6.3560063816891885,6.556972883884388,6.775515572435289,6.577872239695262,7.369630899749507,6.401329922932257,6.678885570520862,6.695923985193681,6.101445964911663,5.650830129670031
+,5.559208920761268,5.8383779754047005,5.530880088065467,5.737051249999997,5.084414443110501,5.419204507723477
+2020-12-30 01:00:00,6.115352622673028,6.03150666936433,5.960728586949812,6.2493860613702035,6.368289584415021,7.241098089670285,6.851729931328745,7.396375399749507,6.396823254867842,6.719291570520861,6.421469369178656,5.819935510198401,5.5740453796700296
+,5.645335618056741,5.787269725404701,5.562297088065468,5.751357999999997,5.075069443110501,5.413686507723478
+```
+
+The above was generated from a run using `python forecast.py r0 -d deployment -i deployment\r0\_data\2.test.csv -c 10`
+
+The cadence was set to `-c 10`, so the header of the csv increments by 10 minutes. If the run was using a 5 minute cadence, the header would be increments of 5 up to 180.
+
+The datetime of the row is the t0 time for that forecast. The `0` column for that row would be the nowcast, and all other columns are for the forecast of `datetime` + `column` minutes.
