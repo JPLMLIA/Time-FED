@@ -1,6 +1,6 @@
 # Forecasting
 
-The primary script for forecasting is `forecast.py`. This script handles taking prepared data, adding new features to it, creating windows and extracting even more features, optimizing which models to use for forecasting, and then performing the forecasts.
+The primary script for forecasting is `forecast.py`. This script handles taking prepared data, adding new features to it, creating windows and extracting even more features, selecting which models to use for forecasting, and then performing the forecasts.
 
 ## Installation and Setup
 
