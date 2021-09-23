@@ -67,7 +67,7 @@ The below table provides a list of the arguments currently supported by `forecas
 |-k|--key|The key to the Pandas DataFrame object if the --input is an H5 file|`test`|`-k data`
 |-f|--forecasts|* How far into the future to forecast. This value should be N * cadence <= [r0,weather=180\|pwv=300]|Defaults to 3 hours in any case|`-f 36`, `-f 18`, `-f 2`
 |-c|--cadence|The forecasting cadence, ie. how often to forecast. Must be a multiple of the resolution of the input data, eg. r0/weather is a multiple of 5, PWV a multiple of 30|Defaults to the resolution of the input data|`-c 5`, `-c 30`, `-c 60`
-|-s|--select|Smart selects forecasting models by using the best model for a given forecast. Disabling this option will use all models available to forecast. If this option is followed by a string, only that set of models will be used|False|`-s`, `--select`, `--select r0.Cn2.weather.historical`
+|-s|--select| Disables smart selects forecasting models by using the best model for a given forecast. Disabling this option will use all models available to forecast. If this option is followed by a string, only that set of models will be used|False|`-s`, `--select`, `--select r0.Cn2.weather.historical`
 |-p|--preview|Previews the arguments of the scripts before execution. Useful to ensure arguments are set correctly before committing to execution.|False|`-p`, `--preview`
 ||--skip_check|Skips the check for the last window processed on this input data. May reprocess already processed timestamps.|False|`--skip_check`
 ||--debug|Enables debug logging|False|`--debug`
