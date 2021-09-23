@@ -17,19 +17,19 @@ To install with Conda, follow:
 
 ## Use Cases
 
-forecast.py was developed with the following use cases (refered to in this README simply as **case**):
+forecast.py was developed with the following use cases and runs (referred to in this README simply as "**case**"):
 
-| Case | Description 
-|-|-
-|r0.weather| r0 forecasting using weather inputs only
-|r0.weather.historical| r0 forecastingusing weather and past r0 observations 
-|r0.cn2.weather| r0 forecastingusing weather plus Cn2
-|r0.cn2.weather.historical| r0 forecasting using weather and past r0 observations
-|temperature| 
-|pressure|
-|relative_humidity|
-|wind_speed|
-|pwv| precipitable water vapor
+| Case | Run | Description
+|-|-|-
+|r0|r0.weather| r0 forecasting using weather inputs only
+|r0|r0.weather.historical| r0 forecasting using weather and past r0 observations
+|r0|r0.Cn2.weather| r0 forecasting using weather plus Cn2
+|r0|r0.Cn2.weather.historical| r0 forecasting using weather and past r0 observations
+|temperature|full|
+|pressure|full|
+|relative_humidity|full|
+|wind_speed|full|
+|pwv|full|Precipitable water vapor
 
 
 ## Directory Structure
@@ -109,7 +109,7 @@ Solving for `F`, which is the value to plug in for `--forecasts` would be:
 
 * `-f` was omitted as the target forecasting distance is 3 hours, which is the default
 * `-c` was omitted as the desired cadence rate is the same as the resolution of the data, 5 minutes. Defaults to the resolution when not provided
-* `--select` (optionally shortened to `-no`) disables optimization of model selection and will attempt to apply all models for forecasting, if possible
+* `--select` (optionally shortened to `-s`) disables optimization of model selection and will attempt to apply all models for forecasting, if possible
 
 > I want to forecast r0 every 10 minutes up to 3 hours using only [SET] of models
 
@@ -122,10 +122,10 @@ The r0 case will attempt to smart select which models are used for forecasting b
 
 Subexamples:
 
-* `python forecast.py r0 -i /path/to/input/data.csv -c 10 --no r0.Cn2.weather.historical`
-* `python forecast.py r0 -i /path/to/input/data.csv -c 10 --no r0.Cn2.weather`
-* `python forecast.py r0 -i /path/to/input/data.csv -c 10 --no r0.weather.historical`
-* `python forecast.py r0 -i /path/to/input/data.csv -c 10 --no r0.weather`
+* `python forecast.py r0 -i /path/to/input/data.csv -c 10 -s r0.Cn2.weather.historical`
+* `python forecast.py r0 -i /path/to/input/data.csv -c 10 -s r0.Cn2.weather`
+* `python forecast.py r0 -i /path/to/input/data.csv -c 10 -s r0.weather.historical`
+* `python forecast.py r0 -i /path/to/input/data.csv -c 10 -s r0.weather`
 
 NOTE: Models will not be invoked if the data is not viable for the models, ie. there is missing data that the stricter sets of models (`Cn2`, `historical` models) require. If this occurs, the script may not output any forecasts (as there are none).
 
