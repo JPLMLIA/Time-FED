@@ -15,7 +15,28 @@ To install with Conda, follow:
 5. Install MLOC via `pip install .`
 - Windows may raise an error: `ERROR: Could not install packages due to an EnvironmentError`. To get around this, append `--user` to the above command.
 
-The folder structure for the forecasting script is expected to be in this format:
+## Use Cases
+
+forecast.py was developed with the following use cases (refered to in this README simply as **case**):
+
+| Case | Description 
+|-|-
+|r0.weather| r0 forecasting using weather inputs only
+|r0.weather.historical| r0 forecastingusing weather and past r0 observations 
+|r0.cn2.weather| r0 forecastingusing weather plus Cn2
+|r0.cn2.weather.historical| r0 forecasting using weather and past r0 observations
+|temperature| 
+|pressure|
+|relative_humidity|
+|wind_speed|
+|pwv| precipitable water vapor
+
+
+## Directory Structure
+
+
+
+The directory structure for the forecasting script is expected to be in this format:
 
 ```
 deployment/
