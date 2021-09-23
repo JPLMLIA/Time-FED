@@ -15,8 +15,6 @@ from pvlib.solarposition import get_solarposition
 from tqdm import tqdm
 from glob import glob
 
-# from tsfresh.utilities.dataframe_functions import impute
-
 from mloc import utils
 
 
@@ -95,26 +93,21 @@ def roll(df, case):
     # Minimum columns for a viable window
     viable = {
         'r0' : ['temperature', 'pressure', 'wind_speed', 'relative_humidity'],
-        'pwv': ['temperature', 'pressure', 'wind_speed', 'humidity', 'dewpoint'],
-        'temperature'      : ['temperature', 'pressure','relative_humidity', 'wind_speed'],
-        'pressure'         : ['temperature', 'pressure','relative_humidity', 'wind_speed'],
-        'relative_humidity': ['temperature', 'pressure','relative_humidity', 'wind_speed'],
-        'wind_speed'       : ['temperature', 'pressure','relative_humidity', 'wind_speed'],
+        'pwv': ['datetime', 'temperature', 'pressure', 'wind_speed', 'humidity', 'dewpoint'],
+        'temperature'      : ['historical_feature_temperature', 'pressure','relative_humidity', 'wind_speed'],
+        'pressure'         : ['temperature', 'historical_feature_pressure','relative_humidity', 'wind_speed'],
+        'relative_humidity': ['temperature', 'pressure','historical_feature_relative_humidity', 'wind_speed'],
+        'wind_speed'       : ['temperature', 'pressure','relative_humidity', 'historical_feature_wind_speed'],
     }
 
     # Calculate the integer distance for the window size of this case
-    distance = int(window[case]/Resolution[case])
-
-    delta = pd.Timedelta(f'{window[case]} min')
     count = Counter()
     valid = set()
-    for i in range(0, df.index.size - window[case]):
-        # Determine a window and check if it's the expected size
-        j = i + distance
-        if df.index[j] - df.index[i] > delta:
+    delta = pd.Timedelta(f'{window[case]} min')
+    for ts in df.index:
+        sub = df[(ts - delta < df.index) & (df.index <= ts)]
+        if sub.index.size != 10:
             continue
-
-        sub = df.iloc[i:j]
 
         # Drop columns that have a NaN
         sub = sub.dropna(how='any', axis=1)
@@ -122,7 +115,7 @@ def roll(df, case):
         # Verify this window has the minimum required columns
         if all([column in sub for column in viable[case]]):
             count.update(sub)
-            valid.add((i, j))
+            valid.add(ts)
 
     if len(valid) == 0:
         logger.debug('There were no valid windows, returning')
@@ -134,8 +127,10 @@ def roll(df, case):
         logger.debug(f"{key}{' '*(fmt-len(key))}: {n}")
 
     # Now yield the windows
-    for i, j in tqdm(valid, desc='Windows'):
-        yield df.iloc[i:j].dropna(how='any', axis=1)
+    for ts in tqdm(valid, desc='Windows'):
+        sub = df[(ts - delta < df.index) & (df.index <= ts)]
+        sub = sub.dropna(how='any', axis=1)
+        yield sub
 
 def calculate_features(df):
     """
@@ -200,7 +195,6 @@ def extract(df):
         column_sort  = '_TIME',
         column_kind  = None,
         column_value = None,
-        # impute_function     = impute,
         disable_progressbar = True,
         n_jobs = 1
     )
@@ -344,7 +338,7 @@ def forecast(case, run, df, forecasts, cadence):
     fcs = fcs.reset_index()
     fcs.to_csv(output, index=False, **flags)
 
-def main(case, forecasts, cadence, input, key, nonoptimize, skip_check):
+def main(case, forecasts, cadence, input, key, select, skip_check):
     """
     Main function that handles data loading, stepping through data processing
     functions, and data masking for forecasting.
@@ -361,8 +355,8 @@ def main(case, forecasts, cadence, input, key, nonoptimize, skip_check):
         Path to the input data h5
     key: string
         String key to the data in the input h5
-    nonoptimize: bool
-        Disables mask optimization which only applies the best models for each
+    select: bool
+        Disables mask selection which only applies the best models for each
         timestamp
     skip_check: bool
         Skips the check for a last_window.pkl, effectively forcing a full
@@ -389,12 +383,17 @@ def main(case, forecasts, cadence, input, key, nonoptimize, skip_check):
         # Only process timestamps that haven't been before
         try:
             logger.info('Remove already processed data')
-            last       = utils.load_pkl(os.path.join(DEPLOYDIR, case, '_data', 'last_window.pkl'))
-            index      = df.index == last
-            index[-9:] = True
-            df         = df[index]
+            last  = utils.load_pkl(os.path.join(DEPLOYDIR, case, '_data', 'last_window.pkl'))
+            delta = pd.Timedelta(f'{Resolution[case]*9} min')
+            df    = df[last - delta < df.index]
         except:
             logger.exception('Unable to load last window index, processing all possible windows')
+
+    # Sanity check the resolution of the input
+    count = (df.index.to_series().diff() % pd.Timedelta(Resolution[case])).value_counts()
+    if count.size != 1:
+        logger.warning(f'The resolution of the data is not a consistent {Resolution[case]} minutes, performance of the script cannot be guaranteed. See debug for more.')
+        logger.debug(f'Value counts (expect only 0):\n{count}')
 
     # Insert calculated features
     df = calculate_features(df)
@@ -418,7 +417,7 @@ def main(case, forecasts, cadence, input, key, nonoptimize, skip_check):
         Cn2 = 'log_Cn2_10T' in isvalid
 
         # Optimize only selects the best model for each window
-        if not nonoptimize:
+        if not select:
             # r0 and Cn2 are present
             if r0 and Cn2:
                 masks['r0.Cn2.weather.historical'] = df[ isvalid['historical_feature_r0_10T'] &  isvalid['log_Cn2_10T']] #  r0 &  Cn2
@@ -438,20 +437,20 @@ def main(case, forecasts, cadence, input, key, nonoptimize, skip_check):
                 masks['r0.weather']                = df
 
         # A specific run has been chosen
-        elif isinstance(nonoptimize, str):
-            if nonoptimize == 'r0.Cn2.weather.historical':
+        elif isinstance(select, str):
+            if select == 'r0.Cn2.weather.historical':
                 if r0 and Cn2:
                     masks['r0.Cn2.weather.historical'] = df[isvalid['historical_feature_r0_10T'] & isvalid['log_Cn2_10T']]
-            elif nonoptimize == 'r0.weather.historical':
+            elif select == 'r0.weather.historical':
                 if r0:
                     masks['r0.weather.historical'] = df[isvalid['historical_feature_r0_10T']]
-            elif nonoptimize == 'r0.Cn2.weather':
+            elif select == 'r0.Cn2.weather':
                 if Cn2:
                     masks['r0.Cn2.weather'] = df[isvalid['log_Cn2_10T']]
-            elif nonoptimize == 'r0.weather':
+            elif select == 'r0.weather':
                 masks['r0.weather'] = df
             else:
-                logger.error(f'Run {nonoptimize} does not exist for this case ({case}), should be one of: [r0.Cn2.weather.historical, r0.weather.historical, r0.Cn2.weather, r0.weather]')
+                logger.error(f'Run {select} does not exist for this case ({case}), should be one of: [r0.Cn2.weather.historical, r0.weather.historical, r0.Cn2.weather, r0.weather]')
 
         # Unoptimized selects all windows that each model type could process
         else:
@@ -515,13 +514,13 @@ Defaults to 3 hours for any cadence in any case.\
                                                 default  = 'test',
                                                 help     = 'Key to the Pandas DataFrame object in the --input file if it is an H5'
     )
-    parser.add_argument('-no', '--nonoptimize', type     = str,
+    parser.add_argument('-s', '--select',       type     = str,
                                                 nargs    = '?',
                                                 const    = True,
                                                 default  = False,
                                                 help     = '''\
-Disables optimization of forecasting which selects the best model for a given forecast if multiple cases are available. If disabled, \
-all models will be applied to all forecasts, if viable. If this option is followed by a string with the same name as a run for this case, \
+Disables smart forecasting which selects the best model for a given forecast if multiple cases are available. If disabled, \
+all models will be applied to all forecasts. If this option is followed by a string with the same name as a run for this case, \
 only the models for that run will be used.
 '''
     )
@@ -611,7 +610,7 @@ only the models for that run will be used.
     logger.info(f'Forecasting {args.case} every {args.cadence} minutes up to {args.forecasts * args.cadence} minutes')
     logger.debug(f'Input file        : {args.input}')
     logger.debug(f'Input key         : {args.key}')
-    logger.debug(f'Optimized         : {args.nonoptimize}')
+    logger.debug(f'Selective         : {args.select}')
     logger.debug(f'Skip Check        : {args.skip_check}')
 
     # If previewing the arguments, exit
@@ -619,7 +618,7 @@ only the models for that run will be used.
         sys.exit(1)
 
     try:
-        status = main(args.case, args.forecasts, args.cadence, args.input, args.key, args.nonoptimize, args.skip_check)
+        status = main(args.case, args.forecasts, args.cadence, args.input, args.key, args.select, args.skip_check)
 
         if status:
             logger.info('Finished successfully')

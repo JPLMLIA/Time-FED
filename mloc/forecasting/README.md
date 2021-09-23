@@ -46,58 +46,58 @@ The below table provides a list of the arguments currently supported by `forecas
 |-k|--key|The key to the Pandas DataFrame object if the --input is an H5 file|`test`|`-k data`
 |-f|--forecasts|* How far into the future to forecast. This value should be N * cadence <= [r0,weather=180\|pwv=300]|Defaults to 3 hours in any case|`-f 36`, `-f 18`, `-f 2`
 |-c|--cadence|The forecasting cadence, ie. how often to forecast. Must be a multiple of the resolution of the input data, eg. r0/weather is a multiple of 5, PWV a multiple of 30|Defaults to the resolution of the input data|`-c 5`, `-c 30`, `-c 60`
-|-o|--optimize|Optimizes forecasting by selecting the best model for a given forecast. Not optimizing will use all models available to forecast.|False|`-o`, `--optimize`
+|-s|--select|Smart selects forecasting models by using the best model for a given forecast. Disabling this option will use all models available to forecast. If this option is followed by a string, only that set of models will be used|False|`-s`, `--select`, `--select r0.Cn2.weather.historical`
 |-p|--preview|Previews the arguments of the scripts before execution. Useful to ensure arguments are set correctly before committing to execution.|False|`-p`, `--preview`
 ||--skip_check|Skips the check for the last window processed on this input data. May reprocess already processed timestamps.|False|`--skip_check`
 ||--debug|Enables debug logging|False|`--debug`
 
 The formula for calculating the `--forecasts F` value is:
 
-`(F / (C / R)) * R = FC (minutes)`
+`F * C = D (minutes)`
 
 where
-* `FC` = The forecast distance, in minutes
+* `D` = The forecast distance, in minutes
 * `F` = The forecast distance, in units of the resolution
-* `C` = The cadence of the forecasting
-* `R` = The resolution of the data
+* `C` = The cadence of the forecasting, which is a multiple of the resolution of the data
 
 Solving for `F`, which is the value to plug in for `--forecasts` would be:
 
-`F = FC / ((C / R) * R)`
+`F = D / C`
 
 ### Example Usages
 
 > I want to forecast every 10 minutes up to 3 hours for data with a resolution of 5 minutes (r0, weather)
 
-`python forecast.py r0 -i /path/to/input/data.csv --cadence 10 --forecasts 36`
+`python forecast.py r0 -i /path/to/input/data.csv --cadence 10 --forecasts 18`
 * `r0` defines the case
 * `-i` is the path to the input data.csv
 * `--cadence 10` (can be reduced to `-c 10`) defines the frquency of the forecasts, in this case "every 10 minutes"
-* `--forecasts 36` (can be reduced to `-f 36`) sets the forecasting limit to be `forecasts / (cadence / resolution[case])`. In this case, with the resolution of r0 being 5 minutes, the value is `36 / (10 / 5)` = `18`, which can be logically verified as `18 * cadence = 180 minutes` which is 3 hours. This option does not need to be set if the intended forecast distance is 3 hours.
+* `--forecasts 18` (can be reduced to `-f 18`) sets the forecasting limit to be `D / C` (see the Interface section for more). Since the forecast distance (`D`) is 180 minutes, the value (`F`) is `180 / 10 = 18`. This option does not need to be set if the intended forecast distance is 3 hours.
+36/10/5
 
 > I want to forecast every 30 minutes up to 2 hours for data with a resolution of 30 minutes (PWV)
 
 `python forecast.py pwv -i /path/to/input/data.csv -c 30 -f 4`
 
 * `-c 30` sets the cadence to 30 minutes, but the resolution of the data is already 30 so this option can be omitted (defaults to 30)
-* `-f 4`, formula `4 / (30 / 30) = 4`, `4 * 30 = 120 minutes` = 2 hours
+* `-f 4`, formula `120 / 10`
 
 > I want to forecast r0 every 5 minutes up to 3 hours using all possible models
 
-`python forecast.py r0 -i  /path/to/input/data.csv --nonoptimize`
+`python forecast.py r0 -i  /path/to/input/data.csv --select`
 
 * `-f` was omitted as the target forecasting distance is 3 hours, which is the default
 * `-c` was omitted as the desired cadence rate is the same as the resolution of the data, 5 minutes. Defaults to the resolution when not provided
-* `--nonoptimize` (optionally shortened to `-no`) disables optimization of model selection and will attempt to apply all models for forecasting, if possible
+* `--select` (optionally shortened to `-no`) disables optimization of model selection and will attempt to apply all models for forecasting, if possible
 
 > I want to forecast r0 every 10 minutes up to 3 hours using only [SET] of models
 
-The r0 case will attempt to optimize which models are used for forecasting by default. To disable this, use the `--nonoptimize` option.
+The r0 case will attempt to smart select which models are used for forecasting by default. To disable this, use the `--select` option.
 
-`python forecast.py r0 -i /path/to/input/data.csv -c 10 --nonoptimize [SET]`
+`python forecast.py r0 -i /path/to/input/data.csv -c 10 --select [SET]`
 
 * `-f` was omitted as the target forecasting distance is 3 hours, which is the default
-* `--nonoptimize [SET]` this run will _only_ use the set of models from `[SET]` (eg. `r0.Cn2.weather.historical`) to forecast with, if possible.
+* `--select [SET]` this run will _only_ use the set of models from `[SET]` (eg. `r0.Cn2.weather.historical`) to forecast with, if possible.
 
 Subexamples:
 
