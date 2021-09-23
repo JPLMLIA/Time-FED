@@ -1,6 +1,6 @@
 # Forecasting
 
-The primary script for forecasting is `forecast.py`. This script handles taking prepared data, adding new features to it, creating windows and extracting even more features, optimizing which models to use for forecasting, and then performing the forecasts.
+The primary script for forecasting is `forecast.py`. This script handles taking prepared data, adding new features to it, creating windows and extracting even more features, selecting which models to use for forecasting, and then performing the forecasts.
 
 ## Installation and Setup
 
@@ -15,15 +15,36 @@ To install with Conda, follow:
 5. Install MLOC via `pip install .`
 - Windows may raise an error: `ERROR: Could not install packages due to an EnvironmentError`. To get around this, append `--user` to the above command.
 
-The folder structure for the forecasting script is expected to be in this format:
+## Use Cases
+
+forecast.py was developed with the following use cases (refered to in this README simply as **case**):
+
+| Case | Description 
+|-|-
+|r0.weather| r0 forecasting using weather inputs only
+|r0.weather.historical| r0 forecastingusing weather and past r0 observations 
+|r0.cn2.weather| r0 forecastingusing weather plus Cn2
+|r0.cn2.weather.historical| r0 forecasting using weather and past r0 observations
+|temperature| 
+|pressure|
+|relative_humidity|
+|wind_speed|
+|pwv| precipitable water vapor
+
+
+## Directory Structure
+
+
+
+The directory structure for the forecasting script is expected to be in this format:
 
 ```
 deployment/
-|[case]/
-||_data/
-||features/
-||models/
-||forecasts/
+deployment/[case]/
+deployment/[case]/_data/
+deployment/[case]/features/
+deployment/[case]/models/
+deployment/[case]/forecasts/
 ```
 
 This deployment directory may be set via the environment variable `MLOC_DEPLOYDIR`. Alternatively, this path can be set via `-d, --deploydir` at runtime. If this path is not specified, the script will exit early.
