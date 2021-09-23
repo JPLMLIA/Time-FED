@@ -40,11 +40,11 @@ The directory structure for the forecasting script is expected to be in this for
 
 ```
 deployment/
-|[case]/
-||_data/
-||features/
-||models/
-||forecasts/
+deployment/[case]/
+deployment/[case]/_data/
+deployment/[case]/features/
+deployment/[case]/models/
+deployment/[case]/forecasts/
 ```
 
 This deployment directory may be set via the environment variable `MLOC_DEPLOYDIR`. Alternatively, this path can be set via `-d, --deploydir` at runtime. If this path is not specified, the script will exit early.
