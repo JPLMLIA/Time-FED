@@ -22,13 +22,7 @@ from tqdm     import tqdm
 # Set context of seaborn
 sns.set_context('poster', rc={'axes.titlesize': 35, 'axes.labelsize': 30})
 
-logging.basicConfig(
-    level   = logging.DEBUG,
-    format  = '%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
-    datefmt = '%m-%d %H:%M',
-    stream  = sys.stdout
-)
-Logger = logging.getLogger('mloc/utils.py')
+Logger = logging.getLogger('timefed/research/mloc/utils.py')
 
 # Increase matplotlib's logger to warning to disable the debug spam it makes
 logging.getLogger('matplotlib').setLevel(logging.WARNING)

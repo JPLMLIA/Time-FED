@@ -7,9 +7,9 @@ import os
 from pvlib.solarposition import get_solarposition
 
 # Import utils to set the logger
-from mloc import utils
+from timefed.research.mloc import utils
 
-logger = logging.getLogger('mloc/research/preprocess.py')
+logger = logging.getLogger('timefed/research/mloc/preprocess.py')
 
 def filter(feature, args, df):
     """

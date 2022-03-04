@@ -93,7 +93,7 @@ def roll(df, case):
     # Minimum columns for a viable window
     viable = {
         'r0' : ['temperature', 'pressure', 'wind_speed', 'relative_humidity'],
-        'pwv': ['datetime', 'temperature', 'pressure', 'wind_speed', 'humidity', 'dewpoint'],
+        'pwv': ['temperature', 'pressure', 'wind_speed', 'humidity', 'dewpoint'],
         'temperature'      : ['historical_feature_temperature', 'pressure','relative_humidity', 'wind_speed'],
         'pressure'         : ['temperature', 'historical_feature_pressure','relative_humidity', 'wind_speed'],
         'relative_humidity': ['temperature', 'pressure','historical_feature_relative_humidity', 'wind_speed'],
@@ -370,7 +370,29 @@ def main(case, forecasts, cadence, input, key, select, skip_check):
     # Load the data in
     try:
         if input.endswith('.csv'):
+            # read the CSV
             df = pd.read_csv(input)
+
+            # Check for duplicates
+            orig = df.index.size
+            df   = df.drop_duplicates(subset='datetime', keep='last')
+
+            # Sort the index to ensure timestamps are in order
+            df = df.sort_index()
+
+            if orig > df.index.size:
+                logger.warning('Duplicate timestamps found, keeping only the most recent timestamp')
+                logger.debug(f'{orig - df.index.size} duplicates dropped, {orig} --> {df.index.size}')
+
+            # Check for NaN rows
+            orig = df.index.size
+            df   = df.dropna(how='all')
+
+            if orig > df.index.size:
+                logger.warning('All NaN rows were discovered, dropping those rows')
+                logger.debug(f'{orig - df.index.size} NaN rows dropped, {orig} --> {df.index.size}')
+
+            # Set the datetime column as the index
             df.index = pd.DatetimeIndex(df.datetime)
             df = df.drop(columns=['datetime'])
         elif input.endswith('.h5'):
@@ -393,7 +415,7 @@ def main(case, forecasts, cadence, input, key, select, skip_check):
     count = (df.index.to_series().diff() % pd.Timedelta(Resolution[case])).value_counts()
     if count.size != 1:
         logger.warning(f'The resolution of the data is not a consistent {Resolution[case]} minutes, performance of the script cannot be guaranteed. See debug for more.')
-        logger.debug(f'Value counts (expect only 0):\n{count}')
+        logger.debug(f'Value counts (expect only 0 days to have a count):\n{count}')
 
     # Insert calculated features
     df = calculate_features(df)
