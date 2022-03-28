@@ -7,7 +7,7 @@ import os
 from pvlib.solarposition import get_solarposition
 
 # Import utils to set the logger
-from timefed.research.mloc import utils
+from timefed.research.mloc import mutils
 
 logger = logging.getLogger('timefed/research/mloc/preprocess.py')
 
@@ -103,7 +103,7 @@ def preprocess(config):
 
     if config.subselect:
         logger.info('Subselecting whole dataset')
-        df = utils.subselect(config.subselect, df).copy()
+        df = mutils.subselect(config.subselect, df).copy()
 
     logger.debug(f'df.describe():\n{df.describe()}')
 
@@ -133,14 +133,14 @@ def preprocess(config):
 
     if config.train:
         logger.info('Creating training subset')
-        train = utils.subselect(config.train, df)
+        train = mutils.subselect(config.train, df)
         logger.debug(f'Count of non-NaN values for train:\n{(~train.isnull()).sum()}')
         train.to_hdf(config.output.file, f'{config.output.key}/train')
         # Interpolate train only
 
     if config.test:
         logger.info('Creating testing subset')
-        test = utils.subselect(config.test, df)
+        test = mutils.subselect(config.test, df)
         logger.debug(f'Count of non-NaN values for test:\n{(~test.isnull()).sum()}')
         test.to_hdf(config.output.file, f'{config.output.key}/test')
 

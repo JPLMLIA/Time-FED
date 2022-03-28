@@ -9,7 +9,6 @@ import multiprocessing.pool as mp_pool
 import numpy  as np
 import os
 import pandas as pd
-import pickle
 import seaborn as sns
 import sys
 import yaml
@@ -23,45 +22,6 @@ from tqdm     import tqdm
 sns.set_context('poster', rc={'axes.titlesize': 35, 'axes.labelsize': 30})
 
 Logger = logging.getLogger('timefed/research/mloc/utils.py')
-
-# Increase matplotlib's logger to warning to disable the debug spam it makes
-logging.getLogger('matplotlib').setLevel(logging.WARNING)
-
-def timeit(func):
-    """
-    Utility decorator to track the processing time of a function
-
-    Parameters
-    ----------
-    func : function
-        The function to track
-
-    Returns
-    -------
-    any
-        Returns the return of the tracked function
-    """
-    def _wrap(*args, **kwargs):
-        start = dtt.now()
-        ret   = func(*args, **kwargs)
-        Logger.debug(f'Finished function {func.__name__} in {(dtt.now() - start).total_seconds()} seconds')
-        return ret
-    # Need to pass the docs on for sphinx to generate properly
-    _wrap.__doc__ = func.__doc__
-    return _wrap
-
-def save_pkl(file, data):
-    """
-    Saves data to a file via pickle
-    """
-    with open(file, 'wb') as file:
-        pickle.dump(data, file)
-
-def load_pkl(file):
-    """
-    Loads data from a pickle
-    """
-    return pickle.load(open(file, 'rb'))
 
 def subselect(args, df):
     """

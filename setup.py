@@ -1,9 +1,9 @@
 import setuptools
 
 setuptools.setup(
-    name        = 'MLOC',
-    version     = '0.0.1',
-    description = 'Package containing libraries and scripts for the MLOC project',
+    name        = 'TimeFED',
+    version     = '1.1.0',
+    description = 'Time-series Forecasting, Evaluation, and Deployment',
     packages    = setuptools.find_packages(),
     classifiers = [
         'Programming Language :: Python :: 3'

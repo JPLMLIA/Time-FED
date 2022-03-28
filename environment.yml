@@ -1,4 +1,4 @@
-name: mloc
+name: timefed
 channels:
   - defaults
 dependencies:

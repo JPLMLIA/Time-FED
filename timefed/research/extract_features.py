@@ -11,9 +11,9 @@ from tqdm      import tqdm
 from tsfresh.feature_extraction            import ComprehensiveFCParameters
 from tsfresh.utilities.dataframe_functions import impute
 
-from mloc import utils
+from timefed import utils
+from timefed.config import Config
 
-logger = logging.getLogger('mloc/research/extract_features.py')
 
 def roll(df, window, step=1, observations=None, drop=None):
     """
@@ -99,10 +99,10 @@ def get_features(whitelist=None, blacklist=None, prompt=False):
     # Prompt the user with a list of available features
     if prompt:
         retain = list(features.keys())
-        logger.info('Current list of features to be used in feature extraction:')
+        Logger.info('Current list of features to be used in feature extraction:')
 
         for i, feat in enumerate(retain):
-            logger.info(f'\t{i}\t- {feat}')
+            Logger.info(f'\t{i}\t- {feat}')
 
         response = input('Please select which features to use in extraction (eg. 0 3 11): ')
         indices  = re.findall(r'(\d+)', response)
@@ -167,7 +167,7 @@ def select_features(df, config, label=None, shift=None):
             key += f'/{label}/historical_{shift}_min'
         key += '/train'
 
-        logger.debug(f'Using features from {config.use_features}, with key {key}')
+        Logger.debug(f'Using features from {config.use_features}, with key {key}')
         # Load features from some key
         features = pd.read_hdf(config.use_features, key).columns
 
@@ -184,16 +184,16 @@ def select_features(df, config, label=None, shift=None):
     # Only keep the same features in test as train
     test = test[train.columns]
 
-    logger.debug(f'Train:\n{train}')
-    logger.debug(f'Test:\n{test}')
+    Logger.debug(f'Train:\n{train}')
+    Logger.debug(f'Test:\n{test}')
 
     if config.output.file:
         if shift is not None:
-            logger.info(f'Saving to {config.output.file} under key {config.output.key}/{label}/historical_{shift}_min/')
+            Logger.info(f'Saving to {config.output.file} under key {config.output.key}/{label}/historical_{shift}_min/')
             train.to_hdf(config.output.file, f'{config.output.key}/{label}/historical_{shift}_min/train')
             test.to_hdf(config.output.file, f'{config.output.key}/{label}/historical_{shift}_min/test')
         else:
-            logger.info(f'Saving to {config.output.file} under key {config.output.key}/')
+            Logger.info(f'Saving to {config.output.file} under key {config.output.key}/')
             train.to_hdf(config.output.file, f'{config.output.key}/train')
             test.to_hdf(config.output.file, f'{config.output.key}/test')
 
@@ -201,10 +201,10 @@ def select(df, label, config):
     """
     Performs feature selection process
     """
-    logger.debug(f'Selecting on\n{df}')
+    Logger.debug(f'Selecting on\n{df}')
     if label in df:
         for length in config.historical:
-            logger.info(f'Selecting relevant features for historical length {length} minutes for label {label}')
+            Logger.info(f'Selecting relevant features for historical length {length} minutes for label {label}')
             ## Shift by the historical length
             # Copy the original
             shift = df.copy()
@@ -222,7 +222,7 @@ def select(df, label, config):
             shift[[label]+config.static] = static
 
             if shift.isna().any().any():
-                logger.debug(f'Percent of NaNs in columns that had NaNs:\n{(shift[shift.columns[shift.isna().any()]].isna().sum() / shift.index.size) * 100}')
+                Logger.debug(f'Percent of NaNs in columns that had NaNs:\n{(shift[shift.columns[shift.isna().any()]].isna().sum() / shift.index.size) * 100}')
 
             # Make sure there are no nans
             orig = shift.index.size
@@ -231,12 +231,12 @@ def select(df, label, config):
             else:
                 shift = shift.dropna(how='any', axis=0)
 
-            logger.debug(f'Dropping NaNs reduced the data by {(1-shift.index.size/orig)*100:.2f}%')
+            Logger.debug(f'Dropping NaNs reduced the data by {(1-shift.index.size/orig)*100:.2f}%')
 
-            logger.debug(f'Shifted {length}:\n{shift}')
+            Logger.debug(f'Shifted {length}:\n{shift}')
             select_features(shift, config, label=label, shift=length)
     else:
-        logger.info('Selecting relevant features without historical')
+        Logger.info('Selecting relevant features without historical')
         select_features(df, config)
 
 @utils.timeit
@@ -255,7 +255,7 @@ def process(config):
     elif config.process == 'median':
         func = median
     else:
-        logger.error(f'Unrecognized process argument: {config.process}')
+        Logger.error(f'Unrecognized process argument: {config.process}')
         return
 
     # load the data
@@ -266,7 +266,7 @@ def process(config):
     if config.hist_feat:
         df[f'historical_feature_{config.label[0]}'] = df[config.label].shift(1)
 
-    logger.debug(f'Percent of NaNs in each column:\n{(df.isna().sum() / df.index.size) * 100}')
+    Logger.debug(f'Percent of NaNs in each column:\n{(df.isna().sum() / df.index.size) * 100}')
 
     # Drop nans
     df = df.dropna(how='any', axis=0, subset=set(df) - set(config.ignore or []))
@@ -274,22 +274,26 @@ def process(config):
     if config.inverse_drop:
         df = df.loc[df[config.label].isnull()]
 
-    logger.debug(f'Dropping NaNs reduced the data by {(1-df.index.size/orig)*100:.2f}%')
+    Logger.debug(f'Dropping NaNs reduced the data by {(1-df.index.size/orig)*100:.2f}%')
 
-    logger.info('Creating the rolling windows and beginning processing')
+    # Remove columns that are not int or float dtypes
+    drop = [col for col in df if not any([np.issubdtype(df[col].dtype, kind) for kind in [int, float]])]
+    Logger.debug(f'The following columns will be excluded from tsfresh calculations due to not being of [int, float] dtypes: {drop}')
+
+    Logger.info('Creating the rolling windows and beginning processing')
     # Create rolling windows and process tsfresh on each window
     rolls = roll(df,
         window       = config.window,
         step         = config.step,
         observations = config.observations,
-        drop         = config.drop + config.label
+        drop         = config.drop + config.label + drop
     )
     extracts = []
     with utils.Pool(processes=config.cores) as pool:
         for ret in pool.imap_unordered(func, rolls, chunksize=100):
             extracts.append(ret)
 
-    logger.info('Concatting the feature frames together')
+    Logger.info('Concatting the feature frames together')
     ret = pd.concat(extracts)
     ret.sort_index(inplace=True)
 
@@ -301,17 +305,17 @@ def process(config):
         ret[columns] = df[columns].loc[ret.index]
 
     if ret.isna().any().any():
-        logger.debug(f'Percent of NaNs in columns that had NaNs:\n{(ret[ret.columns[ret.isna().any()]].isna().sum() / ret.index.size) * 100}')
+        Logger.debug(f'Percent of NaNs in columns that had NaNs:\n{(ret[ret.columns[ret.isna().any()]].isna().sum() / ret.index.size) * 100}')
 
-    logger.debug('Dropping columns with a NaN')
+    Logger.debug('Dropping columns with a NaN')
     orig = len(ret.columns)
     ret  = ret.dropna(how='any', axis=1)
     new  = len(ret.columns)
 
-    logger.debug(f'{orig - new}/{orig} ({(orig - new) / orig * 100:.2f}%) columns were dropped')
+    Logger.debug(f'{orig - new}/{orig} ({(orig - new) / orig * 100:.2f}%) columns were dropped')
 
     if config.output.file:
-        logger.info(f'Saving raw to {config.output.file}')
+        Logger.info(f'Saving raw to {config.output.file}')
         ret.to_hdf(config.output.file, f'{config.output.key}/full')
 
     # Select features
@@ -344,7 +348,10 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     try:
-        config = utils.Config(args.config, args.section)
+        config = Config(args.config, args.section)
+
+        utils.init(config)
+        Logger = logging.getLogger('timefed/extract_features.py')
 
         if args.select:
             df = pd.read_hdf(config.output.file, f'{config.output.key}/full')
@@ -357,6 +364,6 @@ if __name__ == '__main__':
         else:
             process(config)
 
-        logger.info('Finished successfully')
+        Logger.info('Finished successfully')
     except Exception as e:
-        logger.exception('Failed to complete')
+        Logger.exception('Failed to complete')

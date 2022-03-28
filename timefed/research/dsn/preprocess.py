@@ -1,26 +1,85 @@
-tf = tf.set_index('RECEIVED_AT_TS')
+"""
+"""
+import argparse
+import h5py
+import logging
+import pandas as pd
+import warnings
 
-#%%
-import datetime as dt
-
-
-dtt.fromordinal(tf.index[0])
-tf.index[0]
-dtt.fromtimestamp(tf.index[0])
-dtt.fromtimestamp(tf.index[1])
-dtt.fromtimestamp(tf.index[2])
-
-
-tf.index
-
-pd.DatetimeIndex(tf.index)
-
-dtt.fromtimestamp(tf.index)
-
-nf.index = [dtt.fromtimestamp(ts) for ts in tf.index]
-
-#%%
 from datetime import datetime as dtt
+from tables   import NaturalNameWarning
+from tqdm     import tqdm
+
+from timefed        import utils
+from timefed.config import Config
+
+# Disable tables warnings
+warnings.filterwarnings('ignore', category=NaturalNameWarning)
+
+# Disable pandas warnings
+pd.options.mode.chained_assignment = None
+
+def add_features(config, df):
+    """
+    Adds additional features to a track's dataframe per the config.
+
+    Parameters
+    ----------
+    config: timefed.config.Config
+        MilkyLib configuration object
+    df: pandas.DataFrame
+        Track DataFrame to add a columns to
+
+    Returns
+    -------
+    df: pandas.DataFrame
+        Modified track DataFrame
+    """
+    for feature in config.features.diff:
+        df[f'diff_{feature}'] = df[feature].diff()
+
+    return df
+
+def add_label(df, drs):
+    """
+    Adds the `Label` column to the input DataFrame and marks timestamps as:
+         0: Negative class (no DR)
+         1: Positive class (had DR)
+        -1:  Invalid class (Bad frames)
+
+    Parameters
+    ----------
+    df: pandas.DataFrame
+        Track DataFrame to add a Label column to
+    drs: pandas.DataFrame
+        The DataFrame containing DR information
+
+    Returns
+    -------
+    df: pandas.DataFrame
+        Modified track DataFrame
+    """
+    # Create label column with -1 as "bad" rows
+    df['Label'] = -1
+
+    # Set rows between B/EoT as 0
+    df.Label.loc[df.query('BEGINNING_OF_TRACK_TIME_DT <= RECEIVED_AT_TS <= END_OF_TRACK_TIME_DT').index] = 0
+
+    # Exclude bad frames from the negative class
+    df.Label.loc[df.query('TLM_BAD_FRAME_COUNT > 0').index] = -1
+
+    # Verify the bad frames were removed correctly
+    assert df.query('Label == 0 and TLM_BAD_FRAME_COUNT > 0').empty, 'Failed to remove bad frames from negative class'
+
+    # Lookup if this track had a DR, if so change those timestamps to 1
+    lookup = drs.query(f'SCHEDULE_ITEM_ID == {df.SCHEDULE_ITEM_ID.iloc[0]}')
+    if not lookup.empty:
+        incident = *timestamp_to_datetime(lookup.INCIDENT_START_TIME_DT), *timestamp_to_datetime(lookup.INCIDENT_END_TIME_DT)
+
+        # Set the incident as positive
+        df.Label.loc[df.query('@incident[0] <= RECEIVED_AT_TS <= @incident[1]').index] = 1
+
+    return df
 
 def timestamp_to_datetime(timestamps):
     """
@@ -40,16 +99,6 @@ def timestamp_to_datetime(timestamps):
     else:
         return [dtt.fromtimestamp(ts) for ts in timestamps]
 
-nf = tf.copy()
-nf.index = timestamp_to_datetime(nf.index)
-#%%
-
-for name, column in nf.items():
-    if 'DT' in name:
-        nf[name] = timestamp_to_datetime(column)
-
-#%%
-
 def decode_strings(df):
     """
     Attempts to apply string.decode() to any column with a dtype of object.
@@ -65,14 +114,207 @@ def decode_strings(df):
     df: pandas.DataFrame
         Same DataFrame object as input but with decoded columns
     """
-    for name, column in nf.items():
+    for name, column in df.items():
         if column.dtype == 'object':
             try:
                 df[name] = column.apply(lambda string: string.decode())
-                print(f'Decoded column {name}')
+                Logger.debug(f'Decoded column {name}')
             except:
-                print(f'Failed to decode column {name}')
+                Logger.exception(f'Failed to decode column {name}')
 
     return df
 
-nf = decode_strings(nf)
+def get_keys(file):
+    """
+    Retrieves the keys of the input h5 file
+
+    Parameters
+    ----------
+    file: str
+        Path to h5 file to read
+
+    Returns
+    -------
+    keys: dict
+        Dictionary of keys in the h5
+    """
+    keys = {}
+    with h5py.File(file, 'r') as h5:
+        for mission in h5.keys():
+            keys[mission] = {}
+            for ant in h5[mission].keys():
+                keys[mission][ant] = list(h5[f'{mission}/{ant}'].keys())
+
+    return keys
+
+def preprocess(config, mission, keys):
+    """
+    Preprocesses all the tracks for a given mission to prepare the data for the
+    pipeline scripts.
+
+    Parameters
+    ----------
+    config: timefed.config.Config
+        MilkyLib configuration object
+    mission: str
+        The string name of the mission being processed
+    keys: dict
+        Dictionary of {antenna: [tracks]} for this mission
+
+    Notes
+    -----
+    config keys:
+        input:
+            tracks: str
+            drs: str
+        only:
+            drs: list of str
+        output:
+            tracks: str
+    """
+    Logger.info(f'Processing tracks for mission: {mission}')
+    Logger.info('Retrieving DRs')
+    # Retrieve the DRs for this mission
+    drs = pd.read_hdf(config.input.drs, mission)
+
+    # Skip tracks that have wrong DRs
+    skip = []
+    if config.only.drs:
+        skip = drs.query(f'DR_CLOSURE_CAUSE_CD not in {config.only.drs}').SCHEDULE_ITEM_ID
+        Logger.debug(f'Processing only DRs: {config.only.drs}')
+        Logger.info(f'{skip.size} tracks will be skipped due to being the wrong DR')
+
+    # Setup TQDM
+    total = sum([len(tracks) for _, tracks in keys.items()])
+    bar   = tqdm(total=total, desc=f'Processing {mission} tracks')
+    dfs   = []
+
+    # Iterate over all antennae, tracks for this mission
+    for ant, tracks in keys.items():
+        for track in tracks:
+            if track in ['-1.0']:
+                bar.update()
+                Logger.info(f'Skipping bad track ID: {track}')
+                continue
+
+            if track in skip:
+                bar.update()
+                continue
+
+            # Load this track in
+            key = f'{mission}/{ant}/{track}'
+            df  = pd.read_hdf(config.input.tracks, key)
+
+            # Decode the strings to cleanup column values (removes the b'')
+            df = decode_strings(df)
+
+            # Next attempt to convert DT and TS columns to python DT objects
+            for name, column in df.items():
+                if 'DT' in name or 'TS' in name:
+                    try:
+                        df[name] = timestamp_to_datetime(column)
+                    except:
+                        Logger.exception(f'Failed to convert {name} to datetime for {key}, skipping track')
+                        continue
+
+            try:
+                # Create the label column
+                df = add_label(df, drs)
+            except:
+                Logger.exception(f'Failed to add label to {key}, skipping track')
+                raise
+
+            # Compute additional features
+            df = add_features(config, df)
+
+            # Set the index before saving
+            df = df.set_index('RECEIVED_AT_TS')
+            df.index.name = 'datetime'
+
+            # Save to output and update TQDM
+            df.to_hdf(config.output.tracks, key)
+
+            dfs.append(df)
+
+            Logger.debug(f'Successfully processed {key}')
+            bar.update()
+
+    Logger.info('Concatenating all frames together')
+    df = pd.concat(dfs)
+
+    df.to_hdf(config.output.tracks, f'{mission}/master')
+
+def main(config):
+    """
+    Sends each missions' tracks off to preprocessing
+
+    Parameters
+    ----------
+    config: timefed.config.Config
+        MilkyLib configuration object
+
+    Returns
+    -------
+    True or None
+        Whether the function processed each mission successfully
+
+    Notes
+    -----
+    config keys:
+        input:
+            tracks: str
+        only:
+            missions: list of str
+    """
+    # Retrieve key structure of the tracks h5
+    keys = get_keys(config.input.tracks)
+
+    # Subselect which missions to process
+    missions = config.only.missions
+    if not missions:
+        missions = list(keys.keys())
+
+    for mission in missions:
+        if mission not in keys:
+            Logger.warning(f'Mission {mission} not found in tracks h5, skipping')
+            continue
+
+        preprocess(config, mission, keys[mission])
+
+    return True
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
+
+    parser.add_argument('-c', '--config',   type     = str,
+                                            required = True,
+                                            metavar  = '/path/to/config.yaml',
+                                            help     = 'Path to a config.yaml file'
+    )
+    parser.add_argument('-s', '--section',  type     = str,
+                                            default  = 'preprocess',
+                                            metavar  = '[section]',
+                                            help     = 'Section of the config to use'
+    )
+
+    args  = parser.parse_args()
+    state = False
+
+    # Parse the config file
+    config = Config(args.config, args.section)
+
+    # Initialize the loggers
+    utils.init(config)
+    Logger = logging.getLogger('timefed/dsn/preprocess.py')
+
+    # Process
+    try:
+        state = main(config)
+    except Exception:
+        Logger.exception('Caught an exception during runtime')
+    finally:
+        if state is not None:
+            Logger.info('Finished successfully')
+        else:
+            Logger.info('Failed to complete')

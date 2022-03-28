@@ -1,10 +1,8 @@
 """
 """
 import copy
-import logging
+import os
 import yaml
-
-Logger = logging.getLogger('MilkyLib/config.py')
 
 class Null:
     """
@@ -91,23 +89,28 @@ class Config:
     """
     Reads a yaml file and creates a configuration from it
     """
-    def __init__(self, file, active=None, default='default'):
+    def __init__(self, string, active=None, default='default'):
         """
         Loads a config.yaml file
 
         Parameters
         ----------
-        file: str
-            Path to the config.yaml file to read
+        string: str
+            Either a path to the config.yaml file to read or a yaml string to
+            parse
         active: str or None
             Sets the active section
         default: str or None
             Defaults to this section when a key is not found in the active
             section
         """
-        self.file = file
-        with open(file, 'r') as f:
-            data = yaml.load(f, Loader=yaml.FullLoader)
+        if os.path.exists(string):
+            self.file = string
+            with open(string, 'r') as f:
+                data = yaml.load(f, Loader=yaml.FullLoader)
+        else:
+            self.file = None
+            data = yaml.load(string, Loader=yaml.FullLoader)
 
         if active not in data:
             raise AttributeError(f'Active section {active!r} does not exist in the YAML: {list(data.keys())}')
@@ -124,7 +127,6 @@ class Config:
         # If there is a default section, deep copy it then override it using the active section
         if self._default is not None:
             self.active = copy.deepcopy(self.__dict__[self._default])
-            print(self.active)
             self.active.name = f'Active {self._active}'
             self.update(self.__dict__[self._active], self.active)
         # Otherwise set the active section as active
@@ -198,17 +200,12 @@ class Config:
         if b is None:
             b = self.active
 
-        # delete = set()
         for key, value in a.items():
             if key in b:
                 if isinstance(value, Section):
-                    self.update(value, b[key])#, child=True)
+                    self.update(value, b[key])
                 else:
-                    # print(f'Setting {b}[{key!r}] = {value!r}')
                     b[key] = value
-                # delete.add(key)
-            # elif child:
-            #     b[key] = value
             b[key] = value
 
     def reset(self):
