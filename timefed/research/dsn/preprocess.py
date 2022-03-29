@@ -36,27 +36,32 @@ def analyze(df):
     size   = df.shape[0]
     counts = df.Label.value_counts()
     tracks = df.SCHEDULE_ITEM_ID.value_counts().size
-    Logger.debug('Stats on the combined dataframe:')
-    Logger.debug(f'Number of tracks   : {tracks}')
-    Logger.debug(f'Total timestamps   : {size}')
-    Logger.debug(f'Percent Label is  1: {counts[1]/size*100:.2f}%')
-    Logger.debug(f'Percent Label is  0: {counts[0]/size*100:.2f}%')
-    Logger.debug(f'Percent Label is -1: {counts[-1]/size*100:.2f}%')
+    Logger.info('Stats on the combined dataframe:')
+    Logger.info(f'Number of tracks   : {tracks}')
+    Logger.info(f'Total timestamps   : {size}')
+    Logger.info(f'Percent Label is  1: {counts[1]/size*100:.2f}%')
+    Logger.info(f'Percent Label is  0: {counts[0]/size*100:.2f}%')
+    Logger.info(f'Percent Label is -1: {counts[-1]/size*100:.2f}%')
 
     df = df.query('Label != -1')
 
-    Logger.debug(f'Removing invalid labels (-1) reduced the data by {(1-df.shape[0]/size)*100:.2f}%')
+    Logger.info(f'Removing invalid labels (-1) reduced the data by {(1-df.shape[0]/size)*100:.2f}%')
 
+    size    = df.shape[0]
+    counts  = df.Label.value_counts()
     ntracks = df.SCHEDULE_ITEM_ID.value_counts().size
 
-    Logger.debug(f'This removed {tracks - ntracks} ({(1-ntracks/tracks)*100:.2f}%) tracks, leaving {ntracks}')
+    Logger.info(f'This removed {tracks - ntracks} ({(1-ntracks/tracks)*100:.2f}%) tracks, leaving {ntracks}')
+    Logger.info(f'Total timestamps   : {size}')
+    Logger.info(f'Percent Label is  1: {counts[1]/size*100:.2f}%')
+    Logger.info(f'Percent Label is  0: {counts[0]/size*100:.2f}%')
 
     gf  = df[['SCHEDULE_ITEM_ID', 'Label']].groupby('SCHEDULE_ITEM_ID').mean()
     vc  = (gf != 0).value_counts()
     sum = vc.sum()
 
-    Logger.debug(f'Number of tracks with positive labels  : {vc[True]:5} ({vc[True]/sum*100:.2f}%)')
-    Logger.debug(f'Number of tracks that are only negative: {vc[False]:5} ({vc[False]/sum*100:.2f}%)')
+    Logger.info(f'Number of tracks with positive labels  : {vc[True]:5} ({vc[True]/sum*100:.2f}%)')
+    Logger.info(f'Number of tracks that are only negative: {vc[False]:5} ({vc[False]/sum*100:.2f}%)')
 
     return df
 
