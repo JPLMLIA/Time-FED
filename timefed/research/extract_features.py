@@ -327,12 +327,7 @@ def process(config):
             select(ret, config.label, config)
 
     return True
-G Em D C G x2
-G D Em C
-G D C G
-Em D G
-C G D
-Em F C G D D7
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
