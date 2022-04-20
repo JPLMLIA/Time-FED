@@ -18,13 +18,11 @@ preprocess:
     level: info
 
 extract_features:
-  static: [SCHEDULE_ITEM_ID, GROUND_ANTENNA_ID, BEGINNING_OF_TRACK_TIME_DT, END_OF_TRACK_TIME_DT]
-  window: 50 min
-  step: 1
-  observations: 10
-  cores: 4
-  label: [Label]
-  historical: [0, 30, 60, 90, 120, 150, 180]
+  window: 5 min
+  step: 60 sec
+  observations: 60
+  cores: 8
+  label: Label
   train:
     lt: 2016/01/01
   test:

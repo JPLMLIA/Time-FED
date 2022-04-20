@@ -56,6 +56,12 @@ def analyze(df):
     Logger.info(f'Percent Label is  1: {counts[1]/size*100:.2f}%')
     Logger.info(f'Percent Label is  0: {counts[0]/size*100:.2f}%')
 
+    Logger.info('Dropping rows with a NaN in any column')
+
+    df = df.dropna(how='any', axis=0)
+
+    Logger.info(f'Total rows removed: {size-df.shape[0]} ({(1-df.shape[0]/size)*100:.2f}%)')
+
     gf  = df[['SCHEDULE_ITEM_ID', 'Label']].groupby('SCHEDULE_ITEM_ID').mean()
     vc  = (gf != 0).value_counts()
     sum = vc.sum()
@@ -65,14 +71,12 @@ def analyze(df):
 
     return df
 
-def add_features(config, df):
+def add_features(df):
     """
     Adds additional features to a track's dataframe per the config.
 
     Parameters
     ----------
-    config: timefed.config.Config
-        MilkyLib configuration object
     df: pandas.DataFrame
         Track DataFrame to add a columns to
 
@@ -81,6 +85,8 @@ def add_features(config, df):
     df: pandas.DataFrame
         Modified track DataFrame
     """
+    config = Config()
+
     for feature in config.features.diff:
         df[f'diff_{feature}'] = df[feature].diff()
 
@@ -193,15 +199,13 @@ def get_keys(file):
 
     return keys
 
-def preprocess(config, mission, keys):
+def preprocess(mission, keys):
     """
     Preprocesses all the tracks for a given mission to prepare the data for the
     pipeline scripts.
 
     Parameters
     ----------
-    config: timefed.config.Config
-        MilkyLib configuration object
     mission: str
         The string name of the mission being processed
     keys: dict
@@ -218,6 +222,8 @@ def preprocess(config, mission, keys):
         output:
             tracks: str
     """
+    config = Config()
+
     Logger.info(f'Processing tracks for mission: {mission}')
     Logger.info('Retrieving DRs')
     # Retrieve the DRs for this mission
@@ -233,7 +239,9 @@ def preprocess(config, mission, keys):
     # Setup TQDM
     total = sum([len(tracks) for _, tracks in keys.items()])
     bar   = tqdm(total=total, desc=f'Processing {mission} tracks')
-    dfs   = []
+
+    # List to store track frames
+    dfs = []
 
     # Iterate over all antennae, tracks for this mission
     for ant, tracks in keys.items():
@@ -326,7 +334,7 @@ def main(config):
             Logger.warning(f'Mission {mission} not found in tracks h5, skipping')
             continue
 
-        preprocess(config, mission, keys[mission])
+        preprocess(mission, keys[mission])
 
     return True
 

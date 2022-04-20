@@ -401,15 +401,29 @@ def main(case, forecasts, cadence, input, key, select, skip_check):
         logger.exception(f'Unable to load the input data from {input} using key {key}')
         return False
 
+    # Check the dtypes of the columns to ensure they are correct
+    for col, dtype in df.dtypes.items():
+        if not np.issubdtype(dtype, np.float):
+            logger.error(f'Column {col!r} is {dtype!r} but is expected to be float64, attempting to fix')
+            try:
+                df[col] = df[col].astype(np.float64)
+            except:
+                logger.exception(f'Failed to convert {col!r} to float64 dtype, exiting')
+                return False
+
     if not skip_check:
         # Only process timestamps that haven't been before
+        file = os.path.join(DEPLOYDIR, case, '_data', 'last_window.pkl')
         try:
             logger.info('Remove already processed data')
-            last  = utils.load_pkl(os.path.join(DEPLOYDIR, case, '_data', 'last_window.pkl'))
+            last  = utils.load_pkl(file)
             delta = pd.Timedelta(f'{Resolution[case]*9} min')
             df    = df[last - delta < df.index]
         except:
             logger.exception('Unable to load last window index, processing all possible windows')
+            if glob(file):
+                logger.debug('The last_window.pkl file appears to exist but failed to load, deleting it')
+                os.remove(file)
 
     # Sanity check the resolution of the input
     count = (df.index.to_series().diff() % pd.Timedelta(Resolution[case])).value_counts()
@@ -580,7 +594,7 @@ only the models for that run will be used.
     if args.cadence is not None:
         if args.cadence % default_cadence != 0:
             logger.error(f'The --cadence (-c) for {args.case} must be a multiple of {default_cadence}. You gave {args.cadence}')
-            sys.exit(0)
+            sys.exit(1)
     else:
         args.cadence = default_cadence
 
@@ -614,13 +628,23 @@ only the models for that run will be used.
                     # features/ and models/ needs to be populated by the user
                     else:
                         logger.error(f'Cannot create directory {path}, it must be manually created and contain the expected contents')
-                        sys.exit(0)
+                        sys.exit(2)
         else:
             logger.error(f'Directory for case {args.case} not found in the deployment directory ({args.deploydir}), please create it and add the features and models subdirectories')
-            sys.exit(0)
+            sys.exit(3)
     else:
         logger.error(f'No deployment directory found. Please set it either via the environment variable MLOC_DEPLOYDIR or via -d, --deploydir')
-        sys.exit(0)
+        sys.exit(4)
+
+    # Verify the windows.h5 file is accessible
+    file = os.path.join(args.deploydir, args.case, '_data', 'windows.h5')
+    if glob(file):
+        try:
+            with h5py.File(file, 'r'):
+                pass
+        except:
+            logger.exception(f'Failed to access windows.h5, deleting it')
+            os.remove(file)
 
     # Set the global
     DEPLOYDIR = args.deploydir
@@ -637,7 +661,7 @@ only the models for that run will be used.
 
     # If previewing the arguments, exit
     if args.preview:
-        sys.exit(1)
+        sys.exit(0)
 
     try:
         status = main(args.case, args.forecasts, args.cadence, args.input, args.key, args.select, args.skip_check)

@@ -23,6 +23,29 @@ sns.set_context('poster', rc={'axes.titlesize': 35, 'axes.labelsize': 30})
 
 Logger = logging.getLogger('timefed/research/mloc/utils.py')
 
+def timeit(func):
+    """
+    Utility decorator to track the processing time of a function
+
+    Parameters
+    ----------
+    func : function
+        The function to track
+
+    Returns
+    -------
+    any
+        Returns the return of the tracked function
+    """
+    def _wrap(*args, **kwargs):
+        start = dtt.now()
+        ret   = func(*args, **kwargs)
+        Logger.debug(f'Finished function {func.__name__} in {(dtt.now() - start).total_seconds()} seconds')
+        return ret
+    # Need to pass the docs on for sphinx to generate properly
+    _wrap.__doc__ = func.__doc__
+    return _wrap
+
 def subselect(args, df):
     """
     Subselects from a dataframe between dates
