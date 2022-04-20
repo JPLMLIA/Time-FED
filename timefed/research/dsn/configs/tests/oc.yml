@@ -1,14 +1,13 @@
-
 default:
   log:
     level: debug
 
 preprocess:
   input:
-    tracks: /Users/jamesmo/projects/mloc/timefed/research/dsn/local/data/tracks.h5
-    drs: /Users/jamesmo/projects/sqa-utils/local/data/drs.h5
+    tracks: /data1/timefed/timefed/research/dsn/local/data/tracks.h5
+    drs: /data1/timefed/timefed/research/dsn/local/data/drs.h5
   output:
-    tracks: /Users/jamesmo/projects/mloc/timefed/research/dsn/local/data/preprocess.h5
+    tracks: /data1/timefed/timefed/research/dsn/local/data/preprocess.h5
   only:
     missions: [MMS1]
     drs: [RFI, SC]
@@ -21,17 +20,17 @@ extract_features:
   window: 5 min
   step: 60 sec
   observations: 60
-  cores: 8
+  cores: 32
   label: Label
   train:
     lt: 2016/01/01
   test:
     gte: 2016/01/01
   input:
-    file: /Users/jamesmo/projects/mloc/timefed/research/dsn/local/data/preprocess.h5
+    file: /data1/timefed/timefed/research/dsn/local/data/preprocess.h5
     key: MMS1/master
   output:
-    file: /Users/jamesmo/projects/mloc/timefed/research/dsn/local/data/features.h5
+    file: /data1/timefed/timefed/research/dsn/local/data/features.h5
     key: MMS1
   prompt:
     features: False
