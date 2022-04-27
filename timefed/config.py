@@ -15,6 +15,9 @@ class Null:
     def __call__(self):
         pass
 
+    def __deepcopy__(self, memo):
+        return Null()
+
     def __bool__(self):
         return False
 
@@ -63,6 +66,10 @@ class Section:
         data = self.__dict__.copy()
         data.pop('name')
         return (self.__class__, (self.name, data))
+
+    def __deepcopy__(self, memo):
+        print(memo)
+        return None
 
     def __contains__(self, key):
         return key in self.__dict__
@@ -166,7 +173,7 @@ class Config():
 
                 # If there is a default section, deep copy it then override it using the active section
                 if cls._flags._default is not None:
-                    cls._flags.active = copy.deepcopy(cls._data[cls._flags.default])
+                    cls._flags.active = copy.copy(cls._data[cls._flags.default]) # TODO: Fix the deepcopy
                     cls._flags.active.name = f'[active] {active}'
                     cls.update(cls._data[active], cls._flags.active)
                 # Otherwise set the active section as active

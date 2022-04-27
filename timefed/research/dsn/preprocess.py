@@ -279,7 +279,7 @@ def preprocess(mission, keys):
                 raise
 
             # Compute additional features
-            df = add_features(config, df)
+            df = add_features(df)
 
             # Set the index before saving
             df = df.set_index('RECEIVED_AT_TS')

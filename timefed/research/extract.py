@@ -55,13 +55,16 @@ def roll(df, window, step, observations):
 
         # Make sure the window is the correct size
         if sub.shape[0] == observations:
-            windows.append((i, j))
+            windows.append(sub)
 
-        # Make sure the step is correct
-        k = i + 1
-        while k < size and index[k] - index[i] < step:
-            k += 1
-        i = k
+            # Make sure the step is correct
+            k = i + 1
+            while k < size and index[k] - index[i] < step:
+                k += 1
+            i = k
+        else:
+            # Step only one index if this window was invalid
+            i += 1
 
         # Incrementally step the progress bar
         p = np.round(i / size, decimals=2)
@@ -178,22 +181,26 @@ def process():
     # Remove columns that are not int or float dtypes
     for col in df:
         dtype = df[col].dtype
-        if not np.issubdtype(dtype, int) or not np.issubdtype(dtype, float):
+        if not np.issubdtype(dtype, int) and not np.issubdtype(dtype, float):
             config.drop.append(col)
+    # Unique the drops list
+    config.drop = list(set(config.drop))
     Logger.debug(f'The following columns will be excluded from tsfresh calculations due to not being of [int, float] dtypes: {config.drop}')
 
     Logger.info('Creating the rolling windows and beginning processing')
     # Create rolling windows and process tsfresh on each window
-    rolls = roll(df,
+    windows = roll(df,
         window       = config.window,
         step         = config.step,
         observations = config.observations
     )
+    Logger.info(f'Number of windows: {len(rolls)}')
+
     with utils.Pool(processes=config.cores) as pool:
         i = 0
-        for ret in pool.imap_unordered(func, rolls, chunksize=100):
+        for ret in pool.imap_unordered(func, windows, chunksize=100):
             ret.to_hdf(config.output.file, f'{config.output.key}/windows/{i}')
-            del extract
+            del ret
             i += 1
 
     return
