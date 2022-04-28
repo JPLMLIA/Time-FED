@@ -16,13 +16,13 @@ class Null:
         pass
 
     def __deepcopy__(self, memo):
-        return Null()
+        return type(self)()
 
     def __bool__(self):
         return False
 
     def __eq__(self, other):
-        if other in [None, Null()]:
+        if type(other) in [type(None), type(self)]:
             return True
         return False
 
@@ -55,54 +55,58 @@ class Section:
     A section of the Config, essentially acts like a dict with dot notation
     """
     def __init__(self, name=None, data={}):
-        self.name = name
+        self.__dict__['_name'] = name
+        self.__dict__['_data'] = {}
         for key, value in data.items():
             if isinstance(value, dict):
-                setattr(self, key, Section(key, value))
+                self._data[key] = Section(key, value)
             else:
-                setattr(self, key, value)
+                self._data[key] = value
 
     def __reduce__(self):
-        data = self.__dict__.copy()
-        data.pop('name')
-        return (self.__class__, (self.name, data))
+        return (type(self), (self._name, self._data))
 
     def __deepcopy__(self, memo):
-        print(memo)
-        return None
+        new = type(self)(self._name)
+        memo[id(self)] = new
+        new._data = copy.deepcopy(self._data, memo)
+        return new
 
     def __contains__(self, key):
-        return key in self.__dict__
+        return key in self._data
 
     def __iter__(self):
-        data = self.__dict__.copy()
-        data.pop('name')
-        return iter(data)
+        return iter(self._data)
 
     def items(self):
-        data = self.__dict__.copy()
-        data.pop('name')
-        return data.items()
+        return self._data.items()
 
     def __getattr__(self, key):
         if key in self.__dict__:
             return self.__dict__[key]
+        elif key in self._data:
+            return self._data[key]
         return Null()
 
     def __setattr__(self, key, value):
-        self.__dict__[key] = value
+        if key in self.__dict__:
+            self.__dict__[key] = value
+        elif isinstance(value, dict):
+            self._data[key] = Section(key, value)
+        else:
+            self._data[key] = value
 
     def __getitem__(self, key):
         return self.__getattr__(key)
 
     def get(self, key, other=None):
-        return self.__dict__.get(key, other)
+        return self._data.get(key, other)
 
     def __setitem__(self, key, value):
         self.__setattr__(key, value)
 
     def __delitem__(self, key):
-        del self.__dict__[key]
+        del self._data[key]
 
     def __repr__(self):
         sections, attributes = [], []
@@ -111,7 +115,7 @@ class Section:
                 sections.append(key)
             else:
                 attributes.append(key)
-        return f'<Section {self.name} (attributes={attributes}, sections={sections})>'
+        return f'<Section {self._name} (attributes={attributes}, sections={sections})>'
 
 class Config():
     """
@@ -120,7 +124,7 @@ class Config():
     _data  = {}
     _flags = Section('flags', {
         'initialized': False,
-        'active'     : Section('None'),
+        'active'     : Section(),
         'active_name': None,
         'default'    : None
     })
@@ -173,8 +177,8 @@ class Config():
 
                 # If there is a default section, deep copy it then override it using the active section
                 if cls._flags._default is not None:
-                    cls._flags.active = copy.copy(cls._data[cls._flags.default]) # TODO: Fix the deepcopy
-                    cls._flags.active.name = f'[active] {active}'
+                    cls._flags.active = copy.deepcopy(cls._data[cls._flags.default])
+                    cls._flags.active._name = f'[active] {active}'
                     cls.update(cls._data[active], cls._flags.active)
                 # Otherwise set the active section as active
                 else:

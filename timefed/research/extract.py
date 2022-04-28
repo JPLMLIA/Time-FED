@@ -4,14 +4,19 @@ import numpy  as np
 import pandas as pd
 import re
 import tsfresh
+import warnings
 
 from functools import partial
+from tables    import NaturalNameWarning
 from tqdm      import tqdm
 
 from tsfresh.feature_extraction import ComprehensiveFCParameters
 
 from timefed import utils
 from timefed.config import Config
+
+# Disable h5py warning about setting an integer as a key name
+warnings.filterwarnings('ignore', category=NaturalNameWarning)
 
 
 def roll(df, window, step, observations):
@@ -41,7 +46,7 @@ def roll(df, window, step, observations):
     windows = []
 
     # Setup the progress bar
-    perc = np.linspace(1, size - observations, 100)
+    perc = np.linspace(1, size - observations - 1, 100)
     bar  = tqdm(total=100, desc='Percent Rolled')
     prog = 0
 
@@ -166,14 +171,12 @@ def get_features(whitelist=None, blacklist=None, prompt=False):
 
     return features
 
-def extract(df, features=None):
+def extract(df, config, features=None):
     """
     """
-    config = Config()
-
     df['_ID']   = np.full(len(df), 0)
     df['_TIME'] = df.index
-    extracted = tsfresh.extract_features(
+    extracted   = tsfresh.extract_features(
         df.drop(columns=config.drop),
         column_id    = '_ID',
         column_sort  = '_TIME',
@@ -211,7 +214,7 @@ def process():
         blacklist = config.features.blacklist,
         prompt    = config.prompt.features
     )
-    func = partial(extract, features=features)
+    func = partial(extract, features=features, config=config)
 
     # load the data
     df = pd.read_hdf(config.input.file, config.input.key)
@@ -244,6 +247,8 @@ def process():
     Logger.info(f'Number of windows: {len(windows)}')
     stats = {'pos': 0, 'neg': 0}
 
+    bar = tqdm(total=len(windows), desc='Extracting')
+
     with utils.Pool(processes=config.cores) as pool:
         i = 0
         for ret in pool.imap_unordered(func, windows, chunksize=100):
@@ -254,6 +259,7 @@ def process():
                 stats['neg'] += 1
             del ret
             i += 1
+            bar.update()
 
     print(f"Windows:\nTotal    = {len(windows)}\nPositive = {stats['pos']}\nNegative = {stats['neg']}")
 

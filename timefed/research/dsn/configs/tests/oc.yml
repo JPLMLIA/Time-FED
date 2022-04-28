@@ -17,6 +17,7 @@ preprocess:
     level: info
 
 extract_features:
+  kind: classification
   window: 5 min
   step: 60 sec
   observations: 60
