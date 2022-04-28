@@ -37,11 +37,11 @@ def roll(df, window, step, observations):
     index   = df.index
     delta   = pd.Timedelta(window)
     step    = pd.Timedelta(step)
-    size    = df.shape[0]
+    size    = df.shape[0] - 1
     windows = []
 
     # Setup the progress bar
-    perc = np.linspace(1, size-1, 100)
+    perc = np.linspace(1, size - observations, 100)
     bar  = tqdm(total=100, desc='Percent Rolled')
     prog = 0
 
