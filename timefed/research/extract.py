@@ -34,6 +34,53 @@ def roll(df, window, step, observations):
     ------
     pandas.DataFrame
     """
+    index   = df.index
+    delta   = pd.Timedelta(window)
+    step    = pd.Timedelta(step)
+    size    = df.shape[0]
+    windows = []
+
+    # Setup the progress bar
+    perc = np.linspace(1, size-1, 100)
+    bar  = tqdm(total=100, desc='Percent Rolled')
+    prog = 0
+
+    i = -1
+    while i < size - observations:
+        i += 1
+        j  = i + observations
+        if index[j] - index[i] > delta:
+            continue
+
+        windows.append(df.iloc[i:j])
+
+        # Incrementally step the progress bar
+        if (i > perc).sum() > prog:
+            prog += 1
+            bar.update()
+
+    return windows
+
+def roll_v1(df, window, step, observations):
+    """
+    Creates a generator for rolling over a pandas DataFrame with a given window
+    size.
+
+    Parameters
+    ----------
+    df: pandas.DataFrame
+        DataFrame to roll over
+    window: str
+        The window size to extract
+    step: str
+        Step size to take when rolling over the DataFrame
+    observations: int
+        Minimum number of observations required to be a valid window
+
+    Yields
+    ------
+    pandas.DataFrame
+    """
     # Setup the progress bar
     bar  = tqdm(total=100, desc='Percent Rolled')
     prog = 0
@@ -194,14 +241,21 @@ def process():
         step         = config.step,
         observations = config.observations
     )
-    Logger.info(f'Number of windows: {len(rolls)}')
+    Logger.info(f'Number of windows: {len(windows)}')
+    stats = {'pos': 0, 'neg': 0}
 
     with utils.Pool(processes=config.cores) as pool:
         i = 0
         for ret in pool.imap_unordered(func, windows, chunksize=100):
             ret.to_hdf(config.output.file, f'{config.output.key}/windows/{i}')
+            if 1 in ret[config.label]:
+                stats['pos'] += 1
+            else:
+                stats['neg'] += 1
             del ret
             i += 1
+
+    print(f"Windows:\nTotal    = {len(windows)}\nPositive = {stats['pos']}\nNegative = {stats['neg']}")
 
     return
 
