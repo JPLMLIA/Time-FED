@@ -54,8 +54,8 @@ select:
     CARRIER_SYSTEM_NOISE_TEMP
   ]
   split:
-    train: '< 2021'
-    test: '>= 2021'
+    train: '< 2018'
+    test: '>= 2018'
   input:
     file: /data1/timefed/timefed/research/dsn/local/data/features.h5
     key: MMS1/full

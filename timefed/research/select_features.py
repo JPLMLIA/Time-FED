@@ -23,8 +23,8 @@ def split(df):
     train = df.query(f'index {config.train}')
     test  = df.query(f'index {config.test}')
 
-    Logger.debug(f'Train shape: {train.shape}')
-    Logger.debug(f'Test  shape: {test.shape}')
+    Logger.debug(f'Train shape: {train.shape} ({train.shape[0]/df.shape[0]*100:.2f}%)')
+    Logger.debug(f'Test  shape: {test.shape} ({test.shape[0]/df.shape[0]*100:.2f}%)')
 
     return train, test
 
