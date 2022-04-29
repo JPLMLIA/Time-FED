@@ -1,6 +1,6 @@
-
 default:
   label: Label
+  cores: 8
   log:
     level: debug
 
@@ -24,7 +24,6 @@ extract:
   window: 5 min
   step: 60 sec
   observations: 60
-  cores: 8
   tsfresh: [diff_CARRIER_SYSTEM_NOISE_TEMP, diff_AGC_VOLTAGE]
   train:
     lt: 2016/01/01

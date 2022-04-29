@@ -49,7 +49,7 @@ def select():
     label = train[config.label]
 
     Logger.info('Selecting features on the train data')
-    train = select_features(train.drop(columns=[config.label]), label, n_jobs=config.get('cores', -1), chunksize=64)
+    train = select_features(train.drop(columns=[config.label]), label, n_jobs=config.get('cores', 1), chunksize=64)
 
     # Add the label column back in
     train[config.label] = label
