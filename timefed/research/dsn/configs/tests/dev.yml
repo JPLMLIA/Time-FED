@@ -14,6 +14,7 @@ preprocess:
     drs: [RFI, SC]
   features:
     diff: [CARRIER_SYSTEM_NOISE_TEMP, AGC_VOLTAGE]
+  subsample: 1 # N:1 ratio of negative:positive tracks
   log:
     level: info
 
@@ -24,6 +25,7 @@ extract_features:
   observations: 60
   cores: 8
   label: Label
+  tsfresh: [diff_CARRIER_SYSTEM_NOISE_TEMP, diff_AGC_VOLTAGE]
   train:
     lt: 2016/01/01
   test:

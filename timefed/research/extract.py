@@ -225,17 +225,23 @@ def process():
         Logger.debug(f'Percent of NaNs in each column:\n{(df.isna().sum() / df.index.size) * 100}')
         return 1
 
+    # Determine which columns to use for processing
+    if config.tsfresh:
+        config.drop = [config.label] + list(set(df.columns) - set(config.tsfresh))
+
     # The label column is always excluded from feature extraction
     if not config.drop:
         config.drop = [config.label]
+
     # Remove columns that are not int or float dtypes
     for col in df:
         dtype = df[col].dtype
         if not np.issubdtype(dtype, int) and not np.issubdtype(dtype, float):
             config.drop.append(col)
+
     # Unique the drops list
     config.drop = list(set(config.drop))
-    Logger.debug(f'The following columns will be excluded from tsfresh calculations due to not being of [int, float] dtypes: {config.drop}')
+    Logger.debug(f'tsfresh will extract only on the following columns: {set(df.columns) - set(config.drop)}')
 
     Logger.info('Creating the rolling windows and beginning processing')
     # Create rolling windows and process tsfresh on each window
@@ -245,54 +251,20 @@ def process():
         observations = config.observations
     )
     Logger.info(f'Number of windows: {len(windows)}')
-    stats = {'pos': 0, 'neg': 0}
 
     bar = tqdm(total=len(windows), desc='Extracting')
-
     with utils.Pool(processes=config.cores) as pool:
         i = 0
         for ret in pool.imap_unordered(func, windows, chunksize=100):
-            ret.to_hdf(config.output.file, f'{config.output.key}/windows/{i}')
-            if 1 in ret[config.label]:
-                stats['pos'] += 1
-            else:
-                stats['neg'] += 1
-            del ret
-            i += 1
+            # ret.to_hdf(config.output.file, f'{config.output.key}/windows/{i}')
             bar.update()
-
-    print(f"Windows:\nTotal    = {len(windows)}\nPositive = {stats['pos']}\nNegative = {stats['neg']}")
-
-    return
 
     Logger.info('Concatting the feature frames together')
     ret = pd.concat(extracts)
     ret.sort_index(inplace=True)
 
-    # Add back in the original columns
-    ret[df.columns] = df.loc[ret.index]
-
-    if ret.isna().any().any():
-        Logger.debug(f'Percent of NaNs in columns that had NaNs:\n{(ret[ret.columns[ret.isna().any()]].isna().sum() / ret.index.size) * 100}')
-
-    Logger.debug('Dropping columns with a NaN')
-    orig = len(ret.columns)
-    ret  = ret.dropna(how='any', axis=1)
-    new  = len(ret.columns)
-
-    Logger.debug(f'{orig - new}/{orig} ({(orig - new) / orig * 100:.2f}%) columns were dropped')
-
-    if config.output.file:
-        Logger.info(f'Saving raw to {config.output.file}')
-        ret.to_hdf(config.output.file, f'{config.output.key}/full')
-
-    # Select features
-    if config.process == 'tsfresh':
-        if isinstance(config.label, list):
-            for label in config.label:
-                select(ret, label, config)
-        else:
-            select(ret, config.label, config)
+    Logger.info(f'Saving to {config.output.file}')
+    ret.to_hdf(config.output.file, f'{config.output.key}/full')
 
     return True
 

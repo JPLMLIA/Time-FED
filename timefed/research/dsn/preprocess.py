@@ -3,6 +3,7 @@
 import argparse
 import h5py
 import logging
+import numpy as np
 import pandas as pd
 import warnings
 
@@ -18,6 +19,34 @@ warnings.filterwarnings('ignore', category=NaturalNameWarning)
 
 # Disable pandas warnings
 pd.options.mode.chained_assignment = None
+
+def subsample(df):
+    """
+    """
+    config = Config()
+
+    # Group by SID, taking the mean value of the Label to differentiate between positive and negative tracks (positive has mean value > 0, neg == 0)
+    gf  = df[['SCHEDULE_ITEM_ID', 'Label']].groupby('SCHEDULE_ITEM_ID').mean()
+    pos = gf.query('Label  > 0')
+    neg = gf.query('Label == 0')
+
+    # Randomly sample from negative tracks
+    ratio  = int(pos.shape[0] * config.subsample)
+    tracks = np.random.choice(neg.index, ratio, replace=False)
+
+    # Now select those tracks plus the positive ones from the df
+    tracks = list(tracks) + list(pos.index)
+    df = df.query('SCHEDULE_ITEM_ID in @tracks')
+
+    # Report stats
+    gf  = df[['SCHEDULE_ITEM_ID', 'Label']].groupby('SCHEDULE_ITEM_ID').mean()
+    pos = gf.query('Label  > 0')
+    neg = gf.query('Label == 0')
+    Logger.info(f'Number of tracks total  : {df.shape[0]:5}')
+    Logger.info(f'Number that are positive: {pos.shape[0]:5} ({pos.shape[0]/df.shape[0]*100:.2f}%)')
+    Logger.info(f'Number that are negative: {neg.shape[0]:5} ({neg.shape[0]/df.shape[0]*100:.2f}%)')
+
+    return df
 
 def analyze(df):
     """
@@ -296,6 +325,10 @@ def preprocess(mission, keys):
     Logger.info('Concatenating all frames together')
     df = pd.concat(dfs)
     df = analyze(df)
+
+    if config.subsample:
+        Logger.info(f'Subsampling negative to positive tracks with a ratio of {config.subsample}:1')
+        df = subsample(df)
 
     df.to_hdf(config.output.tracks, f'{mission}/master')
 
