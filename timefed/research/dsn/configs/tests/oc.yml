@@ -1,4 +1,5 @@
 default:
+  label: Label
   log:
     level: debug
 
