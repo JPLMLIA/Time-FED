@@ -57,6 +57,9 @@ def select():
     # Only keep the same features in test as train
     test = test[train.columns]
 
+    # Report stats
+    Logger.info(f'Number of selected features: {train.shape[0]-1}/{df.shape[0]-1} ({(train.shape[0]-1)/(df.shape[0]-1)*100:.2f})')
+
     Logger.info(f'Saving to {config.output.file} under key {config.output.key}/[train,test]')
     train.to_hdf(config.output.file, f'{config.output.key}/train')
     test .to_hdf(config.output.file, f'{config.output.key}/test')
