@@ -60,7 +60,7 @@ def roll(df, window, step, observations):
         windows.append(df.iloc[i:j])
 
         # Incrementally step the progress bar
-        if (i > perc).sum() > prog:
+        if (i >= perc).sum() > prog:
             prog += 1
             bar.update()
 
@@ -263,6 +263,20 @@ def process():
     df = pd.concat(extracts)
     df.sort_index(inplace=True)
 
+    # Drop columns that have any NaNs
+    nans = df.isna().sum()
+    nans = nans[nans > 0].sort_values()
+    if nans.any():
+        Logger.info(f'{nans.shape[0]}/{df.shape[1]} ({nans.shape[0]/df.shape[1]*100:.2f}%) columns had NaNs in them and will be dropped, see debug for more information')
+
+        fmt = '- {name:'+f'{len(max(nans.index, key=lambda s: len(s)))}'+'} = {value:'+f'{len(str(nans.max()))}'+'}'
+        Logger.debug(f'Columns with NaNs:')
+        for name, value in nans.items():
+            Logger.debug(fmt.format(name=name, value=value))
+
+        df = df.drop(columns=nans.index)
+
+    # Finally save out
     Logger.info(f'Saving to {config.output.file}')
     df.to_hdf(config.output.file, f'{config.output.key}/full')
 
@@ -285,9 +299,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     try:
-        config = Config(args.config, args.section)
-
-        utils.init(config)
+        utils.init(args)
         Logger = logging.getLogger('timefed/extract.py')
 
         code = process()

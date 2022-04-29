@@ -8,12 +8,14 @@ import sys
 
 from datetime import datetime as dtt
 
+from timefed.config import Config
+
 # Increase matplotlib's logger to warning to disable the debug spam it makes
 logging.getLogger('matplotlib').setLevel(logging.WARNING)
 
 Logger = logging.getLogger('timefed/utils.py')
 
-def init(config):
+def init(args):
     """
     Initializes the root logger with parameters defined by the config.
 
@@ -30,6 +32,8 @@ def init(config):
             format: str
             datefmt: str
     """
+    config = Config(args.config, args.section)
+
     levels = {
         'critical': logging.CRITICAL,
         'error'   : logging.ERROR,
@@ -39,7 +43,7 @@ def init(config):
     }
 
     logging.basicConfig(
-        level   = levels.get(config.log.level, logging.DEBUG),
+        level   = levels.get(config.log.level or '', logging.DEBUG),
         format  = config.log.format  or '%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
         datefmt = config.log.datefmt or '%m-%d %H:%M',
         stream  = sys.stdout,

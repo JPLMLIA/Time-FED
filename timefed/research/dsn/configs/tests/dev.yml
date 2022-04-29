@@ -1,5 +1,6 @@
 
 default:
+  label: Label
   log:
     level: debug
 
@@ -18,13 +19,12 @@ preprocess:
   log:
     level: info
 
-extract_features:
+extract:
   kind: classification
   window: 5 min
   step: 60 sec
   observations: 60
   cores: 8
-  label: Label
   tsfresh: [diff_CARRIER_SYSTEM_NOISE_TEMP, diff_AGC_VOLTAGE]
   train:
     lt: 2016/01/01
@@ -41,3 +41,25 @@ extract_features:
   features:
     whitelist:
     blacklist:
+
+select:
+  drop: [
+    SCHEDULE_ITEM_ID,
+    GROUND_ANTENNA_ID,
+    BEGINNING_OF_TRACK_TIME_DT,
+    END_OF_TRACK_TIME_DT,
+    TLM_GOOD_FRAME_COUNT,
+    TLM_BAD_FRAME_COUNT,
+    CAR_TRK_LOOP_LOCK_STATUS,
+    AGC_VOLTAGE,
+    CARRIER_SYSTEM_NOISE_TEMP
+  ]
+  split:
+    train: '< 2021'
+    test: '>= 2021'
+  input:
+    file: /Users/jamesmo/projects/mloc/timefed/research/dsn/local/data/features.h5
+    key: MMS1/full
+  output:
+    file: /Users/jamesmo/projects/mloc/timefed/research/dsn/local/data/features.h5
+    key: MMS1

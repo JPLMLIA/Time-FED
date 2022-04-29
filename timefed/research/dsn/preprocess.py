@@ -389,11 +389,8 @@ if __name__ == '__main__':
     args  = parser.parse_args()
     state = False
 
-    # Parse the config file
-    config = Config(args.config, args.section)
-
     # Initialize the loggers
-    utils.init(config)
+    utils.init(args)
     Logger = logging.getLogger('timefed/dsn/preprocess.py')
 
     # Process
