@@ -42,9 +42,9 @@ def subsample(df):
     gf  = df[['SCHEDULE_ITEM_ID', 'Label']].groupby('SCHEDULE_ITEM_ID').mean()
     pos = gf.query('Label  > 0')
     neg = gf.query('Label == 0')
-    Logger.info(f'Number of tracks total  : {df.shape[0]:5}')
-    Logger.info(f'Number that are positive: {pos.shape[0]:5} ({pos.shape[0]/df.shape[0]*100:.2f}%)')
-    Logger.info(f'Number that are negative: {neg.shape[0]:5} ({neg.shape[0]/df.shape[0]*100:.2f}%)')
+    Logger.info(f'Number of tracks total  : {gf.shape[0]:5}')
+    Logger.info(f'Number that are positive: {pos.shape[0]:5} ({pos.shape[0]/gf.shape[0]*100:.2f}%)')
+    Logger.info(f'Number that are negative: {neg.shape[0]:5} ({neg.shape[0]/gf.shape[0]*100:.2f}%)')
 
     return df
 

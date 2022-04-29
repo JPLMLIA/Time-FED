@@ -252,19 +252,19 @@ def process():
     )
     Logger.info(f'Number of windows: {len(windows)}')
 
+    extracts = []
     bar = tqdm(total=len(windows), desc='Extracting')
     with utils.Pool(processes=config.cores) as pool:
-        i = 0
         for ret in pool.imap_unordered(func, windows, chunksize=100):
-            # ret.to_hdf(config.output.file, f'{config.output.key}/windows/{i}')
+            extracts.append(ret)
             bar.update()
 
     Logger.info('Concatting the feature frames together')
-    ret = pd.concat(extracts)
-    ret.sort_index(inplace=True)
+    df = pd.concat(extracts)
+    df.sort_index(inplace=True)
 
     Logger.info(f'Saving to {config.output.file}')
-    ret.to_hdf(config.output.file, f'{config.output.key}/full')
+    df.to_hdf(config.output.file, f'{config.output.key}/full')
 
     return True
 
