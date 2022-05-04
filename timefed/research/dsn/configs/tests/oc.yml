@@ -1,0 +1,65 @@
+default:
+  label: Label
+  cores: 32
+  log:
+    level: debug
+
+preprocess:
+  input:
+    tracks: /data1/timefed/timefed/research/dsn/local/data/tracks.h5
+    drs: /data1/timefed/timefed/research/dsn/local/data/drs.h5
+  output:
+    tracks: /data1/timefed/timefed/research/dsn/local/data/preprocess.h5
+  only:
+    missions: [MMS1]
+    drs: [RFI, SC]
+  features:
+    diff: [CARRIER_SYSTEM_NOISE_TEMP, AGC_VOLTAGE]
+  subsample: 1 # N:1 ratio of negative:positive tracks
+  log:
+    level: info
+
+extract:
+  kind: classification
+  window: 5 min
+  step: 60 sec
+  observations: 60
+  label: Label
+  tsfresh: [diff_CARRIER_SYSTEM_NOISE_TEMP, diff_AGC_VOLTAGE]
+  train:
+    lt: 2016/01/01
+  test:
+    gte: 2016/01/01
+  input:
+    file: /data1/timefed/timefed/research/dsn/local/data/preprocess.h5
+    key: MMS1/master
+  output:
+    file: /data1/timefed/timefed/research/dsn/local/data/features.h5
+    key: MMS1
+  prompt:
+    features: False
+  features:
+    whitelist:
+    blacklist:
+
+select:
+  drop: [
+    SCHEDULE_ITEM_ID,
+    GROUND_ANTENNA_ID,
+    BEGINNING_OF_TRACK_TIME_DT,
+    END_OF_TRACK_TIME_DT,
+    TLM_GOOD_FRAME_COUNT,
+    TLM_BAD_FRAME_COUNT,
+    CAR_TRK_LOOP_LOCK_STATUS,
+    AGC_VOLTAGE,
+    CARRIER_SYSTEM_NOISE_TEMP
+  ]
+  split:
+    train: '< 2018'
+    test: '>= 2018'
+  input:
+    file: /data1/timefed/timefed/research/dsn/local/data/features.h5
+    key: MMS1/full
+  output:
+    file: /data1/timefed/timefed/research/dsn/local/data/features.h5
+    key: MMS1
