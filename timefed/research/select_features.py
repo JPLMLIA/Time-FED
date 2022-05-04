@@ -42,13 +42,13 @@ def select():
         Logger.info(f'Dropping columns: {config.drop}')
         df = df.drop(columns=config.drop)
 
-    Logger.info('Splitting data into train/test')
+    Logger.info('Splitting data into train/test sets')
     train, test = split(df)
 
     # Select only on the train data
     label = train[config.label]
 
-    Logger.info('Selecting features on the train data')
+    Logger.info('Selecting features on the train set')
     train = select_features(train.drop(columns=[config.label]), label, n_jobs=config.get('cores', 1), chunksize=64)
 
     # Add the label column back in
@@ -58,7 +58,7 @@ def select():
     test = test[train.columns]
 
     # Report stats
-    Logger.info(f'Number of selected features: {train.shape[0]-1}/{df.shape[0]-1} ({(train.shape[0]-1)/(df.shape[0]-1)*100:.2f})')
+    Logger.info(f'Number of selected features: {train.shape[1]-1}/{df.shape[1]-1} ({(train.shape[1]-1)/(df.shape[1]-1)*100:.2f})')
 
     Logger.info(f'Saving to {config.output.file} under key {config.output.key}/[train,test]')
     train.to_hdf(config.output.file, f'{config.output.key}/train')

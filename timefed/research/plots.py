@@ -12,7 +12,7 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy.stats             import gaussian_kde
 from sklearn.metrics         import mean_squared_error
 
-from mloc import utils
+from timefed import utils
 
 logger = logging.getLogger('mloc/research/plots.py')
 
@@ -309,8 +309,9 @@ def importances(model, features, config):
         df.to_csv(f'{config.plots.directory}/{file}')
 
     logger.info('Feature ranking:')
+    fmt = '- {i:'+f'{len(str(len(features)))}'+'}: {name:'+f'{len(max(features, key=lambda s: len(s)))}'+'} = {value}'
     for i, feat in enumerate(rankings):
-        print(f'- {i+1}. {feat:20} ({rankings[feat]})')
+        print(fmt.format(i=i+1, name=feat, value=rankings[feat]))
 
     xaxis   = range(min([pconf.number or len(features), len(features)]))
     indices = indices[:len(xaxis)]

@@ -276,6 +276,16 @@ def process():
 
         df = df.drop(columns=nans.index)
 
+    # Drop columns that have inf values
+    inf_cols = df.columns[np.isinf(df).any()]
+    if inf_cols.any():
+        Logger.info(f'{len(inf_cols)} columns with infinity values found and will be dropped, see debug for more information')
+        Logger.debug('Columns with inf values:')
+        for col in inf_cols:
+            Logger.debug(f'- {inf_cols}')
+
+        df = df.drop(columns=inf_cols)
+
     # Finally save out
     Logger.info(f'Saving to {config.output.file}')
     df.to_hdf(config.output.file, f'{config.output.key}/full')
