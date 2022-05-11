@@ -62,3 +62,10 @@ select:
   output:
     file: /Users/jamesmo/projects/mloc/timefed/research/dsn/local/data/features.h5
     key: MMS1
+
+classify:
+  input:
+    file: /Users/jamesmo/projects/mloc/timefed/research/dsn/local/data/features.h5
+    key: MMS1
+  RandomForestClassifier:
+    random_state: 0

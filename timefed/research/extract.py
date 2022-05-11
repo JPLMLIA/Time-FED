@@ -12,7 +12,7 @@ from tqdm      import tqdm
 
 from tsfresh.feature_extraction import ComprehensiveFCParameters
 
-from timefed import utils
+from timefed        import utils
 from timefed.config import Config
 
 # Disable h5py warning about setting an integer as a key name

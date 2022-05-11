@@ -81,6 +81,9 @@ class Section:
     def items(self):
         return self._data.items()
 
+    def keys(self):
+        return self._data.keys()
+
     def __getattr__(self, key):
         if key in self.__dict__:
             return self.__dict__[key]

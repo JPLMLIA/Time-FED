@@ -63,3 +63,10 @@ select:
   output:
     file: /data1/timefed/timefed/research/dsn/local/data/features.h5
     key: MMS1
+
+classify:
+  input:
+    file: /data1/timefed/timefed/research/dsn/local/data/features.h5
+    key: MMS1
+  RandomForestClassifier:
+    random_state: 0
