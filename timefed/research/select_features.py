@@ -7,6 +7,7 @@ from tsfresh import select_features
 from timefed import utils
 from timefed.config import Config
 
+Logger = logging.getLogger('timefed/select.py')
 
 def split(df):
     """
@@ -101,7 +102,6 @@ if __name__ == '__main__':
 
     try:
         utils.init(args)
-        Logger = logging.getLogger('timefed/select.py')
 
         code = select()
 

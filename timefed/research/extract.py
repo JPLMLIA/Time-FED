@@ -18,6 +18,7 @@ from timefed.config import Config
 # Disable h5py warning about setting an integer as a key name
 warnings.filterwarnings('ignore', category=NaturalNameWarning)
 
+Logger = logging.getLogger('timefed/extract.py')
 
 def roll(df, window, step, observations):
     """
@@ -41,6 +42,7 @@ def roll(df, window, step, observations):
     """
     index   = df.index
     delta   = pd.Timedelta(window)
+    zero    = pd.Timedelta(0)
     step    = pd.Timedelta(step)
     size    = df.shape[0] - 1
     windows = []
@@ -54,7 +56,13 @@ def roll(df, window, step, observations):
     while i < size - observations:
         i += 1
         j  = i + observations
-        if index[j] - index[i] > delta:
+        diff = index[j] - index[i]
+
+        # Window too large
+        if diff > delta:
+            continue
+        # Timestamps are not in order causing a negative value
+        elif diff <= zero:
             continue
 
         windows.append(df.iloc[i:j])
@@ -283,7 +291,7 @@ def process():
         Logger.info(f'{len(inf_cols)} columns with infinity values found and will be dropped, see debug for more information')
         Logger.debug('Columns with inf values:')
         for col in inf_cols:
-            Logger.debug(f'- {inf_cols}')
+            Logger.debug(f'- {col}')
 
         df = df.drop(columns=inf_cols)
 
@@ -311,7 +319,6 @@ if __name__ == '__main__':
 
     try:
         utils.init(args)
-        Logger = logging.getLogger('timefed/extract.py')
 
         code = process()
 

@@ -1,0 +1,93 @@
+default:
+  label: Label
+  cores: 8
+
+pipeline-1:
+  preprocess:
+    run: False
+    key: preprocess-1
+  extract:
+    run: False
+    key: extract-1
+  select:
+    run: True
+    key: select-1
+  classify:
+    run: True
+    key: classify-1
+  log:
+    file: /Users/jamesmo/projects/mloc/timefed/research/dsn/local/runs/MRO.1.log
+
+preprocess-1:
+  input:
+    tracks: /Users/jamesmo/projects/mloc/timefed/research/dsn/local/data/mro.tracks.h5
+    drs: /Users/jamesmo/projects/sqa-utils/local/data/drs.h5
+  output:
+    tracks: /Users/jamesmo/projects/mloc/timefed/research/dsn/local/data/MRO.preprocess.h5
+  only:
+    missions: [MRO]
+    drs: [LE, WE]
+  features:
+    diff: [CARRIER_SYSTEM_NOISE_TEMP, ELEVATION_ANGLE, AIR_TEMP, RELATIVE_HUMID, WIND_SPEED, TOTAL_PRECIP, PRECIP_RATE, BARO_PRESSURE, DEW_POINT_TEMP]
+  concat: False
+  subsample:
+    pos_limit: 50 # number of positive tracks to select, if int will be count, if float then percent
+    neg_ratio: 1 # N:1 ratio of negative:positive tracks
+  log:
+    level: info
+
+extract-1:
+  kind: classification
+  window: 5 min
+  step: 60 sec
+  observations: 60
+  tsfresh: [diff_CARRIER_SYSTEM_NOISE_TEMP, diff_ELEVATION_ANGLE, diff_AIR_TEMP, diff_RELATIVE_HUMID, diff_WIND_SPEED, diff_TOTAL_PRECIP, diff_PRECIP_RATE, diff_BARO_PRESSURE, diff_DEW_POINT_TEMP]
+  input:
+    file: /Users/jamesmo/projects/mloc/timefed/research/dsn/local/data/MRO.preprocess.h5
+    key: MRO/master
+  output:
+    file: /Users/jamesmo/projects/mloc/timefed/research/dsn/local/data/MRO.features.h5
+    key: MRO
+  prompt:
+    features: False
+  features:
+    whitelist:
+    blacklist:
+
+select-1:
+  drop: [
+    SCHEDULE_ITEM_ID,
+    GROUND_ANTENNA_ID,
+    BEGINNING_OF_TRACK_TIME_DT,
+    END_OF_TRACK_TIME_DT,
+    START_TIME_DT,
+    END_TIME_DT,
+    TLM_GOOD_FRAME_COUNT,
+    TLM_BAD_FRAME_COUNT,
+    CAR_TRK_LOOP_LOCK_STATUS,
+    CARRIER_SYSTEM_NOISE_TEMP,
+    ELEVATION_ANGLE,
+    AIR_TEMP,
+    RELATIVE_HUMID,
+    WIND_SPEED,
+    TOTAL_PRECIP,
+    PRECIP_RATE,
+    BARO_PRESSURE,
+    DEW_POINT_TEMP
+  ]
+  split:
+    train: '< 2018'
+    test: '>= 2018'
+  input:
+    file: /Users/jamesmo/projects/mloc/timefed/research/dsn/local/data/MRO.features.h5
+    key: MRO/full
+  output:
+    file: /Users/jamesmo/projects/mloc/timefed/research/dsn/local/data/MRO.features.h5
+    key: MRO
+
+classify-1:
+  input:
+    file: /Users/jamesmo/projects/mloc/timefed/research/dsn/local/data/MRO.features.h5
+    key: MRO
+  RandomForestClassifier:
+    random_state: 0

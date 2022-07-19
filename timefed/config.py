@@ -78,12 +78,6 @@ class Section:
     def __iter__(self):
         return iter(self._data)
 
-    def items(self):
-        return self._data.items()
-
-    def keys(self):
-        return self._data.keys()
-
     def __getattr__(self, key):
         if key in self.__dict__:
             return self.__dict__[key]
@@ -102,9 +96,6 @@ class Section:
     def __getitem__(self, key):
         return self.__getattr__(key)
 
-    def get(self, key, other=None):
-        return self._data.get(key, other)
-
     def __setitem__(self, key, value):
         self.__setattr__(key, value)
 
@@ -119,6 +110,15 @@ class Section:
             else:
                 attributes.append(key)
         return f'<Section {self._name} (attributes={attributes}, sections={sections})>'
+
+    def get(self, key, other=None):
+        return self._data.get(key, other)
+
+    def items(self):
+        return self._data.items()
+
+    def keys(self):
+        return self._data.keys()
 
 class Config():
     """
@@ -166,7 +166,7 @@ class Config():
                     data = yaml.load(string, Loader=yaml.FullLoader)
 
                 if active not in data:
-                    raise AttributeError(f'Active section {active!r} does not exist in the YAML: {list(data.keys())}')
+                    raise AttributeError(f'Active section {active!r} does not exist in the YAML: {data}')
 
                 cls._data = {}
                 for key, value in data.items():
@@ -179,13 +179,14 @@ class Config():
                 cls._flags.default     = default if default in data else None
 
                 # If there is a default section, deep copy it then override it using the active section
-                if cls._flags._default is not None:
+                if cls._flags.default is not None:
                     cls._flags.active = copy.deepcopy(cls._data[cls._flags.default])
                     cls._flags.active._name = f'[active] {active}'
                     cls.update(cls._data[active], cls._flags.active)
-                # Otherwise set the active section as active
+                # Otherwise copy the active section as active
                 else:
-                    cls._flags.active = cls._data[cls._active]
+                    cls._flags.active = copy.deepcopy(cls._data[cls._flags.active_name])
+                    cls._flags.active._name = f'[active] {active}'
 
                 cls._flags.initialized = True
 

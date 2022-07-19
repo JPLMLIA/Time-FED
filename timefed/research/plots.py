@@ -12,9 +12,10 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy.stats             import gaussian_kde
 from sklearn.metrics         import mean_squared_error
 
-from timefed import utils
+from timefed.config import Config
+from timefed        import utils
 
-logger = logging.getLogger('mloc/research/plots.py')
+Logger = logging.getLogger('mloc/research/plots.py')
 
 sns.set_style('darkgrid')
 sns.set_context('poster', rc={'axes.titlesize': 35, 'axes.labelsize': 30})
@@ -46,7 +47,7 @@ def protect(func):
         try:
             func(*args, **kwargs)
         except:
-            logger.exception(f'Failed to generate plot: {func.__name__}')
+            Logger.exception(f'Failed to generate plot: {func.__name__}')
 
     return wrap
 
@@ -254,7 +255,7 @@ def scatter_with_errors(true, pred, error_func, name, config):
         scatter(true, pred, axes[0, 0], 'Predicted', zeroes=False, minx=minx, maxx=maxx, miny=miny, maxy=maxy)
         contour(true, pred, axes[0, 1],              zeroes=False, minx=minx, maxx=maxx, miny=miny, maxy=maxy)
     except:
-        logger.exception('Failed to generate scatter_with_errors actual plots')
+        Logger.exception('Failed to generate scatter_with_errors actual plots')
 
     # Plot scatter and contour for actual vs errors
     errs = error_func(true, pred)
@@ -263,13 +264,13 @@ def scatter_with_errors(true, pred, error_func, name, config):
     miny = errs.min() - 1
     maxy = errs.max() + 1
 
-    logger.debug(f'scatter_with_errors | Using miny={miny}, maxy={maxy}')
+    Logger.debug(f'scatter_with_errors | Using miny={miny}, maxy={maxy}')
 
     try:
         scatter(true[val], errs, axes[1, 0], 'Error', zeroes=True, minx=minx, maxx=maxx, miny=miny, maxy=maxy)
         contour(true[val], errs, axes[1, 1],          zeroes=True, minx=minx, maxx=maxx, miny=miny, maxy=maxy)
     except:
-        logger.exception('Failed to generate scatter_with_errors error plots')
+        Logger.exception('Failed to generate scatter_with_errors error plots')
 
     plt.tight_layout()
     if config.plots.directory:
@@ -278,7 +279,7 @@ def scatter_with_errors(true, pred, error_func, name, config):
         plt.show()
 
 @protect
-def importances(model, features, config):
+def importances(model, features, print_only=False):
     """
     Plots the important features of the given model
 
@@ -290,7 +291,8 @@ def importances(model, features, config):
         List of possible features
     """
     # Get the plot configs for this plot type
-    pconf = config.plots.importances
+    config = Config()
+    pconf  = config.plots.importances
 
     # Retrieve the important features
     imports = model.feature_importances_
@@ -308,37 +310,41 @@ def importances(model, features, config):
         file = pconf.file.split('.')[0] + '.csv'
         df.to_csv(f'{config.plots.directory}/{file}')
 
-    logger.info('Feature ranking:')
+    Logger.info('Feature ranking:')
     fmt = '- {i:'+f'{len(str(len(features)))}'+'}: {name:'+f'{len(max(features, key=lambda s: len(s)))}'+'} = {value}'
     for i, feat in enumerate(rankings):
-        print(fmt.format(i=i+1, name=feat, value=rankings[feat]))
+        message = fmt.format(i=i+1, name=feat, value=rankings[feat])
+        if i < 20:
+            Logger.info(message)
+        else:
+            Logger.debug(message)
 
-    xaxis   = range(min([pconf.number or len(features), len(features)]))
-    indices = indices[:len(xaxis)]
+    if not print_only:
+        xaxis   = range(min([pconf.number or len(features), len(features)]))
+        indices = indices[:len(xaxis)]
 
-    # Plot
-    fig, ax = plt.subplots(figsize=pconf.figsize)
-    ax.bar(x=xaxis, height=imports[indices], yerr=stddev[indices], align='center', color='r')
+        fig, ax = plt.subplots(figsize=pconf.figsize)
+        ax.bar(x=xaxis, height=imports[indices], yerr=stddev[indices], align='center', color='r')
 
-    # Set ylim
-    ax.set_ylim([0, 1])
-    ax.set_yticks([0, .25, .5, .75, 1])
+        # Set ylim
+        ax.set_ylim([0, 1])
+        ax.set_yticks([0, .25, .5, .75, 1])
 
-    # Set xlim and ticks
-    ax.set_xlim([-1, len(xaxis)])
-    ax.set_xticks(xaxis)
-    ax.tick_params(axis='x', labelrotation=pconf.labelrotation)
+        # Set xlim and ticks
+        ax.set_xlim([-1, len(xaxis)])
+        ax.set_xticks(xaxis)
+        ax.tick_params(axis='x', labelrotation=pconf.labelrotation)
 
-    # Set labels
-    ax.set_xticklabels([features[i] for i in indices])
-    ax.set_title(pconf.title)
-    watermark(ax, config.plots.watermark)
+        # Set labels
+        ax.set_xticklabels([features[i] for i in indices])
+        ax.set_title(pconf.title)
+        watermark(ax, config.plots.watermark)
 
-    plt.tight_layout()
-    if config.plots.directory:
-        plt.savefig(f'{config.plots.directory}/{pconf.file}')
-    else:
-        plt.show()
+        plt.tight_layout()
+        if config.plots.directory:
+            plt.savefig(f'{config.plots.directory}/{pconf.file}')
+        else:
+            plt.show()
 
 @protect
 def date_range(true, pred, config):
@@ -360,7 +366,7 @@ def date_range(true, pred, config):
     for date, dconf in pconf.dates:
         # Subselect
         start, end = dconf.start, dconf.end
-        logger.debug(f'Plotting between {start} to {end}')
+        Logger.debug(f'Plotting between {start} to {end}')
 
         true_sub = true.loc[(start <= true.index) & (true.index < end)]
         pred_sub = pred.loc[(start <= pred.index) & (pred.index < end)]
@@ -446,6 +452,6 @@ if __name__ == '__main__':
 
         generate_plots(test, pred, model, config)
 
-        logger.info('Finished successfully')
+        Logger.info('Finished successfully')
     except Exception as e:
-        logger.exception('Failed to complete')
+        Logger.exception('Failed to complete')

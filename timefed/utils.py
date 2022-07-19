@@ -42,12 +42,25 @@ def init(args):
         'debug'   : logging.DEBUG
     }
 
+    handlers = []
+
+    # Create console handler
+    sh = logging.StreamHandler(sys.stdout)
+    sh.setLevel(levels.get(config.log.level or '', logging.INFO))
+    handlers.append(sh)
+
+    if config.log.file:
+        # Add the file logging
+        fh = logging.FileHandler(config.log.file)
+        fh.setLevel(logging.DEBUG)
+        handlers.append(fh)
+
     logging.basicConfig(
-        level   = levels.get(config.log.level or '', logging.DEBUG),
-        format  = config.log.format  or '%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
-        datefmt = config.log.datefmt or '%m-%d %H:%M',
-        stream  = sys.stdout,
-        force   = True
+        level    = logging.DEBUG,
+        format   = config.log.format  or '%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
+        datefmt  = config.log.datefmt or '%m-%d %H:%M',
+        handlers = handlers,
+        force    = True
     )
 
 def timeit(func):

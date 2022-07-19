@@ -12,7 +12,9 @@ from sklearn.metrics  import (
     ConfusionMatrixDisplay,
     precision_score,
     recall_score,
-    roc_auc_score
+    roc_auc_score,
+    roc_curve,
+    RocCurveDisplay
 )
 
 from timefed        import utils
@@ -42,21 +44,42 @@ def analyze(train, test, label):
     Logger.info(f'Label counts for test:\n{counts.test}')
     Logger.info(f'Percent label counts for test:\n{counts.test / test[label].count() * 100}')
 
-def score(model, data, name):
+def score(model, data, name, multiclass_scores=False):
     """
     """
     config = Config()
 
-    preds = model.predict(data.drop(columns=config.label))
     truth = data[config.label]
+    data  = data.drop(columns=config.label)
+    preds = model.predict(data)
 
     scores = Section('scores', {
         'accuracy'        : accuracy_score(truth, preds),
         'precision'       : precision_score(truth, preds),
         'recall'          : recall_score(truth, preds),
         'roc_auc'         : roc_auc_score(truth, preds),
-        'confusion_matrix': confusion_matrix(truth, preds)
+        'confusion_matrix': confusion_matrix(truth, preds),
     })
+
+    if multiclass_scores:
+        scores.TP = TP = scores.confusion_matrix.diagonal()
+        scores.FP = FP = scores.confusion_matrix.sum(axis=0) - TP
+        scores.FN = FN = scores.confusion_matrix.sum(axis=1) - TP
+        scores.TN = TN = scores.confusion_matrix.sum() - (FP + FN + TP)
+    else:
+        scores.TP = TP = scores.confusion_matrix[1, 1]
+        scores.FP = FP = scores.confusion_matrix[1, 0]
+        scores.FN = FN = scores.confusion_matrix[0, 1]
+        scores.TN = TN = scores.confusion_matrix[0, 0]
+
+    scores.TPR = TP/(TP+FN) # Sensitivity, hit rate, recall, or true positive rate
+    scores.TNR = TN/(TN+FP) # Specificity or true negative rate
+    scores.PPV = TP/(TP+FP) # Precision or positive predictive value
+    scores.NPV = TN/(TN+FN) # Negative predictive value
+    scores.FPR = FP/(FP+TN) # Fall out or false positive rate
+    scores.FNR = FN/(TP+FN) # False negative rate
+    scores.FDR = FP/(TP+FP) # False discovery rate
+    scores.ACC = (TP+TN)/(TP+FP+FN+TN) # Overall accuracy
 
     Logger.info(f'Scores for {name}:')
     for key, value in scores.items():
@@ -70,7 +93,13 @@ def score(model, data, name):
         else:
             Logger.info(f'{key:9} = {value}')
 
+    scores.roc_curve = roc_curve(truth, preds)
+
     Logger.info(f'Classification Report:\n{classification_report(truth, preds, target_names=sorted(pd.unique(preds).astype(str)))}')
+
+    # plot_roc(truth, preds)
+
+    importances(model, data.columns, print_only=True)
 
     # Return as dict instead of Section
     return scores._data
@@ -103,9 +132,16 @@ def plot_confusion_matrix(cm):
     """
     fig, ax = plt.subplots(figsize=(5, 5))
     cmp = ConfusionMatrixDisplay(confusion_matrix=cm)
-    cmp.plot(ax=ax)
+    cmp.plot(ax=ax, colorbar=False)
     ax.grid(False)
     ax.set_title('Confusion Matrix')
+
+def plot_roc(truth, predicted):
+    """
+    """
+    fig, ax = plt.subplots(figsize=(15, 10))
+    display = RocCurveDisplay.from_predictions(truth, predicted, estimator_name='RandomForestClassifier')
+    display.plot(ax=ax)
 
 
 if __name__ == '__main__':

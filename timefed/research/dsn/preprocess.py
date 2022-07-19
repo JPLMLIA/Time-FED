@@ -20,6 +20,8 @@ warnings.filterwarnings('ignore', category=NaturalNameWarning)
 # Disable pandas warnings
 pd.options.mode.chained_assignment = None
 
+Logger = logging.getLogger('timefed/dsn/preprocess.py')
+
 def subsample(df):
     """
     """
@@ -30,12 +32,30 @@ def subsample(df):
     pos = gf.query('Label  > 0')
     neg = gf.query('Label == 0')
 
-    # Randomly sample from negative tracks
-    ratio  = int(pos.shape[0] * config.subsample)
-    tracks = np.random.choice(neg.index, ratio, replace=False)
+    # Subsample the positive tracks using a percent of the total
+    pos_tracks = pos.index
+    if config.subsample.pos_limit:
+        if isinstance(config.subsample.pos_limit, int):
+            count = config.subsample.pos_limit
+        else:
+            count = int(pos.shape[0] * config.subsample.pos_limit)
+        pos_tracks = np.random.choice(pos.index, count, replace=False)
+        Logger.info(f'Randomly selecting {count}/{pos.shape[0]} ({count/pos.shape[0]*100:.2f}%) positive tracks')
+
+    # Subsample the negative tracks using a ratio to the number of positive
+    neg_tracks = neg.index
+    if config.subsample.neg_ratio:
+        ratio = int(len(pos_tracks) * config.subsample.neg_ratio)
+        neg_tracks = np.random.choice(neg.index, ratio, replace=False)
+        Logger.info(f'Randomly selecting {ratio}/{neg.shape[0]} ({ratio/neg.shape[0]*100:.2f}%) negative tracks')
+
+    if config.subsample.neg_limit:
+        count = int(neg.shape[0] * config.subsample.pos_limit)
+        neg_tracks = np.random.choice(neg.index, count, replace=False)
+        Logger.info(f'Randomly selecting {count}/{neg.shape[0]} ({count/neg.shape[0]*100:.2f}%) negative tracks')
 
     # Now select those tracks plus the positive ones from the df
-    tracks = list(tracks) + list(pos.index)
+    tracks = list(pos_tracks) + list(neg_tracks)
     df = df.query('SCHEDULE_ITEM_ID in @tracks')
 
     # Report stats
@@ -87,9 +107,12 @@ def analyze(df):
 
     Logger.info('Dropping rows with a NaN in any column')
 
-    df = df.dropna(how='any', axis=0)
+    df      = df.dropna(how='any', axis=0)
+    tracks  = ntracks
+    ntracks = df.SCHEDULE_ITEM_ID.value_counts().size
 
     Logger.info(f'Total rows removed: {size-df.shape[0]} ({(1-df.shape[0]/size)*100:.2f}%)')
+    Logger.info(f'This removed {tracks - ntracks} ({(1-ntracks/tracks)*100:.2f}%) tracks, leaving {ntracks}')
 
     gf  = df[['SCHEDULE_ITEM_ID', 'Label']].groupby('SCHEDULE_ITEM_ID').mean()
     vc  = (gf != 0).value_counts()
@@ -199,7 +222,7 @@ def decode_strings(df):
         if column.dtype == 'object':
             try:
                 df[name] = column.apply(lambda string: string.decode())
-                Logger.debug(f'Decoded column {name}')
+                # Logger.debug(f'Decoded column {name}')
             except:
                 Logger.exception(f'Failed to decode column {name}')
 
@@ -254,16 +277,22 @@ def preprocess(mission, keys):
     config = Config()
 
     Logger.info(f'Processing tracks for mission: {mission}')
-    Logger.info('Retrieving DRs')
+
     # Retrieve the DRs for this mission
-    drs = pd.read_hdf(config.input.drs, mission)
+    try:
+        Logger.info('Retrieving DRs')
+        drs = pd.read_hdf(config.input.drs, mission)
+        drs = decode_strings(drs)
+    except:
+        Logger.exception(f'Failed to retrieve DRs for mission {mission} from file {config.input.drs}, returning early')
+        return False
 
     # Skip tracks that have wrong DRs
     skip = []
     if config.only.drs:
-        skip = drs.query(f'DR_CLOSURE_CAUSE_CD not in {config.only.drs}').SCHEDULE_ITEM_ID
+        skip = list(drs.query(f'DR_CLOSURE_CAUSE_CD not in {config.only.drs}').SCHEDULE_ITEM_ID.astype(str))
         Logger.debug(f'Processing only DRs: {config.only.drs}')
-        Logger.info(f'{skip.size} tracks will be skipped due to being the wrong DR')
+        Logger.info(f'{len(skip)} tracks will be skipped due to being the wrong DR')
 
     # Setup TQDM
     total = sum([len(tracks) for _, tracks in keys.items()])
@@ -327,19 +356,15 @@ def preprocess(mission, keys):
     df = analyze(df)
 
     if config.subsample:
-        Logger.info(f'Subsampling negative to positive tracks with a ratio of {config.subsample}:1')
         df = subsample(df)
 
     df.to_hdf(config.output.tracks, f'{mission}/master')
 
-def main(config):
+    return True
+
+def main():
     """
     Sends each missions' tracks off to preprocessing
-
-    Parameters
-    ----------
-    config: timefed.config.Config
-        MilkyLib configuration object
 
     Returns
     -------
@@ -354,6 +379,8 @@ def main(config):
         only:
             missions: list of str
     """
+    config = Config()
+
     # Retrieve key structure of the tracks h5
     keys = get_keys(config.input.tracks)
 
@@ -362,12 +389,25 @@ def main(config):
     if not missions:
         missions = list(keys.keys())
 
+    skip = set()
     for mission in missions:
         if mission not in keys:
             Logger.warning(f'Mission {mission} not found in tracks h5, skipping')
+            skip.update([mission])
             continue
 
-        preprocess(mission, keys[mission])
+        if not preprocess(mission, keys[mission]):
+            skip.update([mission])
+
+    if config.concat:
+        Logger.info('Concatenating mission frames together')
+        data = []
+        for mission in set(missions) - skip:
+            data.append(
+                pd.read_hdf(config.output.tracks, f'{mission}/master')
+            )
+        df = pd.concat(data)
+        df.to_hdf(config.output.tracks, 'concatenated/master')
 
     return True
 
@@ -391,11 +431,10 @@ if __name__ == '__main__':
 
     # Initialize the loggers
     utils.init(args)
-    Logger = logging.getLogger('timefed/dsn/preprocess.py')
 
     # Process
     try:
-        state = main(config)
+        state = main()
     except Exception:
         Logger.exception('Caught an exception during runtime')
     finally:
