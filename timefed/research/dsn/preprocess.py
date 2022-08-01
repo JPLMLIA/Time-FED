@@ -327,6 +327,8 @@ def preprocess(mission, keys):
 
             if len(dccs) > 1:
                 Logger.debug(f'Track {track} has {len(dccs)}: {dccs}')
+                if config.skip_dcc:
+                    dccs = []
 
             for dcc in dccs:
                 key += f'/{dcc}'

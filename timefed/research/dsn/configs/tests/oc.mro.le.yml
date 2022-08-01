@@ -1,0 +1,70 @@
+default:
+  label: Label
+  cores: 42
+
+preprocess:
+  input:
+    tracks: /data1/timefed/local/v3.MRO.tracks.h5
+    drs: /data1/timefed/local/v2.drs.h5
+  output:
+    tracks: /data1/timefed/local/mro/le/preprocess.h5
+  only:
+    missions: [MRO]
+    drs: [LE]
+  features:
+    diff: [CARRIER_SYSTEM_NOISE_TEMP, ELEVATION_ANGLE, AIR_TEMP, RELATIVE_HUMID]
+  concat: False
+  log:
+    level: info
+
+extract:
+  kind: classification
+  window: 5 min
+  step: 60 sec
+  observations: 60
+  tsfresh: [diff_CARRIER_SYSTEM_NOISE_TEMP, diff_ELEVATION_ANGLE, diff_AIR_TEMP, diff_RELATIVE_HUMID]
+  input:
+    file: /data1/timefed/local/mro/le/preprocess.h5
+    key: handselected
+  output:
+    file: /data1/timefed/local/mro/le/features.h5
+    key: extract
+  prompt:
+    features: False
+  features:
+    whitelist:
+    blacklist:
+
+select-le:
+  drop: [
+    SCHEDULE_ITEM_ID,
+    GROUND_ANTENNA_ID,
+    DCC_CHANNEL,
+    BEGINNING_OF_TRACK_TIME_DT,
+    END_OF_TRACK_TIME_DT,
+    START_TIME_DT,
+    END_TIME_DT,
+    TLM_GOOD_FRAME_COUNT,
+    TLM_BAD_FRAME_COUNT,
+    CAR_TRK_LOOP_LOCK_STATUS,
+    CARRIER_SYSTEM_NOISE_TEMP,
+    ELEVATION_ANGLE,
+    AIR_TEMP,
+    RELATIVE_HUMID
+  ]
+  split:
+    train: '< 2018'
+    test: '>= 2018'
+  input:
+    file: /data1/timefed/local/le.features.h5
+    key: MRO/handselected
+  output:
+    file: /data1/timefed/local/le.features.h5
+    key: MRO/selected
+
+classify-le:
+  input:
+    file: /data1/timefed/local/le.features.h5
+    key: MRO/selected
+  RandomForestClassifier:
+    random_state: 0
