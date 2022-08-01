@@ -27,7 +27,8 @@ extract:
   tsfresh: [diff_CARRIER_SYSTEM_NOISE_TEMP, diff_ELEVATION_ANGLE, diff_AIR_TEMP, diff_RELATIVE_HUMID]
   input:
     file: /data1/timefed/local/mro/le/preprocess.h5
-    key: handselected
+    # key: handselected
+    key: MRO/master
   output:
     file: /data1/timefed/local/mro/le/features.h5
     key: extract
