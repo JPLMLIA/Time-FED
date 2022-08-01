@@ -1,6 +1,8 @@
 default:
   label: Label
   cores: 42
+  log:
+    file: /data1/timefed/local/mro/le/run.log
 
 preprocess:
   input:
