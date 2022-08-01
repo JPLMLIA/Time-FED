@@ -2,6 +2,8 @@ default:
   label: Label
   cores: 8
 
+#%% WE/LE COMBINED
+
 pipeline-1:
   preprocess:
     run: False
@@ -36,17 +38,105 @@ preprocess-1:
   log:
     level: info
 
-extract-1:
+#%% LOW ELEVATION
+
+pipeline-le-pos:
+  preprocess:
+    run: True
+    key: preprocess-le-pos
+  extract:
+    run: True
+    key: extract-le-pos
+  select:
+    run: False
+    key: select-le
+  classify:
+    run: False
+    key: classify-le
+  log:
+    file: /Users/jamesmo/projects/mloc/timefed/research/dsn/local/runs/mro.le.pos.log
+
+pipeline-le-neg:
+  preprocess:
+    run: True
+    key: preprocess-le-neg
+  extract:
+    run: True
+    key: extract-le-neg
+  select:
+    run: False
+    key: select-le
+  classify:
+    run: False
+    key: classify-le
+  log:
+    file: /Users/jamesmo/projects/mloc/timefed/research/dsn/local/runs/mro.le.neg.log
+
+pipeline-le:
+  preprocess:
+    run: False
+    key: preprocess-le-neg
+  extract:
+    run: False
+    key: extract-le-neg
+  select:
+    run: True
+    key: select-le
+  classify:
+    run: True
+    key: classify-le
+  log:
+    file: /Users/jamesmo/projects/mloc/timefed/research/dsn/local/runs/mro.le.log
+
+preprocess-le-pos:
+  input:
+    tracks: /Users/jamesmo/projects/mloc/timefed/research/dsn/local/data/mro.tracks.h5
+    drs: /Users/jamesmo/projects/sqa-utils/local/data/drs.h5
+  output:
+    tracks: /Users/jamesmo/projects/mloc/timefed/research/dsn/local/data/mro/le.pos.preprocess.h5
+  only:
+    missions: [MRO]
+    drs: [LE]
+  features:
+    diff: [CARRIER_SYSTEM_NOISE_TEMP, ELEVATION_ANGLE, AIR_TEMP, RELATIVE_HUMID]
+  concat: False
+  subsample:
+    pos_limit: 10 # number of positive tracks to select, if int will be count, if float then percent
+    # neg_ratio: 1 # N:1 ratio of negative:positive tracks
+    neg_limit: 0
+  log:
+    level: info
+
+preprocess-le-neg:
+  input:
+    tracks: /Users/jamesmo/projects/mloc/timefed/research/dsn/local/data/mro.tracks.h5
+    drs: /Users/jamesmo/projects/sqa-utils/local/data/drs.h5
+  output:
+    tracks: /Users/jamesmo/projects/mloc/timefed/research/dsn/local/data/mro/le.neg.preprocess.h5
+  only:
+    missions: [MRO]
+    drs: [LE]
+  features:
+    diff: [CARRIER_SYSTEM_NOISE_TEMP, ELEVATION_ANGLE, AIR_TEMP, RELATIVE_HUMID]
+  concat: False
+  subsample:
+    pos_limit: 0 # number of positive tracks to select, if int will be count, if float then percent
+    # neg_ratio: 1 # N:1 ratio of negative:positive tracks
+    neg_limit: 10
+  log:
+    level: info
+
+extract-le-pos:
   kind: classification
   window: 5 min
   step: 60 sec
   observations: 60
-  tsfresh: [diff_CARRIER_SYSTEM_NOISE_TEMP, diff_ELEVATION_ANGLE, diff_AIR_TEMP, diff_RELATIVE_HUMID, diff_WIND_SPEED, diff_TOTAL_PRECIP, diff_PRECIP_RATE, diff_BARO_PRESSURE, diff_DEW_POINT_TEMP]
+  tsfresh: [diff_CARRIER_SYSTEM_NOISE_TEMP, diff_ELEVATION_ANGLE, diff_AIR_TEMP, diff_RELATIVE_HUMID]
   input:
-    file: /Users/jamesmo/projects/mloc/timefed/research/dsn/local/data/MRO.preprocess.h5
+    file: /Users/jamesmo/projects/mloc/timefed/research/dsn/local/data/mro/le.pos.preprocess.h5
     key: MRO/master
   output:
-    file: /Users/jamesmo/projects/mloc/timefed/research/dsn/local/data/MRO.features.h5
+    file: /Users/jamesmo/projects/mloc/timefed/research/dsn/local/data/mro/le.pos.features.h5
     key: MRO
   prompt:
     features: False
@@ -54,7 +144,266 @@ extract-1:
     whitelist:
     blacklist:
 
-select-1:
+extract-le-neg:
+  kind: classification
+  window: 5 min
+  step: 60 sec
+  observations: 60
+  tsfresh: [diff_CARRIER_SYSTEM_NOISE_TEMP, diff_ELEVATION_ANGLE, diff_AIR_TEMP, diff_RELATIVE_HUMID]
+  input:
+    file: /Users/jamesmo/projects/mloc/timefed/research/dsn/local/data/mro/le.neg.preprocess.h5
+    key: MRO/master
+  output:
+    file: /Users/jamesmo/projects/mloc/timefed/research/dsn/local/data/mro/le.neg.features.h5
+    key: MRO
+  prompt:
+    features: False
+  features:
+    whitelist:
+    blacklist:
+
+# Random select windows (rows) to be balanced before select, eventually will want specific selections
+# Histogram of time distributions
+
+select-le-old:
+  drop: [
+    SCHEDULE_ITEM_ID,
+    GROUND_ANTENNA_ID,
+    BEGINNING_OF_TRACK_TIME_DT,
+    END_OF_TRACK_TIME_DT,
+    START_TIME_DT,
+    END_TIME_DT,
+    TLM_GOOD_FRAME_COUNT,
+    TLM_BAD_FRAME_COUNT,
+    CAR_TRK_LOOP_LOCK_STATUS,
+    CARRIER_SYSTEM_NOISE_TEMP,
+    ELEVATION_ANGLE,
+    AIR_TEMP,
+    RELATIVE_HUMID,
+    WIND_SPEED,
+    TOTAL_PRECIP,
+    PRECIP_RATE,
+    BARO_PRESSURE,
+    DEW_POINT_TEMP
+  ]
+  split:
+    train: '< 2017'
+    test: '>= 2017'
+  input:
+    file: /Users/jamesmo/projects/mloc/timefed/research/dsn/local/data/mro.cat.features.h5
+    key: MRO/full
+  output:
+    file: /Users/jamesmo/projects/mloc/timefed/research/dsn/local/data/mro.cat.features.h5
+    key: MRO
+
+classify-le-old:
+  input:
+    file: /Users/jamesmo/projects/mloc/timefed/research/dsn/local/data/mro.cat.features.h5
+    key: MRO
+  RandomForestClassifier:
+    random_state: 0
+
+#%% WEATHER
+
+pipeline-we-pos:
+  preprocess:
+    run: True
+    key: preprocess-we-pos
+  extract:
+    run: True
+    key: extract-we-pos
+  select:
+    run: False
+    key: select-we
+  classify:
+    run: False
+    key: classify-we
+  log:
+    file: /Users/jamesmo/projects/mloc/timefed/research/dsn/local/runs/mro.we.pos.log
+
+pipeline-we-neg:
+  preprocess:
+    run: True
+    key: preprocess-we-neg
+  extract:
+    run: True
+    key: extract-we-neg
+  select:
+    run: False
+    key: select-we
+  classify:
+    run: False
+    key: classify-we
+  log:
+    file: /Users/jamesmo/projects/mloc/timefed/research/dsn/local/runs/mro.we.neg.log
+
+pipeline-we:
+  preprocess:
+    run: False
+    key: preprocess-we-neg
+  extract:
+    run: False
+    key: extract-we-neg
+  select:
+    run: True
+    key: select-we
+  classify:
+    run: True
+    key: classify-we
+  log:
+    file: /Users/jamesmo/projects/mloc/timefed/research/dsn/local/runs/mro.we.log
+
+preprocess-we-pos:
+  input:
+    tracks: /Users/jamesmo/projects/mloc/timefed/research/dsn/local/data/mro.tracks.h5
+    drs: /Users/jamesmo/projects/sqa-utils/local/data/drs.h5
+  output:
+    tracks: /Users/jamesmo/projects/mloc/timefed/research/dsn/local/data/mro/we.pos.preprocess.h5
+  only:
+    missions: [MRO]
+    drs: [WE]
+  features:
+    diff: [CARRIER_SYSTEM_NOISE_TEMP, ELEVATION_ANGLE, AIR_TEMP, RELATIVE_HUMID, WIND_SPEED, TOTAL_PRECIP, PRECIP_RATE, BARO_PRESSURE, DEW_POINT_TEMP]
+  concat: False
+  subsample:
+    pos_limit: 50 # number of positive tracks to select, if int will be count, if float then percent
+    # neg_ratio: 1 # N:1 ratio of negative:positive tracks
+    neg_limit: 0
+  log:
+    level: info
+
+preprocess-we-neg:
+  input:
+    tracks: /Users/jamesmo/projects/mloc/timefed/research/dsn/local/data/mro.tracks.h5
+    drs: /Users/jamesmo/projects/sqa-utils/local/data/drs.h5
+  output:
+    tracks: /Users/jamesmo/projects/mloc/timefed/research/dsn/local/data/mro/we.neg.preprocess.h5
+  only:
+    missions: [MRO]
+    drs: [WE]
+  features:
+    diff: [CARRIER_SYSTEM_NOISE_TEMP, ELEVATION_ANGLE, AIR_TEMP, RELATIVE_HUMID, WIND_SPEED, TOTAL_PRECIP, PRECIP_RATE, BARO_PRESSURE, DEW_POINT_TEMP]
+  concat: False
+  subsample:
+    pos_limit: 0 # number of positive tracks to select, if int will be count, if float then percent
+    # neg_ratio: 1 # N:1 ratio of negative:positive tracks
+    neg_limit: 50
+  log:
+    level: info
+
+extract-we-pos:
+  kind: classification
+  window: 5 min
+  step: 60 sec
+  observations: 60
+  tsfresh: [diff_CARRIER_SYSTEM_NOISE_TEMP, diff_ELEVATION_ANGLE, diff_AIR_TEMP, diff_RELATIVE_HUMID, diff_WIND_SPEED, diff_TOTAL_PRECIP, diff_PRECIP_RATE, diff_BARO_PRESSURE, diff_DEW_POINT_TEMP]
+  input:
+    file: /Users/jamesmo/projects/mloc/timefed/research/dsn/local/data/mro/we.pos.preprocess.h5
+    key: MRO/master
+  output:
+    file: /Users/jamesmo/projects/mloc/timefed/research/dsn/local/data/mro/we.pos.features.h5
+    key: MRO
+  prompt:
+    features: False
+  features:
+    whitelist:
+    blacklist:
+
+extract-we-neg:
+  kind: classification
+  window: 5 min
+  step: 60 sec
+  observations: 60
+  tsfresh: [diff_CARRIER_SYSTEM_NOISE_TEMP, diff_ELEVATION_ANGLE, diff_AIR_TEMP, diff_RELATIVE_HUMID, diff_WIND_SPEED, diff_TOTAL_PRECIP, diff_PRECIP_RATE, diff_BARO_PRESSURE, diff_DEW_POINT_TEMP]
+  input:
+    file: /Users/jamesmo/projects/mloc/timefed/research/dsn/local/data/mro/we.neg.preprocess.h5
+    key: MRO/master
+  output:
+    file: /Users/jamesmo/projects/mloc/timefed/research/dsn/local/data/mro/we.neg.features.h5
+    key: MRO
+  prompt:
+    features: False
+  features:
+    whitelist:
+    blacklist:
+
+# Random select windows (rows) to be balanced before select, eventually will want specific selections
+# Histogram of time distributions
+
+select-we-old:
+  drop: [
+    SCHEDULE_ITEM_ID,
+    GROUND_ANTENNA_ID,
+    BEGINNING_OF_TRACK_TIME_DT,
+    END_OF_TRACK_TIME_DT,
+    START_TIME_DT,
+    END_TIME_DT,
+    TLM_GOOD_FRAME_COUNT,
+    TLM_BAD_FRAME_COUNT,
+    CAR_TRK_LOOP_LOCK_STATUS,
+    CARRIER_SYSTEM_NOISE_TEMP,
+    ELEVATION_ANGLE,
+    AIR_TEMP,
+    RELATIVE_HUMID,
+    WIND_SPEED,
+    TOTAL_PRECIP,
+    PRECIP_RATE,
+    BARO_PRESSURE,
+    DEW_POINT_TEMP
+  ]
+  split:
+    train: '< 2017'
+    test: '>= 2017'
+  input:
+    file: /Users/jamesmo/projects/mloc/timefed/research/dsn/local/data/mro.cat.features.h5
+    key: MRO/full
+  output:
+    file: /Users/jamesmo/projects/mloc/timefed/research/dsn/local/data/mro.cat.features.h5
+    key: MRO
+
+classify-we-old:
+  input:
+    file: /Users/jamesmo/projects/mloc/timefed/research/dsn/local/data/mro.cat.features.h5
+    key: MRO
+  RandomForestClassifier:
+    random_state: 0
+
+#%%
+
+preprocess:
+  input:
+    tracks: /Users/jamesmo/projects/mloc/timefed/research/dsn/local/data/mro.tracks.h5
+    drs: /Users/jamesmo/projects/sqa-utils/local/data/drs.h5
+  output:
+    tracks: /Users/jamesmo/projects/mloc/timefed/research/dsn/local/data/mro/mro.preprocess.h5
+  only:
+    missions: [MRO]
+    drs: [WE]
+  features:
+    diff: [CARRIER_SYSTEM_NOISE_TEMP, ELEVATION_ANGLE, AIR_TEMP, RELATIVE_HUMID, WIND_SPEED, TOTAL_PRECIP, PRECIP_RATE, BARO_PRESSURE, DEW_POINT_TEMP]
+  concat: False
+  log:
+    level: info
+
+extract:
+  kind: classification
+  window: 5 min
+  step: 60 sec
+  observations: 60
+  tsfresh: [diff_CARRIER_SYSTEM_NOISE_TEMP, diff_ELEVATION_ANGLE, diff_AIR_TEMP, diff_RELATIVE_HUMID, diff_WIND_SPEED, diff_TOTAL_PRECIP, diff_PRECIP_RATE, diff_BARO_PRESSURE, diff_DEW_POINT_TEMP]
+  input:
+    file: /Users/jamesmo/projects/mloc/timefed/research/dsn/local/data/mro/preprocess.h5
+    key: MRO/handselected
+  output:
+    file: /Users/jamesmo/projects/mloc/timefed/research/dsn/local/data/mro/features.h5
+    key: MRO
+  prompt:
+    features: False
+  features:
+    whitelist:
+    blacklist:
+
+select-we:
   drop: [
     SCHEDULE_ITEM_ID,
     GROUND_ANTENNA_ID,
@@ -79,15 +428,49 @@ select-1:
     train: '< 2018'
     test: '>= 2018'
   input:
-    file: /Users/jamesmo/projects/mloc/timefed/research/dsn/local/data/MRO.features.h5
-    key: MRO/full
+    file: /Users/jamesmo/projects/mloc/timefed/research/dsn/local/data/features.h5
+    key: MRO/handselected
   output:
-    file: /Users/jamesmo/projects/mloc/timefed/research/dsn/local/data/MRO.features.h5
+    file: /Users/jamesmo/projects/mloc/timefed/research/dsn/local/data/we.features.h5
     key: MRO
 
-classify-1:
+classify-we:
   input:
-    file: /Users/jamesmo/projects/mloc/timefed/research/dsn/local/data/MRO.features.h5
+    file: /Users/jamesmo/projects/mloc/timefed/research/dsn/local/data/we.features.h5
     key: MRO
+  RandomForestClassifier:
+    random_state: 0
+
+
+select-le:
+  drop: [
+    SCHEDULE_ITEM_ID,
+    GROUND_ANTENNA_ID,
+    BEGINNING_OF_TRACK_TIME_DT,
+    END_OF_TRACK_TIME_DT,
+    START_TIME_DT,
+    END_TIME_DT,
+    TLM_GOOD_FRAME_COUNT,
+    TLM_BAD_FRAME_COUNT,
+    CAR_TRK_LOOP_LOCK_STATUS,
+    CARRIER_SYSTEM_NOISE_TEMP,
+    ELEVATION_ANGLE,
+    AIR_TEMP,
+    RELATIVE_HUMID
+  ]
+  split:
+    train: '< 2018'
+    test: '>= 2018'
+  input:
+    file: /Users/jamesmo/projects/mloc/timefed/research/dsn/local/data/le.features.h5
+    key: MRO/handselected
+  output:
+    file: /Users/jamesmo/projects/mloc/timefed/research/dsn/local/data/le.features.h5
+    key: MRO/selected
+
+classify-le:
+  input:
+    file: /Users/jamesmo/projects/mloc/timefed/research/dsn/local/data/le.features.h5
+    key: MRO/selected
   RandomForestClassifier:
     random_state: 0

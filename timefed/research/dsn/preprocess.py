@@ -34,11 +34,12 @@ def subsample(df):
 
     # Subsample the positive tracks using a percent of the total
     pos_tracks = pos.index
-    if config.subsample.pos_limit:
+    if isinstance(config.subsample.pos_limit, (int, float)):
         if isinstance(config.subsample.pos_limit, int):
             count = config.subsample.pos_limit
         else:
             count = int(pos.shape[0] * config.subsample.pos_limit)
+
         pos_tracks = np.random.choice(pos.index, count, replace=False)
         Logger.info(f'Randomly selecting {count}/{pos.shape[0]} ({count/pos.shape[0]*100:.2f}%) positive tracks')
 
@@ -49,8 +50,12 @@ def subsample(df):
         neg_tracks = np.random.choice(neg.index, ratio, replace=False)
         Logger.info(f'Randomly selecting {ratio}/{neg.shape[0]} ({ratio/neg.shape[0]*100:.2f}%) negative tracks')
 
-    if config.subsample.neg_limit:
-        count = int(neg.shape[0] * config.subsample.pos_limit)
+    if isinstance(config.subsample.neg_limit, (int, float)):
+        if isinstance(config.subsample.neg_limit, int):
+            count = config.subsample.neg_limit
+        else:
+            count = int(neg.shape[0] * config.subsample.neg_limit)
+
         neg_tracks = np.random.choice(neg.index, count, replace=False)
         Logger.info(f'Randomly selecting {count}/{neg.shape[0]} ({count/neg.shape[0]*100:.2f}%) negative tracks')
 
@@ -315,40 +320,50 @@ def preprocess(mission, keys):
 
             # Load this track in
             key = f'{mission}/{ant}/{track}'
-            df  = pd.read_hdf(config.input.tracks, key)
 
-            # Decode the strings to cleanup column values (removes the b'')
-            df = decode_strings(df)
+            # Check if there are DCC channels
+            with h5py.File(config.input.tracks, 'r') as h5:
+                dccs = list(h5[key].keys())
 
-            # Next attempt to convert DT and TS columns to python DT objects
-            for name, column in df.items():
-                if 'DT' in name or 'TS' in name:
-                    try:
-                        df[name] = timestamp_to_datetime(column)
-                    except:
-                        Logger.exception(f'Failed to convert {name} to datetime for {key}, skipping track')
-                        continue
+            if len(dccs) > 1:
+                Logger.debug(f'Track {track} has {len(dccs)}: {dccs}')
 
-            try:
-                # Create the label column
-                df = add_label(df, drs)
-            except:
-                Logger.exception(f'Failed to add label to {key}, skipping track')
-                raise
+            for dcc in dccs:
+                key += f'/{dcc}'
+                df  = pd.read_hdf(config.input.tracks, key)
 
-            # Compute additional features
-            df = add_features(df)
+                # Decode the strings to cleanup column values (removes the b'')
+                df = decode_strings(df)
 
-            # Set the index before saving
-            df = df.set_index('RECEIVED_AT_TS')
-            df.index.name = 'datetime'
+                # Next attempt to convert DT and TS columns to python DT objects
+                for name, column in df.items():
+                    if 'DT' in name or 'TS' in name:
+                        try:
+                            df[name] = timestamp_to_datetime(column)
+                        except:
+                            Logger.exception(f'Failed to convert {name} to datetime for {key}, skipping track')
+                            continue
 
-            # Save to output and update TQDM
-            df.to_hdf(config.output.tracks, key)
+                try:
+                    # Create the label column
+                    df = add_label(df, drs)
+                except:
+                    Logger.exception(f'Failed to add label to {key}, skipping track')
+                    raise
 
-            dfs.append(df)
+                # Compute additional features
+                df = add_features(df)
 
-            Logger.debug(f'Successfully processed {key}')
+                # Set the index before saving
+                df = df.set_index('RECEIVED_AT_TS')
+                df.index.name = 'datetime'
+
+                # Save to output and update TQDM
+                df.to_hdf(config.output.tracks, key)
+
+                dfs.append(df)
+
+            # Logger.debug(f'Successfully processed {key}')
             bar.update()
 
     Logger.info('Concatenating all frames together')
