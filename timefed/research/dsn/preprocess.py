@@ -331,8 +331,8 @@ def preprocess(mission, keys):
                     dccs = []
 
             for dcc in dccs:
-                key += f'/{dcc}'
-                df  = pd.read_hdf(config.input.tracks, key)
+                subkey = f'{key}/{dcc}'
+                df  = pd.read_hdf(config.input.tracks, subkey)
 
                 # Decode the strings to cleanup column values (removes the b'')
                 df = decode_strings(df)
@@ -343,14 +343,14 @@ def preprocess(mission, keys):
                         try:
                             df[name] = timestamp_to_datetime(column)
                         except:
-                            Logger.exception(f'Failed to convert {name} to datetime for {key}, skipping track')
+                            Logger.exception(f'Failed to convert {name} to datetime for {subkey}, skipping track')
                             continue
 
                 try:
                     # Create the label column
                     df = add_label(df, drs)
                 except:
-                    Logger.exception(f'Failed to add label to {key}, skipping track')
+                    Logger.exception(f'Failed to add label to {subkey}, skipping track')
                     raise
 
                 # Compute additional features
@@ -361,11 +361,11 @@ def preprocess(mission, keys):
                 df.index.name = 'datetime'
 
                 # Save to output and update TQDM
-                df.to_hdf(config.output.tracks, key)
+                df.to_hdf(config.output.tracks, subkey)
 
                 dfs.append(df)
 
-            # Logger.debug(f'Successfully processed {key}')
+            # Logger.debug(f'Successfully processed {subkey}')
             bar.update()
 
     Logger.info('Concatenating all frames together')

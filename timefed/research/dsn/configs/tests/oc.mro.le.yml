@@ -37,7 +37,7 @@ extract:
     whitelist:
     blacklist:
 
-select-le:
+select:
   drop: [
     SCHEDULE_ITEM_ID,
     GROUND_ANTENNA_ID,
@@ -64,7 +64,7 @@ select-le:
     file: /data1/timefed/local/le.features.h5
     key: MRO/selected
 
-classify-le:
+classify:
   input:
     file: /data1/timefed/local/le.features.h5
     key: MRO/selected
