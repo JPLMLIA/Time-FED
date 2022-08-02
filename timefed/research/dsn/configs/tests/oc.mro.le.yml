@@ -56,8 +56,8 @@ select:
     RELATIVE_HUMID
   ]
   split:
-    train: '< 2018'
-    test: '>= 2018'
+    train: '< "2013-07"'
+    test: '>= "2013-07"'
   input:
     file: /data1/timefed/local/le.features.h5
     key: MRO/handselected
@@ -123,3 +123,20 @@ extract-pos:
   features:
     whitelist:
     blacklist:
+
+preprocess-neg:
+  input:
+    tracks: /data1/timefed/local/v3.MRO.tracks.h5
+    drs: /data1/timefed/local/v2.drs.h5
+  output:
+    tracks: /data1/timefed/local/mro/le/neg.preprocess.h5
+  only:
+    missions: [MRO]
+    drs: [LE]
+  features:
+    diff: [CARRIER_SYSTEM_NOISE_TEMP, ELEVATION_ANGLE, AIR_TEMP, RELATIVE_HUMID]
+  subsample:
+    pos_limit: 0
+  concat: False
+  log:
+    level: info
