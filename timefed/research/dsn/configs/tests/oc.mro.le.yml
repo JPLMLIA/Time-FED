@@ -73,6 +73,20 @@ classify:
     random_state: 0
 
 # -------------------------------------------------------------------------------------------------------------------------
+pipeline:
+  preprocess:
+    run: True
+    key: preprocess-pos
+  extract:
+    run: True
+    key: extract-pos
+  select:
+    run: False
+    key: select
+  classify:
+    run: False
+    key: classify
+
 preprocess-pos:
   input:
     tracks: /data1/timefed/local/v3.MRO.tracks.h5
