@@ -113,7 +113,8 @@ extract-pos:
   input:
     file: /data1/timefed/local/mro/le/pos.preprocess.h5
     # key: handselected
-    key: MRO/master
+    # key: MRO/master
+    key: positives
   output:
     file: /data1/timefed/local/mro/le/pos.features.h5
     key: extract
