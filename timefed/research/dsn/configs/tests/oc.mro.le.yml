@@ -140,3 +140,23 @@ preprocess-neg:
   concat: False
   log:
     level: info
+
+extract-neg:
+  kind: classification
+  window: 5 min
+  step: 60 sec
+  observations: 60
+  tsfresh: [diff_CARRIER_SYSTEM_NOISE_TEMP, diff_ELEVATION_ANGLE, diff_AIR_TEMP, diff_RELATIVE_HUMID]
+  input:
+    file: /data1/timefed/local/mro/le/neg.preprocess.h5
+    # key: handselected
+    # key: MRO/master
+    key: negatives
+  output:
+    file: /data1/timefed/local/mro/le/neg.features.h5
+    key: extract
+  prompt:
+    features: False
+  features:
+    whitelist:
+    blacklist:
