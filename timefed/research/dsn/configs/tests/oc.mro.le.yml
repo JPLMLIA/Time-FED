@@ -71,3 +71,40 @@ classify:
     key: MRO/selected
   RandomForestClassifier:
     random_state: 0
+
+# -------------------------------------------------------------------------------------------------------------------------
+preprocess-pos:
+  input:
+    tracks: /data1/timefed/local/v3.MRO.tracks.h5
+    drs: /data1/timefed/local/v2.drs.h5
+  output:
+    tracks: /data1/timefed/local/mro/le/pos.preprocess.h5
+  only:
+    missions: [MRO]
+    drs: [LE]
+  features:
+    diff: [CARRIER_SYSTEM_NOISE_TEMP, ELEVATION_ANGLE, AIR_TEMP, RELATIVE_HUMID]
+  subsample:
+    neg_limit: 0
+  concat: False
+  log:
+    level: info
+
+extract-pos:
+  kind: classification
+  window: 5 min
+  step: 60 sec
+  observations: 60
+  tsfresh: [diff_CARRIER_SYSTEM_NOISE_TEMP, diff_ELEVATION_ANGLE, diff_AIR_TEMP, diff_RELATIVE_HUMID]
+  input:
+    file: /data1/timefed/local/mro/le/pos.preprocess.h5
+    # key: handselected
+    key: MRO/master
+  output:
+    file: /data1/timefed/local/mro/le/pos.features.h5
+    key: extract
+  prompt:
+    features: False
+  features:
+    whitelist:
+    blacklist:
