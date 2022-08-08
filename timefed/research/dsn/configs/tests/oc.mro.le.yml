@@ -100,7 +100,7 @@ preprocess-pos:
     diff: [CARRIER_SYSTEM_NOISE_TEMP, ELEVATION_ANGLE, AIR_TEMP, RELATIVE_HUMID]
   subsample:
     neg_limit: 0
-    query: (2010 <= index) & (index < 2013)
+    query: (2010 <= index) & (index < 2012)
   concat: False
   log:
     level: info
@@ -153,7 +153,7 @@ preprocess-neg:
     diff: [CARRIER_SYSTEM_NOISE_TEMP, ELEVATION_ANGLE, AIR_TEMP, RELATIVE_HUMID]
   subsample:
     pos_limit: 0
-    query: (2010 <= index) & (index < 2013)
+    query: (2010 <= index) & (index < 2012)
   concat: False
   log:
     level: info
