@@ -73,7 +73,7 @@ classify:
     random_state: 0
 
 # -------------------------------------------------------------------------------------------------------------------------
-pipeline:
+pipeline-pos:
   preprocess:
     run: True
     key: preprocess-pos
@@ -100,6 +100,7 @@ preprocess-pos:
     diff: [CARRIER_SYSTEM_NOISE_TEMP, ELEVATION_ANGLE, AIR_TEMP, RELATIVE_HUMID]
   subsample:
     neg_limit: 0
+    query: index >= 2022
   concat: False
   log:
     level: info
@@ -137,6 +138,7 @@ preprocess-neg:
     diff: [CARRIER_SYSTEM_NOISE_TEMP, ELEVATION_ANGLE, AIR_TEMP, RELATIVE_HUMID]
   subsample:
     pos_limit: 0
+    query: index >= 2022
   concat: False
   log:
     level: info

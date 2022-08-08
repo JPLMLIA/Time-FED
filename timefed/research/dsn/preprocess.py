@@ -25,7 +25,12 @@ Logger = logging.getLogger('timefed/dsn/preprocess.py')
 def subsample(df):
     """
     """
-    config = Config()
+    config = Config().subsample
+
+    # If a query string is given, apply it first
+    if config.query:
+        Logger.info(f'Applying query: {config.query}')
+        df = df.query(config.query)
 
     # Group by SID, taking the mean value of the Label to differentiate between positive and negative tracks (positive has mean value > 0, neg == 0)
     gf  = df[['SCHEDULE_ITEM_ID', 'Label']].groupby('SCHEDULE_ITEM_ID').mean()
@@ -34,27 +39,27 @@ def subsample(df):
 
     # Subsample the positive tracks using a percent of the total
     pos_tracks = pos.index
-    if isinstance(config.subsample.pos_limit, (int, float)):
-        if isinstance(config.subsample.pos_limit, int):
-            count = config.subsample.pos_limit
+    if isinstance(config.pos_limit, (int, float)):
+        if isinstance(config.pos_limit, int):
+            count = config.pos_limit
         else:
-            count = int(pos.shape[0] * config.subsample.pos_limit)
+            count = int(pos.shape[0] * config.pos_limit)
 
         pos_tracks = np.random.choice(pos.index, count, replace=False)
         Logger.info(f'Randomly selecting {count}/{pos.shape[0]} ({count/pos.shape[0]*100:.2f}%) positive tracks')
 
     # Subsample the negative tracks using a ratio to the number of positive
     neg_tracks = neg.index
-    if config.subsample.neg_ratio:
-        ratio = int(len(pos_tracks) * config.subsample.neg_ratio)
+    if config.neg_ratio:
+        ratio = int(len(pos_tracks) * config.neg_ratio)
         neg_tracks = np.random.choice(neg.index, ratio, replace=False)
         Logger.info(f'Randomly selecting {ratio}/{neg.shape[0]} ({ratio/neg.shape[0]*100:.2f}%) negative tracks')
 
-    if isinstance(config.subsample.neg_limit, (int, float)):
-        if isinstance(config.subsample.neg_limit, int):
-            count = config.subsample.neg_limit
+    if isinstance(config.neg_limit, (int, float)):
+        if isinstance(config.neg_limit, int):
+            count = config.neg_limit
         else:
-            count = int(neg.shape[0] * config.subsample.neg_limit)
+            count = int(neg.shape[0] * config.neg_limit)
 
         neg_tracks = np.random.choice(neg.index, count, replace=False)
         Logger.info(f'Randomly selecting {count}/{neg.shape[0]} ({count/neg.shape[0]*100:.2f}%) negative tracks')
