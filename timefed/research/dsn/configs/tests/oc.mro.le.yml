@@ -2,9 +2,9 @@ default:
   label: Label
   cores: 42
   log:
-    file: /data1/timefed/local/mro/le/run.log
+    file: c
 
-preprocess:
+preprocess-default:
   input:
     tracks: /data1/timefed/local/v3.MRO.tracks.h5
     drs: /data1/timefed/local/v2.drs.h5
@@ -19,7 +19,7 @@ preprocess:
   log:
     level: info
 
-extract:
+extract-default:
   kind: classification
   window: 5 min
   step: 60 sec
@@ -38,7 +38,7 @@ extract:
     whitelist:
     blacklist:
 
-select:
+select-default:
   drop: [
     SCHEDULE_ITEM_ID,
     GROUND_ANTENNA_ID,
@@ -65,7 +65,7 @@ select:
     file: /data1/timefed/local/le.features.h5
     key: MRO/selected
 
-classify:
+classify-default:
   input:
     file: /data1/timefed/local/le.features.h5
     key: MRO/selected
@@ -82,10 +82,10 @@ pipeline-pos:
     key: extract-pos
   select:
     run: False
-    key: select
+    key: select-default
   classify:
     run: False
-    key: classify
+    key: classify-default
 
 preprocess-pos:
   input:
@@ -100,7 +100,7 @@ preprocess-pos:
     diff: [CARRIER_SYSTEM_NOISE_TEMP, ELEVATION_ANGLE, AIR_TEMP, RELATIVE_HUMID]
   subsample:
     neg_limit: 0
-    query: index >= 2022
+    query: index >= 2021
   concat: False
   log:
     level: info
@@ -125,6 +125,21 @@ extract-pos:
     whitelist:
     blacklist:
 
+# -------------------------------------------------------------------------------------------------------------------------
+pipeline-neg:
+  preprocess:
+    run: True
+    key: preprocess-neg
+  extract:
+    run: True
+    key: extract-neg
+  select:
+    run: False
+    key: select-default
+  classify:
+    run: False
+    key: classify-default
+
 preprocess-neg:
   input:
     tracks: /data1/timefed/local/v3.MRO.tracks.h5
@@ -138,7 +153,7 @@ preprocess-neg:
     diff: [CARRIER_SYSTEM_NOISE_TEMP, ELEVATION_ANGLE, AIR_TEMP, RELATIVE_HUMID]
   subsample:
     pos_limit: 0
-    query: index >= 2022
+    query: index >= 2021
   concat: False
   log:
     level: info
