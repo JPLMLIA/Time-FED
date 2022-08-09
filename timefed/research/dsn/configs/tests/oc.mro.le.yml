@@ -70,8 +70,8 @@ select-default:
     RELATIVE_HUMID
   ]
   split:
-    train: '< "2013-07"'
-    test: '>= "2013-07"'
+    train: '< "2021_08_09"'
+    test: '>= "2021_08_09"'
   input:
     file: /data1/timefed/local/le.features.h5
     key: handselected
@@ -114,7 +114,7 @@ preprocess-pos:
     diff: [CARRIER_SYSTEM_NOISE_TEMP, ELEVATION_ANGLE, AIR_TEMP, RELATIVE_HUMID]
   subsample:
     neg_limit: 0
-    query: 2019 <= index
+    query: 2018 <= index
   concat: False
   log:
     level: info
