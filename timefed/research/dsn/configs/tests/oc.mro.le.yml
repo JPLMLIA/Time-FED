@@ -4,6 +4,20 @@ default:
   log:
     file: c
 
+pipeline-default:
+  preprocess:
+    run: False
+    key: preprocess-default
+  extract:
+    run: False
+    key: extract-default
+  select:
+    run: True
+    key: select-default
+  classify:
+    run: True
+    key: classify-default
+
 preprocess-default:
   input:
     tracks: /data1/timefed/local/v3.MRO.tracks.h5
@@ -27,8 +41,8 @@ extract-default:
   tsfresh: [diff_CARRIER_SYSTEM_NOISE_TEMP, diff_ELEVATION_ANGLE, diff_AIR_TEMP, diff_RELATIVE_HUMID]
   input:
     file: /data1/timefed/local/mro/le/preprocess.h5
-    # key: handselected
-    key: MRO/master
+    key: handselected
+    # key: MRO/master
   output:
     file: /data1/timefed/local/mro/le/features.h5
     key: extract
@@ -60,15 +74,15 @@ select-default:
     test: '>= "2013-07"'
   input:
     file: /data1/timefed/local/le.features.h5
-    key: MRO/handselected
+    key: handselected
   output:
     file: /data1/timefed/local/le.features.h5
-    key: MRO/selected
+    key: selected
 
 classify-default:
   input:
     file: /data1/timefed/local/le.features.h5
-    key: MRO/selected
+    key: selected
   RandomForestClassifier:
     random_state: 0
 
