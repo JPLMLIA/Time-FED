@@ -70,8 +70,8 @@ select-default:
     RELATIVE_HUMID
   ]
   split:
-    train: '< "2021_08_09"'
-    test: '>= "2021_08_09"'
+    train: '< "08_09_2021"'
+    test: '>= "08_09_2021"'
   input:
     file: /data1/timefed/local/le.features.h5
     key: handselected
