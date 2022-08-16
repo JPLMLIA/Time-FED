@@ -14,10 +14,6 @@ def split(df):
     """
     config = Config().split
 
-    # Make sure date string doesn't use -
-    config.train = config.train.replace('-', '_')
-    config.test  = config.test .replace('-', '_')
-
     Logger.debug(f'Train query: "index {config.train}"')
     Logger.debug(f'Test  query: "index {config.test}"')
 
