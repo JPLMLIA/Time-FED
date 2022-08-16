@@ -119,7 +119,7 @@ preprocess-pos:
     diff: [CARRIER_SYSTEM_NOISE_TEMP, ELEVATION_ANGLE, AIR_TEMP, RELATIVE_HUMID, WIND_SPEED, TOTAL_PRECIP, PRECIP_RATE, BARO_PRESSURE, DEW_POINT_TEMP]
   subsample:
     neg_limit: 0
-    query: 2018 <= index
+    query: 2020 <= index
   concat: False
   log:
     level: info
@@ -172,7 +172,7 @@ preprocess-neg:
     diff: [CARRIER_SYSTEM_NOISE_TEMP, ELEVATION_ANGLE, AIR_TEMP, RELATIVE_HUMID, WIND_SPEED, TOTAL_PRECIP, PRECIP_RATE, BARO_PRESSURE, DEW_POINT_TEMP]
   subsample:
     pos_limit: 0
-    query: 2019 <= index
+    query: 2020 <= index
   concat: False
   log:
     level: info
