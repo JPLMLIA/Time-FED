@@ -75,18 +75,18 @@ select-default:
     DEW_POINT_TEMP
   ]
   split:
-    train: '< "08-09-2021"'
-    test: '>= "08-09-2021"'
+    train: '< "2021-12-13 12:03:21"'
+    test: '>= "2021-12-13 12:03:21"'
   input:
-    file: /data1/timefed/local/we/features.h5
+    file: /data1/timefed/local/mro/we/features.h5
     key: handselected
   output:
-    file: /data1/timefed/local/we/features.h5
+    file: /data1/timefed/local/mro/we/features.h5
     key: selected
 
 classify-default:
   input:
-    file: /data1/timefed/local/we/features.h5
+    file: /data1/timefed/local/mro/we/features.h5
     key: selected
   RandomForestClassifier:
     random_state: 0
