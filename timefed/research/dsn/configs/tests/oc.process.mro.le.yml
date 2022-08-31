@@ -20,8 +20,8 @@ pipeline-default:
 
 process-default:
   input:
-    tracks: /Users/jamesmo/projects/mloc/timefed/research/dsn/local/data/v3.MRO.tracks.h5
-    drs: /Users/jamesmo/projects/sqa-utils/local/data/drs.h5
+    tracks: /data1/timefed/local/v3.MRO.tracks.h5
+    drs: /data1/timefed/local/v2.drs.h5
   output:
     tracks: /data1/timefed/local/process/mro/le/tracks.h5
     windows: /data1/timefed/local/process/mro/le/windows.h5
