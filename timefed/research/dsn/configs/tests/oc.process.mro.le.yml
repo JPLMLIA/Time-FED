@@ -1,9 +1,8 @@
 default:
   label: Label
-  cores: 42
+  cores: 63
   log:
-    file: /Users/jamesmo/projects/mloc/timefed/research/dsn/local/data/tests/log.log
-    level: debug
+    file: /data1/timefed/local/process/mro/le/process.log
 
 pipeline-default:
   preprocess:
