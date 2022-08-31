@@ -23,6 +23,8 @@ pd.options.mode.chained_assignment = None
 
 Logger = logging.getLogger('timefed/research/dsn/process.py')
 
+Lock = mp.Lock()
+
 def roll(df, window, step, observations):
     """
     Creates a generator for rolling over a pandas DataFrame with a given window
@@ -286,8 +288,9 @@ def process(key, config):
         nf = pd.concat(extracted)
 
         # Save
-        df.to_hdf(config.output.tracks, key)
-        nf.to_hdf(config.output.windows, key)
+        with Lock:
+            df.to_hdf(config.output.tracks, key)
+            nf.to_hdf(config.output.windows, key)
 
         return 0
     return -2
@@ -363,5 +366,3 @@ if __name__ == '__main__':
             Logger.info('Finished successfully')
         else:
             Logger.info('Failed to complete')
-
-#%%
