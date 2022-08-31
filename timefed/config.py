@@ -38,6 +38,9 @@ class Null:
     def __iter__(self):
         return iter(())
 
+    def __len__(self):
+        return 0
+
     def __repr__(self):
         return 'Null'
 
@@ -77,6 +80,9 @@ class Section:
 
     def __iter__(self):
         return iter(self._data)
+
+    def __len__(self):
+        return len(self._data)
 
     def __getattr__(self, key):
         if key in self.__dict__:
@@ -166,7 +172,7 @@ class Config():
                     data = yaml.load(string, Loader=yaml.FullLoader)
 
                 if active not in data:
-                    raise AttributeError(f'Active section {active!r} does not exist in the YAML: {data}')
+                    raise AttributeError(f'Active section {active!r} does not exist in the YAML: {list(data.keys())}')
 
                 cls._data = {}
                 for key, value in data.items():
@@ -199,6 +205,9 @@ class Config():
 
     def __iter__(self):
         return iter(self._data)
+
+    def __len__(self):
+        return len(self._data)
 
     @classmethod
     def __setattr__(cls, key, value):
