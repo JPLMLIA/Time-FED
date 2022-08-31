@@ -276,7 +276,7 @@ def process(key, config):
         window = extract(window, drop, config)
         # Drop columns that have inf values
         window = window.replace([np.inf, -np.inf], np.nan)
-        window = window.drop(columns=window.isna().any().index)
+        window = window.dropna(axis=1)
 
         if not window.empty:
             extracted.append(window)
@@ -363,3 +363,5 @@ if __name__ == '__main__':
             Logger.info('Finished successfully')
         else:
             Logger.info('Failed to complete')
+
+#%%
