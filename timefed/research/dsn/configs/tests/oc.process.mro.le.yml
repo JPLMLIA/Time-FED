@@ -23,8 +23,8 @@ process-default:
     tracks: /data1/timefed/local/v4.MRO.tracks.h5
     drs: /data1/timefed/local/v2.drs.h5
   output:
-    tracks: /data1/timefed/local/process/mro/le/tracks.h5
-    windows: /data1/timefed/local/process/mro/le/windows.h5
+    tracks: /data1/timefed/local/process/mro/le/v2.tracks.h5
+    windows: /data1/timefed/local/process/mro/le/v2.windows.h5
   only:
     spacecrafts: [MRO]
     drs: [LE, WE, SC]

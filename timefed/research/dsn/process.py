@@ -311,7 +311,7 @@ def get_keys(config):
                     for dcc in h5[sc][ant][track].keys():
                         keys.append(f'{sc}/{ant}/{track}/{dcc}')
 
-    yield from tqdm(keys, desc='Keys Processed')
+    return keys
 
 def main():
     """
@@ -321,6 +321,7 @@ def main():
     keys = get_keys(config)
     func = partial(process, config=config)
     results = {0: 0, -1: 0, -2: 0}
+    bar = tqdm(total=len(keys), desc='Tracks Processed')
     with mp.Pool() as pool:
         for result in pool.imap_unordered(func, keys):
             if isinstance(result, tuple):
@@ -330,6 +331,7 @@ def main():
                 results[0] += 1
             else:
                 results[result] += 1
+            bar.update()
 
     Logger.info(f'{sum(results.values())} tracks were processed')
     Logger.info(f'- Accepted: {results[0]}')
