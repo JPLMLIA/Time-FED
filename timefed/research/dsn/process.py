@@ -157,8 +157,8 @@ def add_label(df, drs):
     # Exclude bad frames from the negative class
     df.Label.loc[df.query('TLM_BAD_FRAME_COUNT > 0').index] = -1
 
-    # Verify the bad frames were removed correctly
-    assert df.query('Label == 0 and TLM_BAD_FRAME_COUNT > 0').empty, 'Failed to remove bad frames from negative class'
+    # # Verify the bad frames were removed correctly
+    # assert df.query('Label == 0 and TLM_BAD_FRAME_COUNT > 0').empty, 'Failed to remove bad frames from negative class'
 
     # Lookup if this track had a DR, if so change those timestamps to 1
     lookup = drs.query(f'SCHEDULE_ITEM_ID == {df.SCHEDULE_ITEM_ID.iloc[0]}')
@@ -287,12 +287,8 @@ def process(key, config):
         # Combine the windows for this track together to save out
         nf = pd.concat(extracted)
 
-        # Save
-        with Lock:
-            df.to_hdf(config.output.tracks, key)
-            nf.to_hdf(config.output.windows, key)
+        return key, df, nf
 
-        return 0
     return -2
 
 def get_keys(config):
@@ -325,7 +321,13 @@ def main():
     results = {0: 0, -1: 0, -2: 0}
     with mp.Pool() as pool:
         for result in pool.imap_unordered(func, keys):
-            results[result] += 1
+            if isinstance(result, tuple):
+                key, df, nf = result
+                df.to_hdf(config.output.tracks, key)
+                nf.to_hdf(config.output.windows, key)
+                results[0] += 1
+            else:
+                results[result] += 1
 
     Logger.info(f'{sum(results.values())} tracks were processed')
     Logger.info(f'- Accepted: {results[0]}')

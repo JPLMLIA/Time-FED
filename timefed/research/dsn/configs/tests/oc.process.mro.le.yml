@@ -20,16 +20,16 @@ pipeline-default:
 
 process-default:
   input:
-    tracks: /data1/timefed/local/v3.MRO.tracks.h5
+    tracks: /data1/timefed/local/v4.MRO.tracks.h5
     drs: /data1/timefed/local/v2.drs.h5
   output:
     tracks: /data1/timefed/local/process/mro/le/tracks.h5
     windows: /data1/timefed/local/process/mro/le/windows.h5
   only:
     spacecrafts: [MRO]
-    drs: [LE]
+    drs: [LE, WE, SC]
   features:
-    diff: [CARRIER_SYSTEM_NOISE_TEMP, ELEVATION_ANGLE, AIR_TEMP, RELATIVE_HUMID]
+    diff: [AGC_VOLTAGE, CARRIER_SYSTEM_NOISE_TEMP, ELEVATION_ANGLE, AIR_TEMP, RELATIVE_HUMID, WIND_SPEED, TOTAL_PRECIP, PRECIP_RATE, BARO_PRESSURE, DEW_POINT_TEMP]
   concat: False
   log:
     level: info
@@ -37,7 +37,7 @@ process-default:
   window: 5 min
   step: 60 sec
   observations: 60
-  tsfresh: [diff_CARRIER_SYSTEM_NOISE_TEMP, diff_ELEVATION_ANGLE, diff_AIR_TEMP, diff_RELATIVE_HUMID]
+  tsfresh: [diff_AGC_VOLTAGE, diff_CARRIER_SYSTEM_NOISE_TEMP, diff_ELEVATION_ANGLE, diff_AIR_TEMP, diff_RELATIVE_HUMID, diff_WIND_SPEED, diff_TOTAL_PRECIP, diff_PRECIP_RATE, diff_BARO_PRESSURE, diff_DEW_POINT_TEMP]
 
 select-default:
   drop: [
