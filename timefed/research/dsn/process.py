@@ -168,6 +168,8 @@ def add_label(df, drs):
         # Set the incident as positive
         df.Label.loc[df.query('@incident[0] <= RECEIVED_AT_TS <= @incident[1]').index] = 1
 
+        Logger.debug(f'Track {df.SCHEDULE_ITEM_ID.iloc[0]} had DR {lookup.DR_CLOSURE_CAUSE_CD}')
+
     return df
 
 def timestamp_to_datetime(timestamps):
