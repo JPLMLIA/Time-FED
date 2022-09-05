@@ -23,7 +23,7 @@ pd.options.mode.chained_assignment = None
 
 Logger = logging.getLogger('timefed/research/dsn/process.py')
 
-Lock = mp.Lock()
+Locks = [mp.Lock() for _ in range(10)]
 
 def roll(df, window, step, observations):
     """
@@ -218,6 +218,8 @@ def decode_strings(df):
 def process(key, config):
     """
     """
+    fie = None
+
     # Read in the DRs
     drs = pd.read_hdf(config.input.drs, key.split('/')[0])
     drs = decode_strings(drs)
@@ -248,7 +250,7 @@ def process(key, config):
     df = df.dropna(how='any', axis=0) # Has a NaN
 
     if df.empty:
-        return -1
+        return -1, key, file, False
 
     # Determine which columns to use for processing
     drop = []
@@ -289,9 +291,21 @@ def process(key, config):
         # Combine the windows for this track together to save out
         nf = pd.concat(extracted)
 
-        return key, df, nf
+        done = False
+        while not done:
+            # Find a lock to use
+            for i, lock in enumerate(Locks):
+                if lock.acquire(block=False):
+                    df.to_hdf(f'{config.output.tracks}.{i}', key)
+                    nf.to_hdf(f'{config.output.windows}.{i}', key)
+                    file = f'{config.output.windows}.{i}'
+                    lock.release()
+                    done = True
+                    break
 
-    return -2
+        return 0, key, file, nf.Label.any()
+
+    return -2, key, file, False
 
 def get_keys(config):
     """
@@ -322,16 +336,14 @@ def main():
     func = partial(process, config=config)
     results = {0: 0, -1: 0, -2: 0}
     bar = tqdm(total=len(keys), desc='Tracks Processed')
+    drs = 0
     with mp.Pool() as pool:
-        for result in pool.imap_unordered(func, keys):
-            if isinstance(result, tuple):
-                key, df, nf = result
-                df.to_hdf(config.output.tracks, key)
-                nf.to_hdf(config.output.windows, key)
-                results[0] += 1
-            else:
-                results[result] += 1
+        for result, key, file, had_dr in pool.imap_unordered(func, keys):
+            results[result] += 1
             bar.update()
+            if had_dr:
+                drs += 1
+                Logger.debug(f'Positive track {key} in {file}, total={drs}')
 
     Logger.info(f'{sum(results.values())} tracks were processed')
     Logger.info(f'- Accepted: {results[0]}')
