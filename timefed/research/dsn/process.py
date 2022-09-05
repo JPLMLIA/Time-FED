@@ -218,7 +218,7 @@ def decode_strings(df):
 def process(key, config):
     """
     """
-    fie = None
+    file = None
 
     # Read in the DRs
     drs = pd.read_hdf(config.input.drs, key.split('/')[0])
