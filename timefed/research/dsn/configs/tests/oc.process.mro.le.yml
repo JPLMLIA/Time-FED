@@ -33,6 +33,7 @@ process-default:
   concat: False
   log:
     level: info
+  cores: 20
   kind: classification
   window: 5 min
   step: 60 sec

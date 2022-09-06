@@ -23,7 +23,7 @@ pd.options.mode.chained_assignment = None
 
 Logger = logging.getLogger('timefed/research/dsn/process.py')
 
-Locks = [mp.Lock() for _ in range(10)]
+Locks = [mp.Lock() for _ in range(20)]
 
 def roll(df, window, step, observations):
     """
@@ -168,7 +168,7 @@ def add_label(df, drs):
         # Set the incident as positive
         df.Label.loc[df.query('@incident[0] <= RECEIVED_AT_TS <= @incident[1]').index] = 1
 
-        Logger.debug(f'Track {df.SCHEDULE_ITEM_ID.iloc[0]} had DR {lookup.DR_CLOSURE_CAUSE_CD}')
+        # Logger.debug(f'Track {df.SCHEDULE_ITEM_ID.iloc[0]} had DR {lookup.DR_CLOSURE_CAUSE_CD}')
 
     return df
 
@@ -337,7 +337,7 @@ def main():
     results = {0: 0, -1: 0, -2: 0}
     bar = tqdm(total=len(keys), desc='Tracks Processed')
     drs = 0
-    with mp.Pool() as pool:
+    with mp.Pool(processes=config.cores) as pool:
         for result, key, file, had_dr in pool.imap_unordered(func, keys):
             results[result] += 1
             bar.update()
