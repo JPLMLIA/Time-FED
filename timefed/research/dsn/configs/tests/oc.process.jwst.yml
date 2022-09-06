@@ -21,7 +21,7 @@ pipeline-default:
 process-default:
   input:
     tracks: /data1/timefed/local/process/jwst/data/v4.JWST1.tracks.h5
-    drs: /data1/timefed/local/v2.drs.h5
+    drs: /data1/timefed/local/process/jwst/data/jwst1.drs.h5
   output:
     tracks: /data1/timefed/local/process/jwst/v2.tracks.h5
     windows: /data1/timefed/local/process/jwst/v2.windows.h5
