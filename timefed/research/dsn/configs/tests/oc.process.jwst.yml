@@ -26,7 +26,7 @@ process-default:
     tracks: /data1/timefed/local/process/jwst/v2.tracks.h5
     windows: /data1/timefed/local/process/jwst/v2.windows.h5
   only:
-    spacecrafts: [JWST]
+    spacecrafts: [JWST1]
     drs: [LE, WE, SC]
   features:
     diff: [AGC_VOLTAGE, CARRIER_SYSTEM_NOISE_TEMP, ELEVATION_ANGLE, AIR_TEMP, RELATIVE_HUMID, WIND_SPEED, TOTAL_PRECIP, PRECIP_RATE, BARO_PRESSURE, DEW_POINT_TEMP]
