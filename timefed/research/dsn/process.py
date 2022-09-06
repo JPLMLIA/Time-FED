@@ -23,7 +23,7 @@ pd.options.mode.chained_assignment = None
 
 Logger = logging.getLogger('timefed/research/dsn/process.py')
 
-Locks = [mp.Lock() for _ in range(20)]
+Locks = [mp.Lock() for _ in range(10)]
 
 def roll(df, window, step, observations):
     """
@@ -92,7 +92,7 @@ def extract(df, drop, config, features=None):
         column_value = None,
         default_fc_parameters = features,
         disable_progressbar   = True,
-        n_jobs = 1
+        n_jobs = 3
     )
 
     # Imitate the original index
@@ -337,7 +337,7 @@ def main():
     results = {0: 0, -1: 0, -2: 0}
     bar = tqdm(total=len(keys), desc='Tracks Processed')
     drs = 0
-    with mp.Pool(processes=config.cores) as pool:
+    with mp.Pool(processes=10) as pool:
         for result, key, file, had_dr in pool.imap_unordered(func, keys):
             results[result] += 1
             bar.update()
