@@ -236,7 +236,8 @@ def process(key, config):
             df[name] = timestamp_to_datetime(column)
 
     # Drop columns that are all NaN
-    df = df.drop(columns=df.columns[df.isna().all()])
+    drop = list(df.columns[df.isna().all()])
+    df   = df.drop(columns=drop)
 
     # Create the label column
     df = add_label(df, drs)
@@ -258,11 +259,11 @@ def process(key, config):
     # Determine which columns to use for processing
     drop = []
     if config.tsfresh:
-        drop = [config.label] + list(set(df.columns) - set(config.tsfresh))
+        drop += [config.label] + list(set(df.columns) - set(config.tsfresh))
 
     # The label column is always excluded from feature extraction
     if not drop:
-        drop = [config.label]
+        drop += [config.label]
 
     # Remove columns that are not int or float dtypes
     for col in df:
