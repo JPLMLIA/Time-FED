@@ -125,7 +125,8 @@ def add_features(df):
     config = Config()
 
     for feature in config.features.diff:
-        df[f'diff_{feature}'] = df[feature].diff()
+        if feature in df:
+            df[f'diff_{feature}'] = df[feature].diff()
 
     return df
 
@@ -236,8 +237,7 @@ def process(key, config):
             df[name] = timestamp_to_datetime(column)
 
     # Drop columns that are all NaN
-    drop = list(df.columns[df.isna().all()])
-    df   = df.drop(columns=drop)
+    df = df.drop(columns=df.columns[df.isna().all()])
 
     # Create the label column
     df = add_label(df, drs)
@@ -259,11 +259,11 @@ def process(key, config):
     # Determine which columns to use for processing
     drop = []
     if config.tsfresh:
-        drop += [config.label] + list(set(df.columns) - set(config.tsfresh))
+        drop = [config.label] + list(set(df.columns) - set(config.tsfresh))
 
     # The label column is always excluded from feature extraction
     if not drop:
-        drop += [config.label]
+        drop = [config.label]
 
     # Remove columns that are not int or float dtypes
     for col in df:
