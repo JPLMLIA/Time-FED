@@ -92,7 +92,7 @@ def extract(df, drop, config, features=None):
         column_value = None,
         default_fc_parameters = features,
         disable_progressbar   = True,
-        n_jobs = 3
+        n_jobs = 1
     )
 
     # Imitate the original index
