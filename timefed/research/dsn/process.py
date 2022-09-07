@@ -235,6 +235,9 @@ def process(key, config):
         if 'DT' in name or 'TS' in name:
             df[name] = timestamp_to_datetime(column)
 
+    # Drop columns that are all NaN
+    df = df.drop(columns=df.columns[df.isna().all()])
+
     # Create the label column
     df = add_label(df, drs)
 
