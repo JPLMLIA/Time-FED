@@ -40,31 +40,37 @@ process-default:
   observations: 60
   tsfresh: [diff_AGC_VOLTAGE, diff_CARRIER_SYSTEM_NOISE_TEMP, diff_ELEVATION_ANGLE, diff_AIR_TEMP, diff_RELATIVE_HUMID, diff_WIND_SPEED, diff_TOTAL_PRECIP, diff_PRECIP_RATE, diff_BARO_PRESSURE, diff_DEW_POINT_TEMP]
 
-select-default:
+select-rfi:
   drop: [
-    SCHEDULE_ITEM_ID,
+    CARRIER_SYSTEM_NOISE_TEMP,
+    RELATIVE_HUMID,
+    Label,
+    ELEVATION_ANGLE,
+    START_TIME_DT,
+    TLM_GOOD_FRAME_COUNT,
+    CAR_TRK_LOOP_LOCK_STATUS,
+    TOTAL_PRECIP,
+    END_TIME_DT,
     GROUND_ANTENNA_ID,
     DCC_CHANNEL,
-    BEGINNING_OF_TRACK_TIME_DT,
     END_OF_TRACK_TIME_DT,
-    START_TIME_DT,
-    END_TIME_DT,
-    TLM_GOOD_FRAME_COUNT,
-    TLM_BAD_FRAME_COUNT,
-    CAR_TRK_LOOP_LOCK_STATUS,
-    CARRIER_SYSTEM_NOISE_TEMP,
-    ELEVATION_ANGLE,
+    BARO_PRESSURE,
     AIR_TEMP,
-    RELATIVE_HUMID
+    WIND_SPEED,
+    SCHEDULE_ITEM_ID,
+    PRECIP_RATE,
+    BEGINNING_OF_TRACK_TIME_DT,
+    DEW_POINT_TEMP,
+    TLM_BAD_FRAME_COUNT
   ]
   split:
-    train: '< "08-09-2021"'
-    test: '>= "08-09-2021"'
+    train: '< "2022-04-27 17:02:07"'
+    test: '>= "2022-04-27 17:02:07"'
   input:
-    file: /data1/timefed/local/le.features.h5
-    key: handselected
+    file: /data1/timefed/local/process/jwst/select.h5
+    key: rfi
   output:
-    file: /data1/timefed/local/le.features.h5
+    file: /data1/timefed/local/process/jwst/rfi.h5
     key: selected
 
 classify-default:
