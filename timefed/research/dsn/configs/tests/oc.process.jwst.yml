@@ -72,9 +72,9 @@ select-rfi:
     file: /data1/timefed/local/process/jwst/rfi.h5
     key: selected
 
-classify-default:
+classify-rfi:
   input:
-    file: /data1/timefed/local/le.features.h5
+    file: /data1/timefed/local/process/jwst/rfi.h5
     key: selected
   RandomForestClassifier:
     random_state: 0
