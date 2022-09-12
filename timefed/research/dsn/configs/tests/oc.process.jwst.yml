@@ -44,7 +44,6 @@ select-rfi:
   drop: [
     CARRIER_SYSTEM_NOISE_TEMP,
     RELATIVE_HUMID,
-    Label,
     ELEVATION_ANGLE,
     START_TIME_DT,
     TLM_GOOD_FRAME_COUNT,
