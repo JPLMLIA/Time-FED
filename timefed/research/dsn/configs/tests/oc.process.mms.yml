@@ -35,9 +35,9 @@ process-default:
     level: info
   cores: 32
   kind: classification
-  window: 5 min
+  window: 3 min
   step: 5 sec
-  observations: 60
+  observations: 36
   tsfresh: [diff_AGC_VOLTAGE, diff_CARRIER_SYSTEM_NOISE_TEMP]
 
 select-rfi:
