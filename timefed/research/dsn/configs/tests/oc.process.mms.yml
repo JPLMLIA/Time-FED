@@ -20,8 +20,8 @@ pipeline-default:
 
 process-default:
   input:
-    tracks: /data1/timefed/local/process/mms/data/v4.MMS.tracks.h5
-    drs: /data1/timefed/local/process/mms/data/mms.drs.h5
+    tracks: /data1/timefed/local/process/mms/v4.MMS.tracks.h5
+    drs: /data1/timefed/local/process/mms/mms.drs.h5
   output:
     tracks: /data1/timefed/local/process/mms/tracks.h5
     windows: /data1/timefed/local/process/mms/windows.h5
