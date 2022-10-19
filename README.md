@@ -1,8 +1,8 @@
-# Machine Learning for the Optical Channel
+# Time Series Forecasting Evaluation and Deployment (TimeFED)
 
 ## Setup
 
-Clone the repo via `git pull https://github.jpl.nasa.gov/jamesmo/MLOC.git`
+Clone the repo via `git pull https://github.jpl.nasa.gov/jamesmo/TimeFED.git`
 
 ### Environment
 
@@ -10,4 +10,4 @@ This project uses Conda to manage the Python environment required to run the scr
 
 1. Ensure [Conda](https://docs.conda.io/en/latest/miniconda.html) is installed.
 2. Install the environment via `conda env create -f environment.yml`
-3. Activate the environment via `conda activate mloc`
+3. Activate the environment via `conda activate timefed`
