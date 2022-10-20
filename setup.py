@@ -20,6 +20,7 @@ setuptools.setup(
         'scipy>=1.5.4',
         'seaborn>=0.11.2',
         'scikit-learn==0.24.1',
+        'ray',
         'tables>=3.6.1',
         'tqdm>=4.50.1',
         'tsfresh>=0.17.0'

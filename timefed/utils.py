@@ -116,6 +116,47 @@ def load_pkl(file):
     """
     return pickle.load(open(file, 'rb'))
 
+def align_print(iterable, enum=False, delimiter='=', offset=1, prepend='', print=print):
+    """
+    Pretty prints an iterable in the form {key} = {value} such that the delimiter (=)
+    aligns on each line
+
+    Parameters
+    ----------
+    iterable: iterable
+        Any iterable with a .items() function
+    enum: bool, default = False
+        Whether to include enumeration of the items
+    delimiter, default = '='
+        The symbol to use between the key and the value
+    offset: int, default = 1
+        Space between the key and the delimiter: {key}{offset}{delimiter}
+        Defaults to 1, eg: "key ="
+    prepend: str, default = ''
+        Any string to prepend to each line
+    print: func, default = print
+        The print function to use. Allows using custom function instead of Python's normal print
+    """
+    # Determine how much padding between the key and delimiter
+    pad = max([1, len(max(iterable.keys(), key=len))]) + offset
+
+    # Build the formatted string
+    fmt = prepend
+    if enum:
+        fmt += '- {i:' + f'{len(str(len(iterable)))}' + '}: '
+    fmt += '{key:'+ str(pad) + '}' + delimiter + ' {value}'
+
+    # Create the formatted list
+    fmt_list = []
+    for i, (key, value) in enumerate(iterable.items()):
+        string = fmt.format(i=i, key=key, value=value)
+        fmt_list.append(string)
+
+    for string in fmt_list:
+        print(string)
+
+    return fmt_list
+
 class NoDaemonProcess(mp.Process):
     '''
     Credit goes to Massimiliano
