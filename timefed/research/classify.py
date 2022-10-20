@@ -99,7 +99,7 @@ def score(model, data, name, multiclass_scores=False):
 
     # plot_roc(truth, preds)
 
-    importances(model, data.columns, print_only=True)
+    importances(model, data.columns, print_only=False)
 
     # Return as dict instead of Section
     return scores._data
@@ -127,7 +127,7 @@ def classify():
 
     return scores
 
-def plot_confusion_matrix(cm):
+def plot_confusion_matrix(config, cm):
     """
     """
     fig, ax = plt.subplots(figsize=(5, 5))
@@ -135,6 +135,11 @@ def plot_confusion_matrix(cm):
     cmp.plot(ax=ax, colorbar=False)
     ax.grid(False)
     ax.set_title('Confusion Matrix')
+
+    if config.plots.directory:
+        plt.savefig(f'{config.plots.directory}/{pconf.file}')
+    else:
+        plt.show()
 
 def plot_roc(truth, predicted):
     """
