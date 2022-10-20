@@ -1,8 +1,7 @@
 """
 """
 import logging
-import multiprocessing as mp
-import multiprocessing.pool as mp_pool
+import os
 import pickle
 import sys
 
@@ -50,6 +49,9 @@ def init(args):
     handlers.append(sh)
 
     if config.log.file:
+        if config.log.reset and os.path.exists(config.log.file):
+            os.remove(config.log.file)
+
         # Add the file logging
         fh = logging.FileHandler(config.log.file)
         fh.setLevel(logging.DEBUG)
@@ -62,6 +64,11 @@ def init(args):
         handlers = handlers,
         force    = True
     )
+
+    logging.getLogger().debug(f'Logging initialized using Config({args.config}, {args.section})')
+
+    if config.log.config:
+        shutil.copy(config._flags.file, config.log.config)
 
 def timeit(func):
     """
@@ -156,32 +163,3 @@ def align_print(iterable, enum=False, delimiter='=', offset=1, prepend='', print
         print(string)
 
     return fmt_list
-
-class NoDaemonProcess(mp.Process):
-    '''
-    Credit goes to Massimiliano
-    https://stackoverflow.com/questions/6974695/python-process-pool-non-daemonic
-    '''
-    @property
-    def daemon(self):
-        return False
-
-    @daemon.setter
-    def daemon(self, value):
-        pass
-
-class NoDaemonContext(type(mp.get_context())):
-    '''
-    Credit goes to Massimiliano
-    https://stackoverflow.com/questions/6974695/python-process-pool-non-daemonic
-    '''
-    Process = NoDaemonProcess
-
-class Pool(mp_pool.Pool):
-    '''
-    Credit goes to Massimiliano
-    https://stackoverflow.com/questions/6974695/python-process-pool-non-daemonic
-    '''
-    def __init__(self, *args, **kwargs):
-        kwargs['context'] = NoDaemonContext()
-        super().__init__(*args, **kwargs)
