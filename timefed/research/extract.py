@@ -384,9 +384,9 @@ def main():
 
     # Retrieve features to use
     features = get_features(
-        whitelist = config.prompt.whitelist,
-        blacklist = config.prompt.blacklist,
-        prompt    = config.prompt.interactive
+        whitelist = config.features.whitelist,
+        blacklist = config.features.blacklist,
+        prompt    = config.features.interactive
     )
 
     # load the data
