@@ -1,0 +1,23 @@
+default:
+  log:
+    level: debug
+    file: /Users/jamesmo/projects/mloc/timefed/research/tests/test.log
+extract:
+  input:
+    file: /Users/jamesmo/projects/mloc/timefed/research/tests/data/generated.h5
+    key: roll_1
+  output:
+    file: /Users/jamesmo/projects/mloc/timefed/research/output/_extract.h5
+    windows: /Users/jamesmo/projects/mloc/timefed/research/output/_windows.h5
+  window: 20 min
+  step: null
+  resolution: null
+  required: []
+  optional: []
+  columns: []
+  index: -1
+  label: label
+  features:
+    interactive: False
+    whitelist: null
+    blacklist: null

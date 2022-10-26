@@ -266,6 +266,11 @@ def extract(df, slice=None, columns=[], label=None, features=None, index=-1):
     Returns
     -------
     extracted: pandas.core.DataFrame
+
+    Notes
+    -----
+    Requires a minimum of two columns: a target column and a data column. There must
+    always be 1 target column, and there can be N>0 columns for data. 
     """
     # TODO: https://stackoverflow.com/questions/20625582/how-to-deal-with-settingwithcopywarning-in-pandas
     pd.options.mode.chained_assignment = None
@@ -314,6 +319,19 @@ def process(df, features=None):
     many windows through extract. This is an optional function
     and may be used as a guideline to writing custom scripts
     leveraging the TimeFED API.
+
+    Parameters
+    ----------
+    df: pandas.core.DataFrame
+        A single input of data to create windows on and process through extraction
+    features: dict, default=None
+        Dictionary subset of tsfresh.feature_extraction.ComprehensiveFCParameters
+        Defaults to None which uses the default ComprehensiveFCParameters (all features, default parameters)
+
+    Returns
+    -------
+    bool
+        Whether the function finished correctly
     """
     import ray
 
@@ -332,23 +350,16 @@ def process(df, features=None):
 
     report(stats, Logger.info)
 
-    df_id = ray.put(df)
-    # func  = partial(extract,
-    #     features = features,
-    #     columns  = config.get('columns', []  ),
-    #     label    = config.get('label'  , None),
-    #     index    = config.get('index'  , -1  )
-    # )
+    # Place constant params into shared memory
+    params = {
+        'df'      : ray.put(df),
+        'features': ray.put(features),
+        'columns' : ray.put(config.get('columns', []  )),
+        'label'   : ray.put(config.get('label'  , None)),
+        'index'   : ray.put(config.get('index'  , -1  )),
+    }
     func = ray.remote(extract)
-    jobs = [func.remote(
-        df       = df_id,
-        slice    = slice(*window),
-        features = features,
-        columns  = config.get('columns', []  ),
-        label    = config.get('label'  , None),
-        index    = config.get('index'  , -1  )
-        ) for window in windows
-    ]
+    jobs = [func.remote(**params, slice=slice(*window)) for window in windows]
 
     extracts = []
     for i in tqdm(range(len(windows)), desc='Processing Windows'):

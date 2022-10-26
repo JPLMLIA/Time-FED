@@ -1,0 +1,49 @@
+default:
+  # Optional | Contains the arguments for logging
+  log:
+    # Optional | str | Sets the log level for the console.
+    level: warning
+    # Optional | str | Path to write the log file to. This is always set to the debug level.
+    file: null
+    # Optional | bool | Deletes the old log file if it exists and recreates it for a new run.
+    reset: False
+    # Optional | str | Path to copy the run config to. Useful for creating a copy of the config at runtime in the output directory for future reference.
+    config: null
+
+extract:
+  # Required | Contains all the arguments for the input data of a script
+  input:
+    # Optional | str | Path to the input h5 file
+    file: null
+    # Optional | str | Key in the h5 to pull a pandas DataFrame from
+    key: null
+  # Optional
+  output:
+    # Optional | str | Path to an h5 file to save the extracted windows DataFrame to under the key "windows"
+    file: null
+    # Optional | str | Path to an h5 file to save individual windows to to help reduce
+    windows: null
+  # Required | str | Size of the windows to extract. The size of these windows is determined by this value divided by the resolution of the data, eg. 10min / 1min = 10 samples.
+  window: null
+  # Optional | Size of the step when moving from one window to the next. This can be either an int or a str, where an int would step N many indices from the start of the previous window's start, and str would step N amount of time beyond the start of the previous window's start.
+  step: 1
+  # Optional | The resolution of the data. If not set, the
+  resolution: null
+  # Optional | list | List of required variables when rolling. If not provided, defaults to all variables.
+  required: []
+  # Optional | list | List of optional variables when rolling. If not provided, defaults to the opposite of `required`.
+  optional: []
+  # Optional
+  columns: []
+  # Optional | int | Which index of a window to set as the window index
+  index: -1
+  # Optional | str | If a classification problem, use this column as the label column. If a window has a 1, the label for that window is 1, otherwise 0.
+  label: null
+  # Optional | Contains the arguments for selecting which tsfresh features to process
+  features:
+    # Optional | bool | Enables interactive mode for selection of feature functions from `tsfresh.feature_extraction.ComprehensiveFCParameters`
+    interactive: False
+    # Optional | list | Name of feature functions to accept from `tsfresh.feature_extraction.ComprehensiveFCParameters`
+    whitelist: []
+    # Optional | list | Name of feature functions to reject from `tsfresh.feature_extraction.ComprehensiveFCParameters`
+    blacklist: []
