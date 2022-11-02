@@ -65,6 +65,10 @@ def roll(df, window, step=1, resolution=None, required=None, optional=[], as_fra
     windows: list
         List of pairs (i, j) for the start and end indices
         for a valid window
+
+    Notes
+    -----
+    The index must be a pandas.TimeIndex. Does not support pandas.PeriodIndex.
     """
     stats = Section('roll stats', {
         'possible': 0,
@@ -240,7 +244,7 @@ def verify(df):
 
     return df
 
-def extract(df, slice=None, columns=[], label=None, features=None, index=-1):
+def extract(df, slice=None, columns=[], target=None, features=None, index=-1, classification=False):
     """
     Prepares a window of data and performs tsfresh feature extraction
 
@@ -253,9 +257,8 @@ def extract(df, slice=None, columns=[], label=None, features=None, index=-1):
         If given, uses this slice on df as the window
     columns: list, default=[]
         Columns to process through tsfresh
-    label: str, default=None
-        If this is a classification problem, use this column to
-        determine the label value
+    target: str, default=None
+        This is the target variable
     features: dict, default=None
         Subset of tsfresh.feature_extraction.ComprehensiveFCParameters
         None uses all feature functions with default params
@@ -270,7 +273,7 @@ def extract(df, slice=None, columns=[], label=None, features=None, index=-1):
     Notes
     -----
     Requires a minimum of two columns: a target column and a data column. There must
-    always be 1 target column, and there can be N>0 columns for data. 
+    always be 1 target column, and there can be N>0 columns for data.
     """
     # TODO: https://stackoverflow.com/questions/20625582/how-to-deal-with-settingwithcopywarning-in-pandas
     pd.options.mode.chained_assignment = None
@@ -283,8 +286,8 @@ def extract(df, slice=None, columns=[], label=None, features=None, index=-1):
 
     columns += ['_ID', '_TIME']
 
-    if label in columns:
-        columns.remove(label)
+    if target in columns:
+        columns.remove(target)
 
     df['_ID']   = np.full(len(df), 0)
     df['_TIME'] = df.index
@@ -307,9 +310,9 @@ def extract(df, slice=None, columns=[], label=None, features=None, index=-1):
     if excluded:
         extracted[excluded] = df[excluded].iloc[index]
 
-    # If this is a classification problem, modify the label
-    if label and df[label].any():
-        extracted[label] = 1
+    # If this is a classification problem, modify the target
+    if classification and df[target].any():
+        extracted[target] = 1
 
     return extracted
 
@@ -352,11 +355,12 @@ def process(df, features=None):
 
     # Place constant params into shared memory
     params = {
-        'df'      : ray.put(df),
-        'features': ray.put(features),
-        'columns' : ray.put(config.get('columns', []  )),
-        'label'   : ray.put(config.get('label'  , None)),
-        'index'   : ray.put(config.get('index'  , -1  )),
+        'df'            : ray.put(df),
+        'features'      : ray.put(features),
+        'columns'       : ray.put(config.get('columns'       , []     )),
+        'target'        : ray.put(config.get('target'        , None   )),
+        'index'         : ray.put(config.get('index'         , -1     )),
+        'classification': ray.put(config.get('classification', False  )),
     }
     func = ray.remote(extract)
     jobs = [func.remote(**params, slice=slice(*window)) for window in windows]
