@@ -86,7 +86,7 @@ def roll(df, window, frequency, step=1, required=None, optional=[], as_frames=Fa
     if zero in freq:
         Logger.warning('Duplicate timestamps were detected, windowing my return unexpected results')
 
-    stats.frequency = pd.Timedelta(frequency)
+    frequency = stats.frequency = pd.Timedelta(frequency)
 
     def _step_by_time(i):
         k = df.index[i] + offset
