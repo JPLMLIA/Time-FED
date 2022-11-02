@@ -7,6 +7,8 @@ default:                                  # ? | Type | Description
     file: !!python/none                   #   | str  | Path to write the log file to. This is always set to the debug level.
     reset: False                          #   | bool | Deletes the old log file if it exists and recreates it for a new run.
     config: !!python/none                 #   | str  | Path to copy the run config to. Useful for creating a copy of the config at runtime in the output directory for future reference.
+
+extract:
   input:                                  # * | dict | Contains all the arguments for the input data of a script
     file: str                             # * | str  | Path to the input h5 file
     key: !!python/none                    # + | str  | Key in the h5 to pull a pandas DataFrame from

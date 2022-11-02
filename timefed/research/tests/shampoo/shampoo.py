@@ -9,6 +9,7 @@ df = pd.read_hdf('timefed/research/tests/shampoo/shampoo.data.label.h5')
 df
 
 
+
 #%%
 
 zero = pd.Timedelta(0)
@@ -20,15 +21,15 @@ if not resolution:
 
 #%%
 
-resolution = freq[freq.keys() > zero].sort_values(ascending=False).index[0]
-resolution
+frequency = freq[freq.keys() > zero].sort_values(ascending=False).index[0]
+frequency
 
 window = '1 Y'
 delta = pd.Timedelta(window)
-size = int(delta / resolution)
+size = int(delta / frequency)
 size
 
-resolution
+frequency
 delta
 
-delta / pd.Timedelta('30 days')
+delta / pd.Timedelta('31 days')
