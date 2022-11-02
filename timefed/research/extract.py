@@ -20,7 +20,7 @@ Logger = logging.getLogger('timefed/extract.py')
 def report(stats, print=print):
     """
     """
-    print(f'- Resolution of the data is assumed: {stats.resolution}')
+    print(f'- Frequency of the data is assumed: {stats.frequency}')
     print(f'- Using a window size of {stats.window} and a step of {stats.step}, the size of each window is {stats.size} samples')
     print(f'- Windows produced:')
     print(f'-- Total possible : {stats.possible}')
@@ -35,7 +35,7 @@ def report(stats, print=print):
         print(f'-- Reasons for rejection:')
         utils.align_print(stats.reasons, print=print, prepend='--- ')
 
-def roll(df, window, step=1, resolution=None, required=None, optional=[], as_frames=False):
+def roll(df, window, frequency, step=1, required=None, optional=[], as_frames=False):
     """
     Creates a generator for rolling over a pandas DataFrame with a given window
     size.
@@ -46,13 +46,12 @@ def roll(df, window, step=1, resolution=None, required=None, optional=[], as_fra
         DataFrame to roll over
     window: str
         The window size to extract
+    frequency: str
+        The frequency of the input data
     step: str or int, default=1
         Step size to take when rolling over the DataFrame
         If int, steps that many indices
         If str, uses time to determine next index
-    resolution: str, default=None
-        The resolution of the input data
-        If None, auto discovers
     required: list, default=None
         Columns to require
     optional: list, default=[]
@@ -87,9 +86,7 @@ def roll(df, window, step=1, resolution=None, required=None, optional=[], as_fra
     if zero in freq:
         Logger.warning('Duplicate timestamps were detected, windowing my return unexpected results')
 
-    if not resolution:
-        resolution   = freq[freq.keys() > zero].sort_index().index[0]
-    stats.resolution = resolution
+    stats.frequency = pd.Timedelta(frequency)
 
     def _step_by_time(i):
         k = df.index[i] + offset
@@ -109,9 +106,9 @@ def roll(df, window, step=1, resolution=None, required=None, optional=[], as_fra
         step   = _step_by_index
 
     delta = pd.Timedelta(window)
-    size  = stats.size = int(delta / resolution)
+    size  = stats.size = int(delta / frequency)
     if size < 1:
-        Logger.error('The window size is too short for the resolution of the data')
+        Logger.error(f'The window size is too short for the cadence of the data: size = int(delta / frequency) = int({delta} / {frequency}) = {size}')
         return [], stats
 
     if not required:
@@ -345,7 +342,7 @@ def process(df, features=None):
     windows, stats = roll(df,
         window     = config.window,
         step       = config.step or 1,
-        resolution = config.resolution,
+        frequency  = config.frequency,
         required   = config.required,
         optional   = config.optional,
         as_frames  = False
