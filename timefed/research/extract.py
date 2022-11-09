@@ -20,7 +20,9 @@ Logger = logging.getLogger('timefed/extract.py')
 def report(stats, print=print):
     """
     """
-    print(f'- Frequency of the data is assumed: {stats.frequency}')
+    print('Roll stats:')
+    print(f'- Frequency of the data is: {stats.frequency}')
+    print(f'- The data ranges over {stats.range}')
     print(f'- Using a window size of {stats.window} and a step of {stats.step}, the size of each window is {stats.size} samples')
     print(f'- Windows produced:')
     print(f'-- Total possible : {stats.possible}')
@@ -122,6 +124,7 @@ def roll(df, window, frequency, step=1, required=None, optional=[], as_frames=Fa
 
     stats.window = delta
     stats.step   = offset
+    stats.range  = df.index[-1] - df.index[0]
 
     samples = df.shape[0]
     windows = []
@@ -337,12 +340,14 @@ def process(df, features=None):
 
     config = Config()
 
-    ray.init(**config.ray)
+    # Only initialize if it's provided by the config
+    if config.ray:
+        ray.init(**config.ray)
 
     windows, stats = roll(df,
         window     = config.window,
-        step       = config.step or 1,
         frequency  = config.frequency,
+        step       = config.step or 1,
         required   = config.required,
         optional   = config.optional,
         as_frames  = False
@@ -363,7 +368,7 @@ def process(df, features=None):
     jobs = [func.remote(**params, slice=slice(*window)) for window in windows]
 
     extracts = []
-    for i in tqdm(range(len(windows)), desc='Processing Windows'):
+    for i in tqdm(range(len(windows)), desc='Processing Windows', position=0):
         [done], running = ray.wait(jobs, num_returns=1)
         jobs   = running
         window = ray.get(done)
@@ -382,7 +387,6 @@ def process(df, features=None):
     Logger.info('Concatting the feature frames together')
     df = pd.concat(extracts).sort_index()
     df = verify(df)
-    df.to_hdf(config.output.file, 'windows')
 
     return df
 
@@ -401,10 +405,15 @@ def main():
         prompt    = config.features.interactive
     )
 
-    # load the data
-    df = pd.read_hdf(config.input.file, config.input.key)
-
-    process(df, features)
+    if config.input.multi:
+        for key in tqdm(config.input.multi, position=1):
+            df = pd.read_hdf(config.input.file, key)
+            df = process(df, features)
+            df.to_hdf(config.output.file, f'windows/{key}')
+    else:
+        df = pd.read_hdf(config.input.file, config.input.key)
+        df = process(df, features)
+        df.to_hdf(config.output.file, 'windows')
 
     return True
 
