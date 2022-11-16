@@ -6,6 +6,7 @@ import pandas as pd
 from tqdm    import tqdm
 from tsfresh import select_features
 
+from timefed        import utils
 from timefed.config import Config
 
 Logger = logging.getLogger('timefed/subselect.py')
@@ -139,10 +140,8 @@ def _split_single_regression(df, n=10, **kwargs):
     groups = [int(i*total/n) for i in range(1, n)]
 
     for i, end in enumerate(groups):
-
         perc = np.round((end / total) * 100, decimals=1)
         sf.loc[i, 'Train% / Test%'] = f'{perc:.1f} / {100-perc:.1f}'
-
 
         if end != total:
             sf.loc[i, 'Split Date'] = df.index[end]

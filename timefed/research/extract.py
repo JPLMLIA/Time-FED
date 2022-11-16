@@ -406,6 +406,13 @@ def main():
     )
 
     if config.input.multi:
+        if isinstance(config.input.multi, str):
+            with h5py.File(config.output.file, 'r') as h5:
+                config.input.multi = [
+                    f'{config.input.multi}/{key}'
+                    for key in h5[config.input.multi].keys()
+                ]
+
         for key in tqdm(config.input.multi, position=1):
             df = pd.read_hdf(config.input.file, key)
             df = process(df, features)
