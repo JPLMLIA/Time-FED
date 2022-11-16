@@ -249,7 +249,7 @@ if __name__ == '__main__':
                                             help     = 'Path to a config.yaml file'
     )
     parser.add_argument('-s', '--section',  type     = str,
-                                            default  = 'select',
+                                            default  = 'subselect',
                                             help     = 'Section of the config to use'
     )
 
