@@ -34,7 +34,7 @@ def split(df, date):
 
     return train, test
 
-def select(df, train, test, target='label'):
+def select(df, train, test, target='label', n_jobs=1):
     """
     Selects relevant features from a tsfresh dataframe of features for a target
     label
@@ -50,7 +50,7 @@ def select(df, train, test, target='label'):
 
     Logger.info('Selecting features on the train set')
     train = select_features(train.drop(columns=[target]), label,
-        n_jobs    = config.get('cores', 1),
+        n_jobs    = n_jobs,
         chunksize = 2**10
     )
 
@@ -181,7 +181,7 @@ def interact(df):
     def _select():
         """
         """
-        Logger.info(sf)
+        Logger.info(f'\n{sf}')
         Logger.info('Please select an index to use as the split date from the above table.')
         Logger.info('If you would like to choose a different N, enter -1.')
 
@@ -199,6 +199,8 @@ def interact(df):
             except:
                 Logger.error(f'The input value is not an integer: {value!r}')
                 return _select
+
+    config = Config()
 
     func = _split_single_regression
     if config.classification:
@@ -227,13 +229,13 @@ def main():
     else:
         df = pd.read_hdf(config.input.file, 'windows')
 
-        if config.interact:
+        if config.interactive:
             config.split_date = interact(df)
 
         train, test = split(df, config.split_date)
-        train, test = select(df, train, test)
+        train, test = select(df, train, test, n_jobs=config.get('cores', 1))
 
-    Logger.info(f'Saving to {config.output.file} under key {config.output.key}/[train,test]')
+    Logger.info(f'Saving to {config.output.file} under key select/[train,test]')
     train.to_hdf(config.output.file, 'select/train')
     test .to_hdf(config.output.file, 'select/test')
 
