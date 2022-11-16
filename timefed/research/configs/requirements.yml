@@ -2,112 +2,143 @@ log:
   _desc_: Contains the arguments for logging
   _type_: dict
   _required_: False
+  _scripts_: all
   _children_:
     level:
       _desc_: Sets the log level for the console.
       _type_: str
       _required_: False
       _default_: warning
+      _scripts_: all
     file:
       _desc_: Path to write the log file to. This is always set to the debug level.
       _type_: str
       _required_: False
+      _scripts_: all
     reset:
       _desc_: Deletes the old log file if it exists and recreates it for a new run.
       _type_: bool
       _required_: False
       _default_: False
+      _scripts_: all
     config:
       _desc_: Path to copy the run config to. Useful for creating a copy of the config at runtime in the output directory for future reference.
       _type_: str
       _required_: False
+      _scripts_: all
 input:
   _desc_: Contains all the arguments for the input data of a script
   _type_: dict
   _required_: True
+  _scripts_: all
   _children_:
     file:
       _desc_: Path to the input h5 file
       _type_: str
       _required_: True
+      _scripts_: all
     key:
       _desc_: Key in the h5 to pull a pandas DataFrame from
       _type_: str
       _required_: False
+      _scripts_: [extract]
     multi:
       _desc_: List of keys to pull DataFrames from to roll
       _type_: list
       _required_: False
+      _scripts_: all
 output:
   _desc_: Output arguments
   _type_: dict
   _required_: False
+  _scripts_: all
   _children_:
     file:
       _desc_: Path to an h5 file to save the extracted windows DataFrame to under the key "windows"
       _type_: str
       _required_: False
+      _scripts_: all
     windows:
       _desc_: Path to an h5 file to save individual windows to to help reduce
       _type_: str
       _required_: False
+      _scripts_: [extract]
 window:
   _desc_: Size of the windows to extract. The size of these windows is determined by this value divided by the frequency of the data, eg. 10min / 1min = 10 samples. This a is a string compatible with pandas.Timedelta().
   _type_: str
   _required_: True
+  _scripts_: [extract]
 step:
   _desc_: Size of the step when moving from one window to the next. This can be either an int or a str, where an int would step N many indices from the start of the previous window's start, and str would step N amount of time beyond the start of the previous window's start.
   _type_: null
   _required_: False
   _default_: 1
+  _scripts_: [extract]
 frequency:
   _desc_: The sampling frequency of the data. If not set, the frequency will be assumed to be the largest quantity of differences between timestamps. This a is a string compatible with pandas.Timedelta().
   _type_: str
   _required_: True
+  _scripts_: [extract]
 target:
   _desc_: Target variable for modeling.
   _type_: str
   _required_: True
+  _scripts_: all
 required:
   _desc_: List of required variables when rolling. If not provided, defaults to all variables.
   _type_: list
   _required_: False
+  _scripts_: [extract]
 optional:
   _desc_: List of optional variables when rolling. If not provided, defaults to the opposite of `required`.
   _type_: list
   _required_: False
+  _scripts_: [extract]
 columns:
   _desc_: Only process these columns through tsfresh extraction. Defaults to all columns if not provided.
   _type_: list
   _required_: False
   _default_: []
+  _scripts_: [extract]
 index:
   _desc_: Which index of a window to set as the window index. Defaults to the last index of the window.
   _type_: int
   _required_: False
   _default_: -1
+  _scripts_: [extract]
 classification:
   _desc_: Flags that this is a classification run. In this case, set the target value for a window dependent on the target values pre-extraction.
   _type_: bool
   _required_: False
   _default_: False
+  _scripts_: all
+interactive:
+  _desc_: Enables the interactive mode for selecting a split date
+  _type_: bool
+  _required_: False
+  _default_: False
+  _scripts_: [subselect]
 features:
   _desc_: Contains the arguments for selecting which tsfresh features to process
   _type_: dict
   _required_: False
+  _scripts_: [extract]
   _children_:
     interactive:
       _desc_: Enables interactive mode for selection of feature functions from `tsfresh.feature_extraction.ComprehensiveFCParameters`
       _type_: bool
       _required_: False
       _default_: False
+      _scripts_: [extract]
     whitelist:
       _desc_: Name of feature functions to accept from `tsfresh.feature_extraction.ComprehensiveFCParameters`
       _type_: list
       _required_: False
       _default_: []
+      _scripts_: [extract]
     blacklist:
       _desc_: Name of feature functions to reject from `tsfresh.feature_extraction.ComprehensiveFCParameters`
       _type_: list
       _required_: False
       _default_: []
+      _scripts_: [extract]
