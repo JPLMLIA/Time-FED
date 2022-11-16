@@ -88,7 +88,7 @@ def _split_single_classification(df, n=10, target='label'):
     for i, end in enumerate(groups):
         # Train/test split percentage
         perc = np.round((end / total) * 100, decimals=1)
-        sf.loc[i, 'Train% / Test%'] = f'{perc} / {100-perc:.1f}'
+        sf.loc[i, 'Train% / Test%'] = f'{perc:.1f} / {100-perc:.1f}'
 
         # Retrieve what this split date is
         if end != total:
@@ -118,8 +118,39 @@ def _split_single_classification(df, n=10, target='label'):
 
     return sf
 
-def _split_single_regression(*args, **kwargs):
-    pass
+def _split_single_regression(df, n=10, **kwargs):
+    """
+    Parameters
+    ----------
+    df: pandas.core.DataFrame
+        DataFrame to split
+    n: int
+        Number of splits to perform where step is 100/n
+
+    Returns
+    -------
+    """
+    # [S]plit [F]rame, DataFrame to store possible splits
+    sf = pd.DataFrame(columns=['Train', 'Test'], index=range(n-1))
+    sf['Train% / Test%'] = np.nan
+    sf['Split Date']     = np.nan
+
+    total  = df.shape[0]
+    groups = [int(i*total/n) for i in range(1, n)]
+
+    for i, end in enumerate(groups):
+
+        perc = np.round((end / total) * 100, decimals=1)
+        sf.loc[i, 'Train% / Test%'] = f'{perc:.1f} / {100-perc:.1f}'
+
+
+        if end != total:
+            sf.loc[i, 'Split Date'] = df.index[end]
+
+        sf.loc[i, 'Train'] = df.iloc[0:end].shape[0]
+        sf.loc[i, 'Test' ] = df.iloc[end:].shape[0]
+
+    return sf
 
 def interact(df):
     """
