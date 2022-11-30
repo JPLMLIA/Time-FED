@@ -175,7 +175,7 @@ def interact(df):
                     target = config.target
                 )
             except:
-                Logger.error(f'The input value is not an integer: {value!r}')
+                Logger.error(f'The input value is not an integer: {n!r}')
                 return _split()
 
     def _select():
