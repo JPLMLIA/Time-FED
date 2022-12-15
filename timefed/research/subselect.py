@@ -12,7 +12,7 @@ from timefed.research.extract import verify
 
 Logger = logging.getLogger('timefed/subselect.py')
 
-def select(df, train, test, target='label', n_jobs=1):
+def select(train, test, target='label', n_jobs=1):
     """
     Selects relevant features from a tsfresh dataframe of features for a target
     label
@@ -23,6 +23,8 @@ def select(df, train, test, target='label', n_jobs=1):
     Returns
     -------
     """
+    original = train.shape[1] - 1
+
     # Select only on the train data
     label = train[target]
 
@@ -38,7 +40,8 @@ def select(df, train, test, target='label', n_jobs=1):
     # Only keep the same features in test as train
     test = test[train.columns]
 
-    Logger.info(f'Number of selected features: {train.shape[1]-1}/{df.shape[1]-1} ({(train.shape[1]-1)/(df.shape[1]-1)*100:.2f})')
+    new = train.shape[1] - 1
+    Logger.info(f'Number of selected features: {new}/{original} ({new/original*100:.2f})')
 
     return train, test
 
@@ -292,24 +295,37 @@ def main():
     date = config.split_date
     if config.interactive:
         date = interact(data)
+    date = pd.Timestamp(date)
 
     if config.input.multi:
         Logger.info('Loading streams into memory')
         train = []
         test  = []
         for key, stream in data.items():
-            df = pd.read_hdf(config.input.file, f'windows/{key}')
             if stream['end'] <= date:
-                train.append(df)
+                train.append(key)
             else:
-                test.append(df)
+                test.append(key)
 
-        Logger.info('Merging train and test datasets together')
-        train = pd.concat(train, axis=0, ignore_index=True)
-        test  = pd.concat(test, axis=0, ignore_index=True)
+        streams = []
+        for key in train:
+            streams.append(
+                pd.read_hdf(config.input.file, f'windows/{key}')
+            )
+        Logger.info('Merging train datasets together')
+        train = pd.concat(streams, axis=0, ignore_index=True)
 
-        Logger.info('Verifying these datasets do not have NaNs')
+        streams = []
+        for key in test:
+            streams.append(
+                pd.read_hdf(config.input.file, f'windows/{key}')
+            )
+        Logger.info('Merging test datasets together')
+        test = pd.concat(streams, axis=0, ignore_index=True)
+
+        Logger.info('Verifying the train dataset does not have NaNs')
         train = verify(train)
+        Logger.info('Verifying the test dataset does not have NaNs')
         test  = verify(test)
     else:
         Logger.debug(f'Split date selected: {date}')
