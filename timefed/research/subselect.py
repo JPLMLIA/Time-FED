@@ -8,31 +8,9 @@ from tsfresh import select_features
 
 from timefed        import utils
 from timefed.config import Config
+from timefed.research.extract import verify
 
 Logger = logging.getLogger('timefed/subselect.py')
-
-
-def split(df, date):
-    """
-    Parameters
-    ----------
-    df: pandas.core.DataFrame
-    date:
-
-    Returns
-    -------
-    train: pandas.core.DataFrame
-    test: pandas.core.DataFrame
-    """
-    Logger.debug(f'Split date selected: {date}')
-
-    train = df.query('index <  @date')
-    test  = df.query('index >= @date')
-
-    Logger.debug(f'Train shape: {train.shape} ({train.shape[0]/df.shape[0]*100:.2f}%)')
-    Logger.debug(f'Test  shape: {test.shape} ({test.shape[0]/df.shape[0]*100:.2f}%)')
-
-    return train, test
 
 def select(df, train, test, target='label', n_jobs=1):
     """
@@ -64,11 +42,69 @@ def select(df, train, test, target='label', n_jobs=1):
 
     return train, test
 
-def _split_single_classification(df, n=10, target='label'):
+def _split_multi_classification(data, n=1, **kwargs):
+    """
+    """
+    # Find the unique edges of the streams
+    splits = set()
+    for key, stream in data.items():
+        splits.update([stream['start'], stream['end']])
+
+    # Make sure none of these edges interrupt any other stream
+    pop = set()
+    for date in splits:
+        for key, stream in data.items():
+            if (stream['start'] < date) and (date < stream['end']):
+                pop.update([date])
+
+    splits = sorted(splits - pop)
+    splits = sorted(set(splits) - set([splits[0], splits[-1]]))
+
+    # [S]plit [F]rame, DataFrame to store possible splits
+    sf = pd.DataFrame(columns=pd.MultiIndex.from_product([['Train', 'Test'], ['Total', 'Percent'], [0, 1]]), index=range(len(splits)))
+    sf[:]                = 0
+    sf['Train% / Test%'] = np.nan
+    sf['Split Date']     = splits
+
+    # For each split date, find the samples of each class for each side of the split
+    for i, date in enumerate(splits):
+        for key, stream in data.items():
+            if stream['end'] <= date:
+                sf.loc[i, ('Train', 'Total', 0)] += stream['neg']
+                sf.loc[i, ('Train', 'Total', 1)] += stream['pos']
+            else:
+                sf.loc[i, ('Test', 'Total', 0)] += stream['neg']
+                sf.loc[i, ('Test', 'Total', 1)] += stream['pos']
+
+    # Percentage of samples in train and test (samples=pos+neg)
+    totals = sf[['Train', 'Test']].sum(axis=1)
+    train  = np.round(sf[('Train', 'Total')].sum(axis=1) / totals * 100, decimals=1)
+    test   = np.round(sf[('Test', 'Total')].sum(axis=1) / totals * 100, decimals=1)
+    sf['Train% / Test%'] = [f'{t0} / {t1}' for t0, t1 in zip(train, test)]
+
+    # Percentage of each class to the total for that class (% of neg total, % of pos total)
+    train0 = sf[('Train', 'Total', 0)]
+    train1 = sf[('Train', 'Total', 1)]
+    test0  = sf[('Test', 'Total', 0)]
+    test1  = sf[('Test', 'Total', 1)]
+    tneg = train0 + test0
+    tpos = train1 + test1
+
+    sf[('Train', 'Percent', 0)] = np.round((train0 / tneg * 100).astype(float), decimals=1)
+    sf[('Train', 'Percent', 1)] = np.round((train1 / tpos * 100).astype(float), decimals=1)
+    sf[('Test' , 'Percent', 0)] = np.round((test0 / tneg * 100).astype(float), decimals=1)
+    sf[('Test' , 'Percent', 1)] = np.round((test1 / tpos * 100).astype(float), decimals=1)
+
+    # Subselect some split dates to present
+    sf = sf.iloc[list(range(0, sf.shape[0], int(sf.shape[0] / n)))]
+
+    return sf
+
+def _split_single_classification(data, n=10, target='label', **kwargs):
     """
     Parameters
     ----------
-    df: pandas.core.DataFrame
+    data: pandas.core.DataFrame
         DataFrame to split
     n: int
         Number of splits to perform where step is 100/n
@@ -83,8 +119,8 @@ def _split_single_classification(df, n=10, target='label'):
     sf['Train% / Test%'] = np.nan
     sf['Split Date']     = np.nan
 
-    total  = df.shape[0]
-    labels = df[target].value_counts()
+    total  = data.shape[0]
+    labels = data[target].value_counts()
     groups = [int(i*total/n) for i in range(1, n)]
     for i, end in enumerate(groups):
         # Train/test split percentage
@@ -93,10 +129,10 @@ def _split_single_classification(df, n=10, target='label'):
 
         # Retrieve what this split date is
         if end != total:
-            sf.loc[i, 'Split Date'] = df.index[end]
+            sf.loc[i, 'Split Date'] = data.index[end]
 
         # TRAIN
-        train  = df.iloc[0:end]
+        train  = data.iloc[0:end]
         counts = train[target].value_counts()
         neg    = counts.get(0, 0)
         pos    = counts.get(1, 0)
@@ -107,7 +143,7 @@ def _split_single_classification(df, n=10, target='label'):
         sf.loc[i, ('Train', 'Percent', 1)] = np.round((pos / labels[1])*100, decimals=1)
 
         # TEST
-        test   = df.iloc[end:]
+        test   = data.iloc[end:]
         counts = {} if test.empty else test[target].value_counts()
         neg    = counts.get(0, 0)
         pos    = counts.get(1, 0)
@@ -119,11 +155,14 @@ def _split_single_classification(df, n=10, target='label'):
 
     return sf
 
-def _split_single_regression(df, n=10, **kwargs):
+def _split_multi_regression(data, n=1, **kwargs):
+    pass
+
+def _split_single_regression(data, n=10, **kwargs):
     """
     Parameters
     ----------
-    df: pandas.core.DataFrame
+    data: pandas.core.DataFrame
         DataFrame to split
     n: int
         Number of splits to perform where step is 100/n
@@ -136,7 +175,7 @@ def _split_single_regression(df, n=10, **kwargs):
     sf['Train% / Test%'] = np.nan
     sf['Split Date']     = np.nan
 
-    total  = df.shape[0]
+    total  = data.shape[0]
     groups = [int(i*total/n) for i in range(1, n)]
 
     for i, end in enumerate(groups):
@@ -144,14 +183,14 @@ def _split_single_regression(df, n=10, **kwargs):
         sf.loc[i, 'Train% / Test%'] = f'{perc:.1f} / {100-perc:.1f}'
 
         if end != total:
-            sf.loc[i, 'Split Date'] = df.index[end]
+            sf.loc[i, 'Split Date'] = data.index[end]
 
-        sf.loc[i, 'Train'] = df.iloc[0:end].shape[0]
-        sf.loc[i, 'Test' ] = df.iloc[end:].shape[0]
+        sf.loc[i, 'Train'] = data.iloc[0:end].shape[0]
+        sf.loc[i, 'Test' ] = data.iloc[end:].shape[0]
 
     return sf
 
-def interact(df):
+def interact(data):
     """
     Parameters
     ----------
@@ -162,7 +201,9 @@ def interact(df):
     def _split():
         """
         """
-        Logger.info('Divide the data into N equal sized pieces')
+        Logger.info('Divide the data into N chunks')
+        Logger.info('If this is a single stream, these are equal-sized split steps')
+        Logger.info('If this is a multi stream, these are every Nth split choice')
 
         while True:
             n = input('n = ')
@@ -170,7 +211,7 @@ def interact(df):
                 n = int(n)
 
                 return func(
-                    df     = df,
+                    data   = data,
                     n      = n,
                     target = config.target
                 )
@@ -191,9 +232,9 @@ def interact(df):
                 index = int(index)
 
                 if index == -1:
-                    return interact(df)
-                elif index >= sf.shape[0]:
-                    Logger.error(f'Index out of bounds: {index}')
+                    return interact(df, metadata)
+                elif index not in sf.index:
+                    Logger.error(f'Invalid index choice: {index}')
                 else:
                     return str(sf['Split Date'].loc[index])
             except:
@@ -202,9 +243,14 @@ def interact(df):
 
     config = Config()
 
-    func = _split_single_regression
-    if config.classification:
-        func = _split_single_classification
+    if config.input.multi:
+        func = _split_multi_regression
+        if config.classification:
+            func = _split_multi_classification
+    else:
+        func = _split_single_regression
+        if config.classification:
+            func = _split_single_classification
 
     sf = _split()
 
@@ -222,18 +268,59 @@ def main():
     config = Config()
 
     if config.input.multi:
-        for key in tqdm(config.input.multi, position=1):
-            df = pd.read_hdf(config.input.file, key)
-            df = process(df, features)
-            df.to_hdf(config.output.file, f'windows/{key}')
+        if not config.input.metadata:
+            Logger.error('The multisteam case requires a metadata file produced by extract.py')
+            return 4
+        data = utils.load_pkl(config.input.metadata)
     else:
-        df = pd.read_hdf(config.input.file, 'windows')
+        data = pd.read_hdf(config.input.file, 'windows')
 
-        if config.interactive:
-            config.split_date = interact(df)
+        if config.classification:
+            Logger.debug(f'This is a classification dataset using the target label: {config.label}')
+            if config.target not in data:
+                Logger.error(f'The target does not exist in the dataset: {target}')
+                return 1
 
-        train, test = split(df, config.split_date)
-        train, test = select(df, train, test, n_jobs=config.get('cores', 1))
+            keys = data[config.target].value_counts().sort_index().keys()
+            if len(keys) > 2:
+                Logger.error('Classification only supports binary values')
+                return 2
+            if not all(keys == [0, 1]):
+                Logger.error('Classification only supports binary values')
+                return 3
+
+    date = config.split_date
+    if config.interactive:
+        date = interact(data)
+
+    if config.input.multi:
+        Logger.info('Loading streams into memory')
+        train = []
+        test  = []
+        for key, stream in data.items():
+            df = pd.read_hdf(config.input.file, f'windows/{key}')
+            if stream['end'] <= date:
+                train.append(df)
+            else:
+                test.append(df)
+
+        Logger.info('Merging train and test datasets together')
+        train = pd.concat(train, axis=0, ignore_index=True)
+        test  = pd.concat(test, axis=0, ignore_index=True)
+
+        Logger.info('Verifying these datasets do not have NaNs')
+        train = verify(train)
+        test  = verify(test)
+    else:
+        Logger.debug(f'Split date selected: {date}')
+
+        train = data.query('index <  @date')
+        test  = data.query('index >= @date')
+
+        Logger.debug(f'Train shape: {train.shape} ({train.shape[0]/data.shape[0]*100:.2f}%)')
+        Logger.debug(f'Test  shape: {test.shape} ({test.shape[0]/data.shape[0]*100:.2f}%)')
+
+    train, test = select(train, test, n_jobs=config.get('cores', 1))
 
     Logger.info(f'Saving to {config.output.file} under key select/[train,test]')
     train.to_hdf(config.output.file, 'select/train')
@@ -262,6 +349,9 @@ if __name__ == '__main__':
 
         state = main()
 
-        Logger.info('Finished successfully')
+        if state is True:
+            Logger.info('Finished successfully')
+        else:
+            Logger.error(f'Failed to complete with exit code: {state}')
     except Exception as e:
         Logger.exception('Failed to complete')

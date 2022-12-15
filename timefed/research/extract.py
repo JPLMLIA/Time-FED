@@ -6,7 +6,8 @@ import pandas as pd
 import re
 import tsfresh
 
-from tqdm import tqdm
+from tqdm                 import tqdm
+from tqdm.contrib.logging import logging_redirect_tqdm
 
 from tsfresh.feature_extraction import ComprehensiveFCParameters
 
@@ -407,17 +408,35 @@ def main():
     )
 
     if config.input.multi:
-        if isinstance(config.input.multi, str):
+        if isinstance(config.input.key, str):
             with h5py.File(config.input.file, 'r') as h5:
-                config.input.multi = [
-                    f'{config.input.multi}/{key}'
-                    for key in h5[config.input.multi].keys()
+                config.input.key = [
+                    f'{config.input.key}/{key}'
+                    for key in h5[config.input.key].keys()
                 ]
 
-        for key in tqdm(config.input.multi, position=1):
+        metadata = {}
+        for key in tqdm(config.input.key, position=1, desc='Streams Processed'):
             df = pd.read_hdf(config.input.file, key)
             df = process(df, features)
+
+            # Metadata information is used by subselect.py for the multitrack case
+            counts = {}
+            if config.classification:
+                counts = df[config.target].value_counts()
+
+            metadata[key] = {
+                'start': df.index[0],
+                'end'  : df.index[-1],
+                'neg'  : counts.get(0, 0),
+                'pos'  : counts.get(1, 0)
+            }
+
             df.to_hdf(config.output.file, f'windows/{key}')
+
+        if config.classification:
+            utils.save_pkl(config.output.metadata, metadata)
+
     else:
         df = pd.read_hdf(config.input.file, config.input.key)
         df = process(df, features)
@@ -444,7 +463,8 @@ if __name__ == '__main__':
     try:
         utils.init(args)
 
-        code = main()
+        with logging_redirect_tqdm():
+            code = main()
 
         Logger.info('Finished successfully')
     except Exception as e:
