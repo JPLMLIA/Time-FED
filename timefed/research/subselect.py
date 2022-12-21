@@ -41,7 +41,7 @@ def select(train, test, target='label', n_jobs=1):
     test = test[train.columns]
 
     new = train.shape[1] - 1
-    Logger.info(f'Number of selected features: {new}/{original} ({new/original*100:.2f})')
+    Logger.info(f'Number of features selected by tsfresh: {new}/{original} ({new/original*100:.2f})')
 
     return train, test
 
@@ -310,18 +310,18 @@ def main():
         streams = []
         for key in train:
             streams.append(
-                pd.read_hdf(config.input.file, f'windows/{key}')
+                pd.read_hdf(config.input.file, f'windows/{key}').reset_index()
             )
         Logger.info('Merging train datasets together')
-        train = pd.concat(streams, axis=0, ignore_index=True)
+        train = pd.concat(streams, axis=0, ignore_index=True).set_index('index')
 
         streams = []
         for key in test:
             streams.append(
-                pd.read_hdf(config.input.file, f'windows/{key}')
+                pd.read_hdf(config.input.file, f'windows/{key}').reset_index()
             )
         Logger.info('Merging test datasets together')
-        test = pd.concat(streams, axis=0, ignore_index=True)
+        test = pd.concat(streams, axis=0, ignore_index=True).set_index('index')
 
         Logger.info('Verifying the train dataset does not have NaNs')
         train = verify(train)
