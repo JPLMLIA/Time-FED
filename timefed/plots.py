@@ -12,10 +12,10 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy.stats             import gaussian_kde
 from sklearn.metrics         import mean_squared_error
 
-from timefed.config import Config
 from timefed        import utils
+from timefed.config import Config
 
-Logger = logging.getLogger('mloc/research/plots.py')
+Logger = logging.getLogger('timefed/plots.py')
 
 sns.set_style('darkgrid')
 sns.set_context('poster', rc={'axes.titlesize': 35, 'axes.labelsize': 30})

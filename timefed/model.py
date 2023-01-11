@@ -27,7 +27,7 @@ from sklearn.metrics import (
 from mloc import utils
 from mloc.research import plots
 
-logger = logging.getLogger('mloc/research/model.py')
+logger = logging.getLogger('timefed/model.py')
 
 def regress_score(model, data, name):
     """

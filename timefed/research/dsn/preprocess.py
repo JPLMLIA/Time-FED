@@ -1,4 +1,5 @@
 """
+Experimental preprocessing for DSN tracks to prepare the data for the TimeFED pipeline.
 """
 import argparse
 import h5py
