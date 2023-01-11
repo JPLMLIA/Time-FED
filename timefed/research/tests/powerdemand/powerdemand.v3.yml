@@ -7,7 +7,7 @@
 
 default:                          # ? | Type | All scripts use these options
   log:                            #   | dict | Contains the arguments for logging
-    level: debug                #   | str  | Sets the log level for the console.
+    level: info                   #   | str  | Sets the log level for the console.
     file: !!python/none           #   | str  | Path to write the log file to. This is always set to the debug level.
     reset: False                  #   | bool | Deletes the old log file if it exists and recreates it for a new run.
     config: !!python/none         #   | str  | Path to copy the run config to. Useful for creating a copy of the config at runtime in the output directory for future reference.
@@ -16,16 +16,16 @@ default:                          # ? | Type | All scripts use these options
 
 extract:                          # S | Type | Options specific to the extract script
   input:                          # * | dict | Contains all the arguments for the input data of a script
-    file: /Users/jamesmo/projects/mloc/timefed/research/tests/powerdemand/power.data.label.h5 # * | str  | Path to the input h5 file
+    file: /Users/Urebbapr/research/TimeFED/timefed/research/tests/powerdemand/power.data.label.h5 # * | str  | Path to the input h5 file
     key: data            # + | str  | Key in the h5 to pull a pandas DataFrame from
-    multi: True                   # + | list | List of keys to pull DataFrames from to roll
+    multi: True                   # + | list | List of keys to pull DataFrames from to roll ::UPDATE ME::
   output:                         #   | dict | Output arguments
-    file: /Users/jamesmo/projects/mloc/timefed/research/tests/powerdemand/extract.h5 #   | str  | Path to an h5 file to save the extracted windows DataFrame to under the key "windows"
-    metadata: /Users/jamesmo/projects/mloc/timefed/research/tests/powerdemand/power.metadata.pkl
+    file: /Users/Urebbapr/research/TimeFED/timefed/research/tests/powerdemand/power.extract.h5 #   | str  | Path to an h5 file to save the extracted windows DataFrame to under the key "windows"
+    metadata: /Users/Urebbapr/research/TimeFED/timefed/research/tests/powerdemand/power.metadata.pkl
     windows: !!python/none        #   | str  | Path to an h5 file to save individual windows to to help reduce
-  window: 1Y                     # * | str  | Size of the windows to extract. The size of these windows is determined by this value divided by the frequency of the data, eg. 10min / 1min = 10 samples. This a is a string compatible with pandas.Timedelta().
+  window: 24 days
   step: 1                         #   |      | Size of the step when moving from one window to the next. This can be either an int or a str, where an int would step N many indices from the start of the previous window's start, and str would step N amount of time beyond the start of the previous window's start.
-  frequency: 30 days                  # * | str  | The sampling frequency of the data. If not set, the frequency will be assumed to be the largest quantity of differences between timestamps. This a is a string compatible with pandas.Timedelta().
+  frequency: 1 day                  # * | str  | The sampling frequency of the data. If not set, the frequency will be assumed to be the largest quantity of differences between timestamps. This a is a string compatible with pandas.Timedelta().
   required: !!python/none         #   | list | List of required variables when rolling. If not provided, defaults to all variables.
   optional: !!python/none         #   | list | List of optional variables when rolling. If not provided, defaults to the opposite of `required`.
   columns: []                     #   | list | Only process these columns through tsfresh extraction. Defaults to all columns if not provided.
@@ -37,9 +37,9 @@ extract:                          # S | Type | Options specific to the extract s
 
 subselect:                        # S | Type | Options specific to the subselect script
   input:                          # * | dict | Contains all the arguments for the input data of a script
-    file: /Users/jamesmo/projects/mloc/timefed/research/tests/powerdemand/extract.h5                     # * | str  | Path to the input h5 file
-    metadata: /Users/jamesmo/projects/mloc/timefed/research/tests/powerdemand/power.metadata.pkl
+    file: /Users/Urebbapr/research/TimeFED/timefed/research/tests/powerdemand/power.extract.h5                     # * | str  | Path to the input h5 file
+    metadata: /Users/Urebbapr/research/TimeFED/timefed/research/tests/powerdemand/power.metadata.pkl
     multi: True          # + | list | List of keys to pull DataFrames from to roll
   output:                         #   | dict | Output arguments
-    file: /Users/jamesmo/projects/mloc/timefed/research/tests/powerdemand/power.subselect.h5           #   | str  | Path to an h5 file to save the extracted windows DataFrame to under the key "windows"
+    file: /Users/Urebbapr/research/TimeFED/timefed/research/tests/powerdemand/power.subselect.h5           #   | str  | Path to an h5 file to save the extracted windows DataFrame to under the key "windows"
   interactive: True              #   | bool | Enables the interactive mode for selecting a split date
