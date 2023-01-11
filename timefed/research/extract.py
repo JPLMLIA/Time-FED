@@ -28,16 +28,18 @@ def report(stats, print=print):
     print(f'- Using a window size of {stats.window} and a step of {stats.step}, the size of each window is {stats.size} samples')
     print(f'- Windows produced:')
     print(f'-- Total possible : {stats.possible}')
-    print(f'-- Number accepted: {stats.valid} ({stats.valid/stats.possible*100:.2f}%)')
 
-    if stats.optional:
-        print(f'-- Number of windows containing each optional variable:')
-        utils.align_print(stats.optional, print=print, prepend='--- ')
+    if stats.possible > 0:
+        print(f'-- Number accepted: {stats.valid} ({stats.valid/stats.possible*100:.2f}%)')
 
-    if stats.possible != stats.valid:
-        print(f'-- Number rejected: {stats.possible-stats.valid} ({(stats.possible-stats.valid)/stats.possible*100:.2f}%)')
-        print(f'-- Reasons for rejection:')
-        utils.align_print(stats.reasons, print=print, prepend='--- ')
+        if stats.optional:
+            print(f'-- Number of windows containing each optional variable:')
+            utils.align_print(stats.optional, print=print, prepend='--- ')
+
+        if stats.possible != stats.valid:
+            print(f'-- Number rejected: {stats.possible-stats.valid} ({(stats.possible-stats.valid)/stats.possible*100:.2f}%)')
+            print(f'-- Reasons for rejection:')
+            utils.align_print(stats.reasons, print=print, prepend='--- ')
 
 def roll(df, window, frequency, step=1, required=None, optional=[], as_frames=False):
     """
@@ -357,6 +359,10 @@ def process(df, features=None):
 
     report(stats, Logger.info)
 
+    if stats.accepted == 0:
+        Logger.error('No windows were accepted for this track of data. Nothing to do, returning.')
+        return
+
     # Place constant params into shared memory
     params = {
         'df'            : ray.put(df),
@@ -420,6 +426,9 @@ def main():
             df = pd.read_hdf(config.input.file, key)
             df = process(df, features)
 
+            if df is None:
+                return 1
+
             # Metadata information is used by subselect.py for the multitrack case
             counts = {}
             if config.classification:
@@ -440,6 +449,10 @@ def main():
     else:
         df = pd.read_hdf(config.input.file, config.input.key)
         df = process(df, features)
+
+        if df is None:
+            return 1
+
         df.to_hdf(config.output.file, 'windows')
 
     return True
@@ -466,6 +479,9 @@ if __name__ == '__main__':
         with logging_redirect_tqdm():
             code = main()
 
-        Logger.info('Finished successfully')
+        if code is True:
+            Logger.info('Finished successfully')
+        else:
+            Logger.error(f'Failed to complete with status code: {code}')
     except Exception as e:
-        Logger.exception('Failed to complete')
+        Logger.exception('Failed to complete due to an exception')
