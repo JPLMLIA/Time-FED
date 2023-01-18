@@ -23,19 +23,22 @@ from sklearn.metrics import (
     r2_score
 )
 
-# Import utils first to set the logger
-from mloc import utils
-from mloc.research import plots
+from timefed        import utils
+from timefed.config import (
+    Config,
+    Section
+)
+from timefed.plots  import importances
 
-logger = logging.getLogger('timefed/model.py')
+Logger = logging.getLogger('timefed/model.py')
 
 def regress_score(model, data, name):
     """
     """
     config = Config()
 
-    truth = data[config.label]
-    data  = data.drop(columns=config.label)
+    truth = data[config.target]
+    data  = data.drop(columns=config.target)
     preds = model.predict(data)
 
     scores = Section('scores', {
@@ -47,7 +50,7 @@ def regress_score(model, data, name):
     Logger.info(f'Scores for {name}:')
     align_print(scores, print=Logger.info, prepend='  ')
 
-    importances(model, data.columns, print_only=False)
+    importances(model, data.columns, print_only=True)
 
     # Return as dict instead of Section
     return scores._data
@@ -57,8 +60,8 @@ def class_score(model, data, name, multiclass_scores=False):
     """
     config = Config()
 
-    truth = data[config.label]
-    data  = data.drop(columns=config.label)
+    truth = data[config.target]
+    data  = data.drop(columns=config.target)
     preds = model.predict(data)
 
     scores = Section('scores', {
@@ -107,33 +110,10 @@ def class_score(model, data, name, multiclass_scores=False):
 
     # plot_roc(truth, preds)
 
-    importances(model, data.columns, print_only=False)
+    importances(model, data.columns, print_only=True)
 
     # Return as dict instead of Section
     return scores._data
-
-def classify():
-    """
-    """
-    config = Config()
-
-    # Load in the train/test dataframes
-    train = pd.read_hdf(config.input.file, f'{config.input.key}/train')
-    test  = pd.read_hdf(config.input.file, f'{config.input.key}/test')
-
-    # Log some analysis on the input data
-    analyze(train, test, config.label)
-
-    # Create the model and fit
-    model = RandomForestClassifier(**config.RandomForestClassifier)
-    model.fit(train.drop(columns=config.label), train[config.label])
-
-    scores = {
-        'test' : score(model,  test, 'test'),
-        'train': score(model, train, 'train')
-    }
-
-    return scores
 
 @utils.timeit
 def main():
@@ -189,12 +169,13 @@ def main():
 
         if config.model.fit:
             model.fit(data.train.drop(columns=[config.target]), data.train[config.target])
+            if config.model.output:
+                utils.save_pkl(config.model.output, model)
 
         scores = {
             'test' : regress_score(model,  data.test, 'test'),
             'train': regress_score(model, data.train, 'train')
         }
-
 
 
 if __name__ == '__main__':
@@ -206,7 +187,7 @@ if __name__ == '__main__':
                                             help     = 'Path to a config.yaml file'
     )
     parser.add_argument('-s', '--section',  type     = str,
-                                            default  = 'extract',
+                                            default  = 'model',
                                             help     = 'Section of the config to use'
     )
 
@@ -215,8 +196,7 @@ if __name__ == '__main__':
     try:
         utils.init(args)
 
-        with logging_redirect_tqdm():
-            code = main()
+        code = main()
 
         Logger.info('Finished successfully')
     except Exception as e:
