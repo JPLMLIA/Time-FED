@@ -48,7 +48,7 @@ input:
       _desc_: List of keys to pull DataFrames from to roll
       _type_: list
       _required_: False
-      _scripts_: all
+      _scripts_: [extract, subselect]
 output:
   _desc_: Output arguments
   _type_: dict
@@ -59,14 +59,14 @@ output:
       _desc_: Path to an h5 file to save the extracted windows DataFrame to under the key "windows"
       _type_: str
       _required_: False
-      _scripts_: all
+      _scripts_: [extract, subselect]
     windows:
       _desc_: Path to an h5 file to save individual windows to to help reduce
       _type_: str
       _required_: False
       _scripts_: [extract]
     model:
-      _desc_: Path to write the model as a pickle to
+      _desc_: Path to write the trained model as a pickle to
       _type_: str
       _required_: False
       _scripts_: [model]
@@ -165,7 +165,6 @@ model:
       _desc_: Key-value pair dictionary for the params of the model
       _type_: dict
       _required_: False
-      _default_: {}
       _scripts_: [model]
     load:
       _desc_: Loads in the pickle at the config.output.model path as the model
