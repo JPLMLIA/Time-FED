@@ -35,11 +35,11 @@ Logger = logging.getLogger('timefed/model.py')
 def regress_score(model, data, name):
     """
     """
-    config = Config()
-
-    truth = data[config.target]
-    data  = data.drop(columns=config.target)
-    preds = model.predict(data)
+    config   = Config()
+    truth    = data[config.target]
+    data     = data.drop(columns=config.target)
+    preds    = truth.copy()
+    preds[:] = model.predict(data)
 
     scores = Section('scores', {
         'r2'      : r2_score(truth, preds),
@@ -48,7 +48,7 @@ def regress_score(model, data, name):
     })
 
     Logger.info(f'Scores for {name}:')
-    align_print(scores, print=Logger.info, prepend='  ')
+    utils.align_print(scores, print=Logger.info, prepend='  ')
 
     importances(model, data.columns, print_only=True)
 
@@ -137,7 +137,7 @@ def main():
         if df.isna().any(axis=None):
             Logger.info('The {kind}ing set was detected to have NaNs. Please correct this and rerun. See debug for more info.')
             Logger.debug('The following columns contained a NaN:')
-            align_print(dict(enumerate(df.columns[df.isna().any()])), print=Logger.debug, prepend='- ', delimiter=':')
+            utils.align_print(dict(enumerate(df.columns[df.isna().any()])), print=Logger.debug, prepend='- ', delimiter=':')
             return 1
 
     scores = {}
@@ -153,6 +153,8 @@ def main():
 
         if config.model.fit:
             model.fit(data.train.drop(columns=[config.target]), data.train[config.target])
+            if config.output.model:
+                utils.save_pkl(config.output.model, model)
 
         scores['test'], predicts = class_score(model, data.test, 'test')
         if config.output.file:
@@ -174,8 +176,8 @@ def main():
 
         if config.model.fit:
             model.fit(data.train.drop(columns=[config.target]), data.train[config.target])
-            if config.model.output:
-                utils.save_pkl(config.model.output, model)
+            if config.output.model:
+                utils.save_pkl(config.output.model, model)
 
         scores['test'], predicts = regress_score(model, data.test, 'test')
         if config.output.file:

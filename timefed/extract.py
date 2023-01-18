@@ -406,6 +406,12 @@ def main():
     # Retrieve the config object
     config = Config()
 
+    if not config.target:
+        Logger.warning(
+              'The target column is not defined. This script does not need a target, but subselect.py and model.py will. '
+            + 'If you plan to use those scripts, please define the target BEFORE executing extract.py.'
+        )
+
     # Retrieve features to use
     features = get_features(
         whitelist = config.features.whitelist,
