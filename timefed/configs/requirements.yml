@@ -165,6 +165,7 @@ model:
       _desc_: Key-value pair dictionary for the params of the model
       _type_: dict
       _required_: False
+      _default_: {}
       _scripts_: [model]
     load:
       _desc_: Loads in the pickle at the config.output.model path as the model
