@@ -4,10 +4,10 @@ import pandas as pd
 
 from tsfresh import select_features
 
-from timefed import utils
+from timefed        import utils
 from timefed.config import Config
 
-Logger = logging.getLogger('timefed/select.py')
+Logger = logging.getLogger('timefed/select_features.py')
 
 def split(df):
     """

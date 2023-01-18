@@ -6,9 +6,9 @@ import pandas as pd
 from tqdm    import tqdm
 from tsfresh import select_features
 
-from timefed        import utils
-from timefed.config import Config
-from timefed.research.extract import verify
+from timefed         import utils
+from timefed.config  import Config
+from timefed.extract import verify
 
 Logger = logging.getLogger('timefed/subselect.py')
 

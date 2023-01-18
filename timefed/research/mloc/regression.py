@@ -160,7 +160,7 @@ def build_model(config, shift=None):
     return train, test, pred, scores, model
 
 @utils.timeit
-def classify(config):
+def regress(config):
     """
     Builds a model, trains and tests against it, then creates plots for the run.
 
@@ -225,7 +225,7 @@ if __name__ == '__main__':
     try:
         config = utils.Config(args.config, args.section)
 
-        classify(config)
+        regress(config)
 
         logger.info('Finished successfully')
     except Exception as e:

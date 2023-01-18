@@ -5,7 +5,7 @@ import logging
 import os
 import yaml
 
-Logger = logging.getLogger('MilkyLib/config.py')
+Logger = logging.getLogger('timefed/config.py')
 
 
 class Null:

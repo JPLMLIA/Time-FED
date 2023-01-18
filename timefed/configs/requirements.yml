@@ -1,3 +1,5 @@
+# Author: James Montgomery
+# MilkyConfig requirements definitions for the TimeFED system
 log:
   _desc_: Contains the arguments for logging
   _type_: dict
@@ -63,6 +65,11 @@ output:
       _type_: str
       _required_: False
       _scripts_: [extract]
+    model:
+      _desc_: Path to write the model as a pickle to
+      _type_: str
+      _required_: False
+      _scripts_: [model]
 window:
   _desc_: Size of the windows to extract. The size of these windows is determined by this value divided by the frequency of the data, eg. 10min / 1min = 10 samples. This a is a string compatible with pandas.Timedelta().
   _type_: str
@@ -142,3 +149,26 @@ features:
       _required_: False
       _default_: []
       _scripts_: [extract]
+model:
+  _desc_: Contains arguments for the model object
+  _type_: dict
+  _required_: False
+  _scripts_: [model]
+  _children_:
+    fit:
+      _desc_: Whether to fit the model to the training data or not
+      _type_: bool
+      _required_: False
+      _default_: True
+      _scripts_: [model]
+    params:
+      _desc_: Key-value pair dictionary for the params of the model
+      _type_: dict
+      _required_: False
+      _scripts_: [model]
+    load:
+      _desc_: Loads in the pickle at the config.output.model path as the model
+      _type_: bool
+      _required_: False
+      _default_: False
+      _scripts_: [model]
