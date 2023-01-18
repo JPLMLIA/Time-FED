@@ -53,16 +53,16 @@ def regress_score(model, data, name):
     importances(model, data.columns, print_only=True)
 
     # Return as dict instead of Section
-    return scores._data
+    return scores._data, preds
 
 def class_score(model, data, name, multiclass_scores=False):
     """
     """
-    config = Config()
-
-    truth = data[config.target]
-    data  = data.drop(columns=config.target)
-    preds = model.predict(data)
+    config   = Config()
+    truth    = data[config.target]
+    data     = data.drop(columns=config.target)
+    preds    = truth.copy()
+    preds[:] = model.predict(data)
 
     scores = Section('scores', {
         'accuracy'        : accuracy_score(truth, preds),
@@ -113,7 +113,7 @@ def class_score(model, data, name, multiclass_scores=False):
     importances(model, data.columns, print_only=True)
 
     # Return as dict instead of Section
-    return scores._data
+    return scores._data, preds
 
 @utils.timeit
 def main():
@@ -140,6 +140,7 @@ def main():
             align_print(dict(enumerate(df.columns[df.isna().any()])), print=Logger.debug, prepend='- ', delimiter=':')
             return 1
 
+    scores = {}
     if config.classification:
         Logger.info('This is a classification run, using RandomForestClassifier')
         if config.model.load:
@@ -153,10 +154,14 @@ def main():
         if config.model.fit:
             model.fit(data.train.drop(columns=[config.target]), data.train[config.target])
 
-        scores = {
-            'test' : class_score(model,  data.test, 'test'),
-            'train': class_score(model, data.train, 'train')
-        }
+        scores['test'], predicts = class_score(model, data.test, 'test')
+        if config.output.file:
+            predicts.to_hdf(config.output.file, 'predicts/test')
+
+        if config.train_scores:
+            scores['train'], predicts = class_score(model, data.train, 'train')
+            if config.output.file:
+                predicts.to_hdf(config.output.file, 'predicts/train')
     else:
         Logger.info('This is a regression run, using RandomForestRegressor')
         if config.model.load:
@@ -172,10 +177,17 @@ def main():
             if config.model.output:
                 utils.save_pkl(config.model.output, model)
 
-        scores = {
-            'test' : regress_score(model,  data.test, 'test'),
-            'train': regress_score(model, data.train, 'train')
-        }
+        scores['test'], predicts = regress_score(model, data.test, 'test')
+        if config.output.file:
+            predicts.to_hdf(config.output.file, 'predicts/test')
+
+        if config.train_scores:
+            scores['train'], predicts = regress_score(model, data.train, 'train')
+            if config.output.file:
+                predicts.to_hdf(config.output.file, 'predicts/train')
+
+    if config.output.scores:
+        utils.save_pkl(config.output.scores, scores)
 
 
 if __name__ == '__main__':

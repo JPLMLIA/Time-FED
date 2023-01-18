@@ -20,7 +20,7 @@ extract:                          # S | Type | Options specific to the extract s
     key: !!python/none            # + | str  | Key in the h5 to pull a pandas DataFrame from
     multi: !!python/none          # + | list | List of keys to pull DataFrames from to roll
   output:                         #   | dict | Output arguments
-    file: !!python/none           #   | str  | Path to an h5 file to save the extracted windows DataFrame to under the key "windows"
+    file: !!python/none           #   | str  | Path to an h5 file to save output dataframes to. This dataframe varies by script
     windows: !!python/none        #   | str  | Path to an h5 file to save individual windows to to help reduce
   window: str                     # * | str  | Size of the windows to extract. The size of these windows is determined by this value divided by the frequency of the data, eg. 10min / 1min = 10 samples. This a is a string compatible with pandas.Timedelta().
   step: 1                         #   |      | Size of the step when moving from one window to the next. This can be either an int or a str, where an int would step N many indices from the start of the previous window's start, and str would step N amount of time beyond the start of the previous window's start.
@@ -39,15 +39,18 @@ subselect:                        # S | Type | Options specific to the subselect
     file: str                     # * | str  | Path to the input h5 file
     multi: !!python/none          # + | list | List of keys to pull DataFrames from to roll
   output:                         #   | dict | Output arguments
-    file: !!python/none           #   | str  | Path to an h5 file to save the extracted windows DataFrame to under the key "windows"
+    file: !!python/none           #   | str  | Path to an h5 file to save output dataframes to. This dataframe varies by script
   interactive: False              #   | bool | Enables the interactive mode for selecting a split date
 
 model:                            # S | Type | Options specific to the model script
   input:                          # * | dict | Contains all the arguments for the input data of a script
     file: str                     # * | str  | Path to the input h5 file
   output:                         #   | dict | Output arguments
+    file: !!python/none           #   | str  | Path to an h5 file to save output dataframes to. This dataframe varies by script
     model: !!python/none          #   | str  | Path to write the trained model as a pickle to
+    scores: !!python/none         #   | str  | Path to write the scores to pickle
   model:                          #   | dict | Contains arguments for the model object
     fit: True                     #   | bool | Whether to fit the model to the training data or not
     params: {}                    #   | dict | Key-value pair dictionary for the params of the model
     load: False                   #   | bool | Loads in the pickle at the config.output.model path as the model
+  train_scores: False             #   | bool | Toggles running the metric functions on the training set

@@ -56,10 +56,10 @@ output:
   _scripts_: all
   _children_:
     file:
-      _desc_: Path to an h5 file to save the extracted windows DataFrame to under the key "windows"
+      _desc_: Path to an h5 file to save output dataframes to. This dataframe varies by script
       _type_: str
       _required_: False
-      _scripts_: [extract, subselect]
+      _scripts_: all
     windows:
       _desc_: Path to an h5 file to save individual windows to to help reduce
       _type_: str
@@ -67,6 +67,11 @@ output:
       _scripts_: [extract]
     model:
       _desc_: Path to write the trained model as a pickle to
+      _type_: str
+      _required_: False
+      _scripts_: [model]
+    scores:
+      _desc_: Path to write the scores to pickle
       _type_: str
       _required_: False
       _scripts_: [model]
@@ -172,3 +177,9 @@ model:
       _required_: False
       _default_: False
       _scripts_: [model]
+train_scores:
+  _desc_: Toggles running the metric functions on the training set
+  _type_: bool
+  _required_: False
+  _default_: False
+  _scripts_: [model]
