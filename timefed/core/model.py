@@ -36,8 +36,8 @@ def regress_score(model, data, name):
     """
     """
     config   = Config()
-    truth    = data[config.target]
-    data     = data.drop(columns=config.target)
+    truth    = data[Config.model.target]
+    data     = data.drop(columns=Config.model.target)
     preds    = truth.copy()
     preds[:] = model.predict(data)
 
@@ -59,8 +59,8 @@ def class_score(model, data, name, multiclass_scores=False):
     """
     """
     config   = Config()
-    truth    = data[config.target]
-    data     = data.drop(columns=config.target)
+    truth    = data[Config.model.target]
+    data     = data.drop(columns=Config.model.target)
     preds    = truth.copy()
     preds[:] = model.predict(data)
 
@@ -115,6 +115,8 @@ def class_score(model, data, name, multiclass_scores=False):
     # Return as dict instead of Section
     return scores._data, preds
 
+
+
 @utils.timeit
 def main():
     """
@@ -125,71 +127,64 @@ def main():
     config : utils.Config
         Config object defining arguments for classify
     """
-    # Retrieve the config object
-    config = Config()
+    # Retrieve this script's configuration section to reduce verbosity of code
+    C = Config.model
 
-    data = Section('data', {
-        'train': pd.read_hdf(config.input.file, 'select/train'),
-        'test' : pd.read_hdf(config.input.file, 'select/test')
+    data = Sect({
+        'train': pd.read_hdf(C.file, 'select/train'),
+        'test' : pd.read_hdf(C.file, 'select/test')
     })
 
     for kind, df in data.items():
         if df.isna().any(axis=None):
-            Logger.info('The {kind}ing set was detected to have NaNs. Please correct this and rerun. See debug for more info.')
+            Logger.info(f'The {kind} set was detected to have NaNs. Please correct this and rerun. See debug for more info.')
             Logger.debug('The following columns contained a NaN:')
             utils.align_print(dict(enumerate(df.columns[df.isna().any()])), print=Logger.debug, prepend='- ', delimiter=':')
             return 1
 
-    scores = {}
-    if config.classification:
-        Logger.info('This is a classification run, using RandomForestClassifier')
-        if config.model.load:
-            Logger.info(f'Loading model from config.output.model: {config.output.model}')
-            utils.load_pkl(config.output.model)
-        else:
-            Logger.info('Creating new model')
-            model = RandomForestClassifier(**config.model.params)
-            config.model.fit = True
+    # Either load an existing model file
+    if Path(path := C.model.file).exists() and not C.model.overwrite:
+        Logger.info(f'Loading existing model: {path}')
+        model = utils.load_pkl(path)
 
-        if config.model.fit:
-            model.fit(data.train.drop(columns=[config.target]), data.train[config.target])
-            if config.output.model:
-                utils.save_pkl(config.output.model, model)
-
-        scores['test'], predicts = class_score(model, data.test, 'test')
-        if config.output.file:
-            predicts.to_hdf(config.output.file, 'predicts/test')
-
-        if config.train_scores:
-            scores['train'], predicts = class_score(model, data.train, 'train')
-            if config.output.file:
-                predicts.to_hdf(config.output.file, 'predicts/train')
+    # or create a new one
     else:
-        Logger.info('This is a regression run, using RandomForestRegressor')
-        if config.model.load:
-            Logger.info(f'Loading model from config.output.model: {config.output.model}')
-            utils.load_pkl(config.output.model)
+        C.model.fit = True
+
+        if C.type == 'classification':
+            model = RandomForestClassifier(**C.model.params)
+            score = class_score
         else:
-            Logger.info('Creating new model')
-            model = RandomForestRegressor(**config.model.params)
-            config.model.fit = True
+            model = RandomForestRegressor(**C.model.params)
+            score = regress_score
 
-        if config.model.fit:
-            model.fit(data.train.drop(columns=[config.target]), data.train[config.target])
-            if config.output.model:
-                utils.save_pkl(config.output.model, model)
+    # Only train the model if set
+    if C.model.fit:
+        model.fit(
+            data.train.drop(columns=[C.target]),
+            data.train[C.target]
+        )
 
-        scores['test'], predicts = regress_score(model, data.test, 'test')
-        if config.output.file:
-            predicts.to_hdf(config.output.file, 'predicts/test')
+        # Save the newly trained model
+        if C.output.model:
+            exists = Path(path := C.model.file).exists()
+            if not exists or (exists and C.model.overwrite):
+                utils.save_pkl(path, model)
 
-        if config.train_scores:
-            scores['train'], predicts = regress_score(model, data.train, 'train')
-            if config.output.file:
-                predicts.to_hdf(config.output.file, 'predicts/train')
+    # Score the test dataset
+    (scores := {})['test'], predicts = score(model, data.test, 'test')
 
-    if config.output.scores:
-        utils.save_pkl(config.output.scores, scores)
+    if C.output.predicts:
+        predicts.to_hdf(C.output.predicts, 'predicts/test')
+
+    if C.train_scores:
+        scores['train'], predicts = score(model, data.train, 'train')
+
+        if C.output.predicts:
+            predicts.to_hdf(C.output.predicts, 'predicts/train')
+
+    if C.output.scores:
+        utils.save_pkl(C.output.scores, scores)
 
 
 if __name__ == '__main__':
@@ -197,8 +192,8 @@ if __name__ == '__main__':
 
     parser.add_argument('-c', '--config',   type     = str,
                                             required = True,
-                                            metavar  = '/path/to/config.yaml',
-                                            help     = 'Path to a config.yaml file'
+                                            metavar  = '/path/to/Config.model.yaml',
+                                            help     = 'Path to a Config.model.yaml file'
     )
     parser.add_argument('-s', '--section',  type     = str,
                                             default  = 'model',

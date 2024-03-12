@@ -6,40 +6,42 @@ import pandas as pd
 import re
 import tsfresh
 
-from tqdm                 import tqdm
+from mlky import (
+    Config,
+    Sect
+)
+from tqdm import tqdm
 from tqdm.contrib.logging import logging_redirect_tqdm
 
 from tsfresh.feature_extraction import ComprehensiveFCParameters
 
-from timefed        import utils
-from timefed.config import (
-    Config,
-    Section
-)
+from timefed.utils import utils
 
-Logger = logging.getLogger('timefed/extract.py')
+Logger = logging.getLogger('timefed/core/extract.py')
 
-def report(stats, print=print):
+
+def report(stats):
     """
     """
-    print('Roll stats:')
-    print(f'- Frequency of the data is: {stats.frequency}')
-    print(f'- The data ranges over {stats.range}')
-    print(f'- Using a window size of {stats.window} and a step of {stats.step}, the size of each window is {stats.size} samples')
-    print(f'- Windows produced:')
-    print(f'-- Total possible : {stats.possible}')
+    Logger.info('Roll stats:')
+    Logger.info(f'- Frequency of the data is: {stats.frequency}')
+    Logger.info(f'- The data ranges over {stats.range}')
+    Logger.info(f'- Using a window size of {stats.window} and a step of {stats.step}, the size of each window is {stats.size} samples')
+    Logger.info(f'- Windows produced:')
+    Logger.info(f'-- Total possible : {stats.possible}')
 
     if stats.possible > 0:
-        print(f'-- Number accepted: {stats.valid} ({stats.valid/stats.possible*100:.2f}%)')
+        Logger.info(f'-- Number accepted: {stats.valid} ({stats.valid/stats.possible:.2%}%)')
 
         if stats.optional:
-            print(f'-- Number of windows containing each optional variable:')
-            utils.align_print(stats.optional, print=print, prepend='--- ')
+            Logger.info(f'-- Number of windows containing each optional variable:')
+            utils.align_print(stats.optional, print=Logger.info, prepend='--- ')
 
         if stats.possible != stats.valid:
-            print(f'-- Number rejected: {stats.possible-stats.valid} ({(stats.possible-stats.valid)/stats.possible*100:.2f}%)')
-            print(f'-- Reasons for rejection:')
-            utils.align_print(stats.reasons, print=print, prepend='--- ')
+            Logger.info(f'-- Number rejected: {stats.possible-stats.valid} ({(stats.possible-stats.valid)/stats.possible:.2%}%)')
+            Logger.info(f'-- Reasons for rejection:')
+            utils.align_print(stats.reasons, print=Logger.info, prepend='--- ')
+
 
 def roll(df, window, frequency, step=1, required=None, optional=[], as_frames=False):
     """
@@ -75,7 +77,7 @@ def roll(df, window, frequency, step=1, required=None, optional=[], as_frames=Fa
     -----
     The index must be a pandas.TimeIndex. Does not support pandas.PeriodIndex.
     """
-    stats = Section('roll stats', {
+    stats = Sect({
         'possible': 0,
         'valid'   : 0,
         'optional': {},
@@ -90,7 +92,11 @@ def roll(df, window, frequency, step=1, required=None, optional=[], as_frames=Fa
     zero = pd.Timedelta(0)
     freq = (df.index[1:] - df.index[:-1]).value_counts().sort_values(ascending=False)
     if zero in freq:
-        Logger.warning('Duplicate timestamps were detected, windowing my return unexpected results')
+        Logger.warning('Duplicate timestamps were detected, windowing may return unexpected results')
+
+    if frequency is None:
+        frequency = freq.index[0]
+        Logger.info(f'Frequency not provided, assuming the most common frequency difference is the expected: {frequency}')
 
     frequency = stats.frequency = pd.Timedelta(frequency)
 
@@ -175,10 +181,11 @@ def roll(df, window, frequency, step=1, required=None, optional=[], as_frames=Fa
 
     return windows, stats
 
+
 def get_features(whitelist=None, blacklist=None, prompt=False):
     """
     Retrieves the dictionary of tsfresh features to use and their arguments.
-    Can be used in an interactive mode or configured via the configuration file.
+    Can be used in an interactive mode or Configured via the Configuration file.
 
     Parameters
     ----------
@@ -220,6 +227,7 @@ def get_features(whitelist=None, blacklist=None, prompt=False):
 
     return features
 
+
 def verify(df):
     """
     Verifies
@@ -247,6 +255,7 @@ def verify(df):
         df = df.drop(columns=inf_cols)
 
     return df
+
 
 def extract(df, slice=None, columns=[], target=None, features=None, index=-1, classification=False):
     """
@@ -295,16 +304,21 @@ def extract(df, slice=None, columns=[], target=None, features=None, index=-1, cl
 
     df['_ID']   = np.full(len(df), 0)
     df['_TIME'] = df.index
-    extracted   = tsfresh.extract_features(
-        df[columns],
-        column_id    = '_ID',
-        column_sort  = '_TIME',
-        column_kind  = None,
-        column_value = None,
-        default_fc_parameters = features,
-        disable_progressbar   = True,
-        n_jobs = 1
-    )
+
+    try:
+        extracted   = tsfresh.extract_features(
+            df[columns],
+            column_id    = '_ID',
+            column_sort  = '_TIME',
+            column_kind  = None,
+            column_value = None,
+            default_fc_parameters = features,
+            disable_progressbar   = True,
+            n_jobs = 1
+        )
+    except Exception as e:
+        Logger.debug(f'Failed to process a window slice {slice}: {e}')
+        return str(e)
 
     # Imitate the original index
     extracted.index = [df.index[index]]
@@ -319,6 +333,7 @@ def extract(df, slice=None, columns=[], target=None, features=None, index=-1, cl
         extracted[target] = 1
 
     return extracted
+
 
 def process(df, features=None):
     """
@@ -342,24 +357,22 @@ def process(df, features=None):
     """
     import ray
 
-    config = Config()
-
-    # Only initialize if it's provided by the config
-    if config.ray:
-        ray.init(**config.ray)
+    # Only initialize if it's provided by the Config
+    if Config.extract.ray:
+        ray.init(**Config.extract.ray)
 
     windows, stats = roll(df,
-        window     = config.window,
-        frequency  = config.frequency,
-        step       = config.step or 1,
-        required   = config.required,
-        optional   = config.optional,
+        window     = Config.extract.roll.window,
+        frequency  = Config.extract.roll.frequency,
+        step       = Config.extract.roll.step or 1,
+        required   = Config.extract.roll.required,
+        optional   = Config.extract.roll.optional,
         as_frames  = False
     )
 
-    report(stats, Logger.info)
+    report(stats)
 
-    if stats.accepted == 0:
+    if stats.valid == 0:
         Logger.error('No windows were accepted for this track of data. Nothing to do, returning.')
         return
 
@@ -367,46 +380,67 @@ def process(df, features=None):
     params = {
         'df'            : ray.put(df),
         'features'      : ray.put(features),
-        'columns'       : ray.put(config.get('columns'       , []     )),
-        'target'        : ray.put(config.get('target'        , None   )),
-        'index'         : ray.put(config.get('index'         , -1     )),
-        'classification': ray.put(config.get('classification', False  )),
+        'target'        : ray.put(Config.model.get('target'   , None)),
+        'columns'       : ray.put(Config.extract.get('columns', []  )),
+        'index'         : ray.put(Config.extract.get('index'  , -1  )),
+        'classification': ray.put(Config.model.kind == 'classification'),
     }
     func = ray.remote(extract)
     jobs = [func.remote(**params, slice=slice(*window)) for window in windows]
 
+    if Config.extract.flush:
+        Logger.debug(f'Window flushing enabled, will be written to: {Config.extract.file}')
+
+    errored  = Sect(count=0, reasons={})
     extracts = []
     for i in tqdm(range(len(windows)), desc='Processing Windows', position=0):
         [done], running = ray.wait(jobs, num_returns=1)
         jobs   = running
         window = ray.get(done)
 
-        if config.output.windows:
-            window.to_hdf(config.output.windows, f'window_{i}')
+        if isinstance(window, str):
+            errored.count += 1
+            if window not in errored.reasons:
+                errored.reasons[window] = 0
+            errored.reasons[window] += 1
+            continue
+
+        if Config.extract.flush:
+            window.to_hdf(Config.extract.file, f'extract/windows/w{i}')
         else:
             extracts.append(window)
 
         del window, done
 
-    if config.output.windows:
-        Logger.info('Loading windows into memory')
-        extracts = [pd.read_hdf(config.output.windows, f'window_{j}') for j in range(i+1)]
+    if errored:
+        Logger.warning(f'{errored.count} windows failed')
+        Logger.debug(f'Reasons:')
+        for reason, count in errored.reasons.items():
+            Logger.debug(f'- {count} = {reason}')
 
-    Logger.info('Concatting the feature frames together')
+        if errored.count == len(windows):
+            Logger.error('All windows failed, exiting')
+            return
+
+    if Config.extract.flush:
+        Logger.info('Loading windows into memory')
+        with h5py.File(Config.extract.file, 'r') as h5:
+            keys = list(h5['extract/windows'])
+        extracts = [pd.read_hdf(Config.extract.file, f'extract/windows/{key}') for key in keys]
+
+    Logger.info(f'Concatenating {len(extracts)} feature frames together')
     df = pd.concat(extracts).sort_index()
     df = verify(df)
 
     return df
+
 
 @utils.timeit
 def main():
     """
     The main process of TrackWindow
     """
-    # Retrieve the config object
-    config = Config()
-
-    if not config.target:
+    if not Config.model.target:
         Logger.warning(
               'The target column is not defined. This script does not need a target, but subselect.py and model.py will. '
             + 'If you plan to use those scripts, please define the target BEFORE executing extract.py.'
@@ -414,31 +448,33 @@ def main():
 
     # Retrieve features to use
     features = get_features(
-        whitelist = config.features.whitelist,
-        blacklist = config.features.blacklist,
-        prompt    = config.features.interactive
+        whitelist = Config.extract.features.whitelist,
+        blacklist = Config.extract.features.blacklist,
+        prompt    = Config.extract.features.interactive
     )
 
-    if config.input.multi:
-        if isinstance(config.input.key, str):
-            with h5py.File(config.input.file, 'r') as h5:
-                config.input.key = [
-                    f'{config.input.key}/{key}'
-                    for key in h5[config.input.key].keys()
-                ]
+    # If `multi` is provided, process only these DataFrames
+    if Config.extract.multi:
+        keys = Config.extract.multi
+
+        # Select all subkeys from this str key
+        if isinstance(keys, str):
+            with h5py.File(Config.extract.file, 'r') as h5:
+                keys = [f'{keys}/{key}' for key in h5[keys].keys()]
 
         metadata = {}
-        for key in tqdm(config.input.key, position=1, desc='Streams Processed'):
-            df = pd.read_hdf(config.input.file, key)
+        for key in tqdm(keys, position=1, desc='Processing Streams'):
+            df = pd.read_hdf(Config.extract.file, key)
             df = process(df, features)
 
             if df is None:
-                return 1
+                Logger.error(f'Windows for key {key} returned None')
+                continue
 
             # Metadata information is used by subselect.py for the multitrack case
             counts = {}
-            if config.classification:
-                counts = df[config.target].value_counts()
+            if Config.model.kind == 'classification':
+                counts = df[Config.model.target].value_counts()
 
             metadata[key] = {
                 'start': df.index[0],
@@ -447,19 +483,25 @@ def main():
                 'pos'  : counts.get(1, 0)
             }
 
-            df.to_hdf(config.output.file, f'windows/{key}')
+            df.to_hdf(Config.extract.file, f'windows/{key}')
 
-        if config.classification:
-            utils.save_pkl(config.output.metadata, metadata)
+        if Config.model.kind == 'classification':
+            if not Config.subselect.metadata:
+                Logger.error('Classification runs must define Config.subselect.metadata')
+                return
+            utils.save_pkl(Config.subselect.metadata, metadata)
 
     else:
-        df = pd.read_hdf(config.input.file, config.input.key)
+        Logger.debug(f'Loading {Config.extract.file}[preprocess/complete]')
+        df = pd.read_hdf(Config.extract.file, 'preprocess/complete')
+
+        Logger.debug('Beginning processing')
         df = process(df, features)
 
         if df is None:
-            return 1
+            return
 
-        df.to_hdf(config.output.file, 'windows')
+        df.to_hdf(Config.extract.file, 'extract/complete')
 
     return True
 
@@ -467,21 +509,19 @@ def main():
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
 
-    parser.add_argument('-c', '--config',   type     = str,
+    parser.add_argument('-c', '--Config',   type     = str,
                                             required = True,
-                                            metavar  = '/path/to/config.yaml',
-                                            help     = 'Path to a config.yaml file'
+                                            metavar  = '/path/to/Config.extract.yaml',
+                                            help     = 'Path to a Config.extract.yaml file'
     )
     parser.add_argument('-s', '--section',  type     = str,
                                             default  = 'extract',
-                                            help     = 'Section of the config to use'
+                                            help     = 'Section of the Config to use'
     )
 
-    args = parser.parse_args()
+    utils.init(args)
 
     try:
-        utils.init(args)
-
         with logging_redirect_tqdm():
             code = main()
 

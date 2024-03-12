@@ -3,14 +3,17 @@ import logging
 import numpy  as np
 import pandas as pd
 
+from pathlib import Path
+
+from mlky    import Config
 from tqdm    import tqdm
 from tsfresh import select_features
 
-from timefed         import utils
-from timefed.config  import Config
-from timefed.extract import verify
+from timefed.core.extract import verify
+from timefed.utils        import utils
 
-Logger = logging.getLogger('timefed/subselect.py')
+Logger = logging.getLogger('timefed/core/subselect.py')
+
 
 def select(train, test, target='label', n_jobs=1):
     """
@@ -20,8 +23,10 @@ def select(train, test, target='label', n_jobs=1):
     Parameters
     ----------
 
+
     Returns
     -------
+
     """
     original = train.shape[1] - 1
 
@@ -41,12 +46,21 @@ def select(train, test, target='label', n_jobs=1):
     test = test[train.columns]
 
     new = train.shape[1] - 1
-    Logger.info(f'Number of features selected by tsfresh: {new}/{original} ({new/original*100:.2f})')
+    Logger.info(f'Number of features selected by tsfresh: {new}/{original} ({new/original:.2%})')
 
     return train, test
 
 def _split_multi_classification(data, n=1, **kwargs):
     """
+    TODO
+
+    Parameters
+    ----------
+
+
+    Returns
+    -------
+
     """
     # Find the unique edges of the streams
     splits = set()
@@ -116,6 +130,7 @@ def _split_single_classification(data, n=10, target='label', **kwargs):
 
     Returns
     -------
+
     """
     # [S]plit [F]rame, DataFrame to store possible splits
     sf = pd.DataFrame(columns=pd.MultiIndex.from_product([['Train', 'Test'], ['Total', 'Percent'], [0, 1]]), index=range(n-1))
@@ -172,6 +187,7 @@ def _split_single_regression(data, n=10, **kwargs):
 
     Returns
     -------
+
     """
     # [S]plit [F]rame, DataFrame to store possible splits
     sf = pd.DataFrame(columns=['Train', 'Test'], index=range(n-1))
@@ -195,13 +211,16 @@ def _split_single_regression(data, n=10, **kwargs):
 
 def interact(data):
     """
+    TODO
+
     Parameters
     ----------
 
     Returns
     -------
+
     """
-    def _split():
+    def _split(func):
         """
         """
         Logger.info('Divide the data into N chunks')
@@ -216,11 +235,11 @@ def interact(data):
                 return func(
                     data   = data,
                     n      = n,
-                    target = config.target
+                    target = Config.model.target
                 )
             except:
                 Logger.exception(f'The input value is not an integer: {n!r}')
-                return _split()
+                return _split(func)
 
     def _select():
         """
@@ -235,7 +254,7 @@ def interact(data):
                 index = int(index)
 
                 if index == -1:
-                    return interact(df, metadata)
+                    return interact(data)
                 elif index not in sf.index:
                     Logger.error(f'Invalid index choice: {index}')
                 else:
@@ -244,47 +263,45 @@ def interact(data):
                 Logger.error(f'The input value is not an integer: {value!r}')
                 return _select
 
-    config = Config()
-
-    if config.input.multi:
+    if Config.subselect.input.multi:
         func = _split_multi_regression
-        if config.classification:
+        if Config.model.type == 'classification':
             func = _split_multi_classification
     else:
         func = _split_single_regression
-        if config.classification:
+        if Config.model.type == 'classification':
             func = _split_single_classification
 
-    sf = _split()
+    sf = _split(func)
 
     return _select()
 
+
 def main():
     """
+    TODO
 
     Returns
     -------
     bool
         Returns True if the function completed successfully
     """
-    # Retrieve the config object
-    config = Config()
-
-    if config.input.multi:
-        if not config.input.metadata:
+    if Config.subselect.input.multi:
+        if not Path(metadata := Config.subselect.metadata).exists():
             Logger.error('The multisteam case requires a metadata file produced by extract.py')
             return 4
-        data = utils.load_pkl(config.input.metadata)
+        data = utils.load_pkl(metadata)
     else:
-        data = pd.read_hdf(config.input.file, 'windows')
+        Logger.info(f'Reading file {Config.subselect.file}[extract/complete]')
+        data = pd.read_hdf(Config.subselect.file, 'extract/complete')
 
-        if config.classification:
-            Logger.debug(f'This is a classification dataset using the target label: {config.label}')
-            if config.target not in data:
-                Logger.error(f'The target does not exist in the dataset: {target}')
+        if Config.model.type == 'classification':
+            Logger.debug(f'This is a classification dataset using the target: {Config.model.target}')
+            if Config.model.target not in data:
+                Logger.error(f'The target does not exist in the dataset: {Config.model.target}')
                 return 1
 
-            keys = data[config.target].value_counts().sort_index().keys()
+            keys = data[Config.model.target].value_counts().sort_index().keys()
             if len(keys) > 2:
                 Logger.error('Classification only supports binary values')
                 return 2
@@ -292,12 +309,12 @@ def main():
                 Logger.error('Classification only supports binary values')
                 return 3
 
-    date = config.split_date
-    if config.interactive:
+    date = Config.subselect.split_date
+    if Config.subselect.interactive:
         date = interact(data)
     date = pd.Timestamp(date)
 
-    if config.input.multi:
+    if Config.subselect.input.multi:
         Logger.info('Loading streams into memory')
         train = []
         test  = []
@@ -310,7 +327,7 @@ def main():
         streams = []
         for key in train:
             streams.append(
-                pd.read_hdf(config.input.file, f'windows/{key}').reset_index()
+                pd.read_hdf(Config.subselect.file, f'windows/{key}').reset_index()
             )
         Logger.info('Merging train datasets together')
         train = pd.concat(streams, axis=0, ignore_index=True).set_index('index')
@@ -318,7 +335,7 @@ def main():
         streams = []
         for key in test:
             streams.append(
-                pd.read_hdf(config.input.file, f'windows/{key}').reset_index()
+                pd.read_hdf(Config.subselect.file, f'windows/{key}').reset_index()
             )
         Logger.info('Merging test datasets together')
         test = pd.concat(streams, axis=0, ignore_index=True).set_index('index')
@@ -336,11 +353,13 @@ def main():
         Logger.debug(f'Train shape: {train.shape} ({train.shape[0]/data.shape[0]*100:.2f}%)')
         Logger.debug(f'Test  shape: {test.shape} ({test.shape[0]/data.shape[0]*100:.2f}%)')
 
-    train, test = select(train, test, n_jobs=config.get('cores', 1))
+    train, test = select(train, test,
+        target = Config.model.target,
+        n_jobs = Config.subselect.get('cores', 1))
 
-    Logger.info(f'Saving to {config.output.file} under key select/[train,test]')
-    train.to_hdf(config.output.file, 'select/train')
-    test .to_hdf(config.output.file, 'select/test')
+    Logger.info(f'Saving to {Config.subselect.file} under key select/[train,test]')
+    train.to_hdf(Config.subselect.file, 'select/train')
+    test .to_hdf(Config.subselect.file, 'select/test')
 
     return True
 

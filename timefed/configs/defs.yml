@@ -1,0 +1,285 @@
+.cores:
+  dtype: int
+  sdesc: Number of cores to use for multiprocessing
+  default: ${!os.cpu_count}
+
+.log:
+  dtype: dict
+  sdesc: Controls the logger
+  .file:
+    dtype: str
+    sdesc: File to write log outputs to. Omit to not write to file
+    default: timefed.log
+  .mode:
+    dtype: str
+    sdesc: "File write mode, ie: `write` = overwite the file, `append` = append to existing"
+    default: write
+    checks:
+      - oneof:
+        - write
+        - append
+  .level:
+    dtype: str
+    sdesc: Logger level. This is the level that will write to file if enabled
+    default: DEBUG
+    checks:
+      - oneof:
+        - DEBUG
+        - INFO
+        - WARNING
+        - ERROR
+        - EXCEPTION
+  .terminal:
+    dtype: str
+    sdesc: The terminal level to log, ie. logger level to write to terminal. This can be different than the file level
+    default: ${.log.level}
+    checks:
+      - oneof:
+        - DEBUG
+        - INFO
+        - WARNING
+        - ERROR
+        - EXCEPTION
+  .mlflow:
+    dtype: bool
+    sdesc: Enables MLFlow logging
+    default: False
+
+.preprocess:
+  dtype: dict
+  sdesc: Options for the DSN `preprocess` module
+  .enabled:
+    dtype: bool
+    sdesc: Enables/disables this module in a pipeline execution
+    default: True
+    required: True
+  .kind:
+    dtype: str
+    sdesc: Which preprocess module to use
+    default: gnss
+    required: True
+    checks:
+      - oneof:
+        - dsn
+        - mloc
+        - gnss
+  .file:
+    dtype: str
+    sdesc: Path to an H5 file to write to
+    default: preprocess.h5
+    required: True
+  .tracks:
+    dtype: str
+    sdesc: Path to a DSN tracks file
+    required: True
+    checks:
+      - isfile
+  .drs:
+    dtype: str
+    sdesc: Path to a DSN DRs file
+    required: True
+    checks:
+      - isfile
+  .skip_dcc:
+    dtype: bool
+    sdesc: Skips tracks with multiple DCC channels
+    default: False
+  .only:
+    dtype: dict
+    sdesc: "Only process these:"
+    .missions:
+      dtype: list
+      sdesc: Missions to select in the tracks file
+    .drs:
+      dtype: list
+      sdesc: DRs to select from the DRs file
+  .features:
+    dtype: dict
+    sdesc: Creates additional features from a predefined set of functions
+    .diff:
+      dtype: list
+      sdesc: "Executes DataFrame[feature].diff(): First discrete difference of element"
+  .concat:
+    dtype: bool
+    sdesc: Enables concatenation of multiple missions' outputs together
+    default: True
+  .subsample:
+    dtype: dict
+    sdesc: Subsampling strategies to balance the negative:positive ratio in classification cases
+    .query:
+      dtype: str
+      sdesc: Passes a query string to DataFrame.query()
+    .pos_limit:
+      dtype: int
+      sdesc: Total number of positive tracks to randomly select
+      checks:
+        - compare:
+            gt: 0
+    .neg_limit:
+      dtype: int
+      sdesc: Total number of negative tracks to randomly select
+      checks:
+        - compare:
+            gt: 0
+    .neg_ratio:
+      dtype: int
+      sdesc: N:1 ratio of negative:positive tracks
+      checks:
+        - compare:
+            gt: 0
+
+.extract:
+  dtype: dict
+  sdesc: Options for the `extract` module
+  .enabled:
+    dtype: bool
+    sdesc: Enables/disables this module in a pipeline execution
+    default: True
+    required: True
+  .cores:
+    dtype: int
+    sdesc: Number of cores to use for the extract module
+    default: ${.cores}
+  .file:
+    dtype: str
+    sdesc: Path to an H5 file to write to
+    default: preprocess.h5
+    required: True
+  .multi:
+    dtype: null
+    sdesc: Processes a stream of multiple input tracks. This is either a str to which the tracks reside under in the input file, or a list of specific keys in the file to grab
+  .flush:
+    dtype: bool
+    sdesc: Flushes processed windows to disk to relieve held memory
+    default: True
+  .roll:
+    dtype: dict
+    sdesc: Parameters for the roll function
+    .window:
+      dtype: str
+      sdesc: Size of the windows to extract. The size of these windows is determined by this value divided by the frequency of the data, eg. 10min / 1min = 10 samples. This a is a string compatible with pandas.Timedelta().
+      required: True
+    .frequency:
+      dtype: null
+      sdesc: The sampling frequency of the data. If not set, the frequency will be assumed to be the largest quantity of differences between timestamps. This a is a string compatible with pandas.Timedelta().
+      required: True
+    .step:
+      dtype: null
+      sdesc: Size of the step when moving from one window to the next. This can be either an int or a str, where an int would step N many indices from the start of the previous window's start, and str would step N amount of time beyond the start of the previous window's start.
+      default: 1
+    .required:
+      dtype: list
+      sdesc: List of required variables when rolling. If not provided, defaults to all variables.
+    .optional:
+      dtype: list
+      sdesc: List of optional variables when rolling. If not provided, defaults to the opposite of `required`.
+  .columns:
+    dtype: list
+    sdesc: Only process these columns through tsfresh extraction. Defaults to all columns if not provided.
+  .index:
+    dtype: int
+    sdesc: Which index of a window to set as the window index. Defaults to the last index of the window.
+    default: -1
+  .features:
+    dtype: dict
+    sdesc: Contains the arguments for selecting which tsfresh features to process
+    .interactive:
+      dtype: bool
+      sdesc: Enables interactive mode for selection of feature functions from `tsfresh.feature_extraction.ComprehensiveFCParameters`
+      default: False
+    .whitelist:
+      dtype: list
+      sdesc: Name of feature functions to accept from `tsfresh.feature_extraction.ComprehensiveFCParameters`
+    .blacklist:
+      dtype: list
+      sdesc: Name of feature functions to reject from `tsfresh.feature_extraction.ComprehensiveFCParameters`
+  # .ray:
+  #   dtype: dict
+  #   sdesc: Parameters for ray.init()
+
+.subselect:
+  dtype: dict
+  sdesc: Options for the `subselect` module
+  .enabled:
+    dtype: bool
+    sdesc: Enables/disables this module in a pipeline execution
+    default: True
+    required: True
+  .cores:
+    dtype: int
+    sdesc: Number of cores to use for the extract module
+    default: ${.cores}
+  .file:
+    dtype: str
+    sdesc: Path to an H5 file to write to
+    default: ${.preprocess.file}
+    required: True
+  .split_date:
+    dtype: str
+    sdesc: Split date to use if not in interactive mode
+  .interactive:
+    dtype: bool
+    sdesc: Enables interactive mode for selecting a split date to use
+    default: True
+  .metadata:
+    dtype: str
+    sdesc: Path to a .pkl file to handle classification metadata (not used in regression)
+    default: metadata.pkl
+    required: True
+
+.model:
+  dtype: dict
+  sdesc: Options for the `model` module
+  .enabled:
+    dtype: bool
+    sdesc: Enables/disables this module in a pipeline execution
+    default: True
+    required: True
+  .type:
+    dtype: str
+    sdesc: Defines what kind of model this data would use. This influences many functions of TimeFED
+    default: regression
+    required: True
+    checks:
+      - oneof:
+        - regression
+        - classification
+  .file:
+    dtype: str
+    sdesc: Path containing the train and set sets (under keys select/[train,test]) (pandas h5 format)
+    default: ${.preprocess.file}
+    required: True
+  .model:
+    dtype: dict
+    sdesc: Options for controlling the model creation
+    .file:
+      dtype: str
+      sdesc: Path to a model pickle file. If this file does not exists, this will be the path to write to if output.model is enabled
+      default:
+    .overwrite:
+      dtype: bool
+      sdesc: If a model file already exists, this enables overwriting that file
+      default: True
+    .fit:
+      dtype: bool
+      sdesc: Enables calling model.fit() on the training dataset
+      default: True
+  .output:
+    dtype: dict
+    sdesc: Options for enabling/disabling various outputs
+    .model:
+      dtype: bool
+      sdesc: Enables saving the model
+      default: True
+    .predicts:
+      dtype: str
+      sdesc: Path to write predict values to (pandas h5 format)
+      default: predicts.h5
+    .scores:
+      dtype: str
+      sdesc: Path to write scores to (dict in pickle format)
+      default: scores.h5
+  .train_scores:
+    dtype: bool
+    sdesc: Perform scoring on the train set
+    default: False

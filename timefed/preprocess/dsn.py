@@ -4,16 +4,16 @@ Experimental preprocessing for DSN tracks to prepare the data for the TimeFED pi
 import argparse
 import h5py
 import logging
-import numpy as np
+import numpy  as np
 import pandas as pd
 import warnings
 
 from datetime import datetime as dtt
+from mlky     import Config
 from tables   import NaturalNameWarning
 from tqdm     import tqdm
 
-from timefed        import utils
-from timefed.config import Config
+from timefed import utils
 
 # Disable tables warnings
 warnings.filterwarnings('ignore', category=NaturalNameWarning)
@@ -21,12 +21,25 @@ warnings.filterwarnings('ignore', category=NaturalNameWarning)
 # Disable pandas warnings
 pd.options.mode.chained_assignment = None
 
-Logger = logging.getLogger('timefed/dsn/preprocess.py')
+Logger = logging.getLogger('timefed/preprocess/dsn.py')
+
 
 def subsample(df):
     """
+    Subsamples positive and negative tracks to balance the classes per the config
+
+    Parameters
+    ----------
+    df: pandas.DataFrame
+        DataFrame containing positive/negative tracks to subsample from
+
+    Returns
+    -------
+    df: pandas.DataFrame
+        DataFrame with randomly selected subsample
     """
-    config = Config().subsample
+    # Section of config for this function
+    config = Config.preprocess.subsample
 
     # If a query string is given, apply it first
     if config.query:
@@ -41,11 +54,14 @@ def subsample(df):
     # Subsample the positive tracks using a percent of the total
     pos_tracks = pos.index
     if isinstance(config.pos_limit, (int, float)):
+        # Int takes N many tracks
         if isinstance(config.pos_limit, int):
             count = config.pos_limit
+        # Float takes a fraction of the total of positive tracks
         else:
             count = int(pos.shape[0] * config.pos_limit)
 
+        # Randomly select from the available tracks
         pos_tracks = np.random.choice(pos.index, count, replace=False)
         Logger.info(f'Randomly selecting {count}/{pos.shape[0]} ({count/pos.shape[0]*100:.2f}%) positive tracks')
 
@@ -56,12 +72,16 @@ def subsample(df):
         neg_tracks = np.random.choice(neg.index, ratio, replace=False)
         Logger.info(f'Randomly selecting {ratio}/{neg.shape[0]} ({ratio/neg.shape[0]*100:.2f}%) negative tracks')
 
+    # Use neg_limit to select negative tracks
     if isinstance(config.neg_limit, (int, float)):
+        # Int takes N many tracks
         if isinstance(config.neg_limit, int):
             count = config.neg_limit
+        # Float takes a fraction of the total of negative tracks
         else:
             count = int(neg.shape[0] * config.neg_limit)
 
+        # Randomly select from the available tracks
         neg_tracks = np.random.choice(neg.index, count, replace=False)
         Logger.info(f'Randomly selecting {count}/{neg.shape[0]} ({count/neg.shape[0]*100:.2f}%) negative tracks')
 
@@ -73,11 +93,13 @@ def subsample(df):
     gf  = df[['SCHEDULE_ITEM_ID', 'Label']].groupby('SCHEDULE_ITEM_ID').mean()
     pos = gf.query('Label  > 0')
     neg = gf.query('Label == 0')
+
     Logger.info(f'Number of tracks total  : {gf.shape[0]:5}')
     Logger.info(f'Number that are positive: {pos.shape[0]:5} ({pos.shape[0]/gf.shape[0]*100:.2f}%)')
     Logger.info(f'Number that are negative: {neg.shape[0]:5} ({neg.shape[0]/gf.shape[0]*100:.2f}%)')
 
     return df
+
 
 def analyze(df):
     """
@@ -96,6 +118,7 @@ def analyze(df):
     size   = df.shape[0]
     counts = df.Label.value_counts()
     tracks = df.SCHEDULE_ITEM_ID.value_counts().size
+
     Logger.info('Stats on the combined dataframe:')
     Logger.info(f'Number of tracks   : {tracks}')
     Logger.info(f'Total timestamps   : {size}')
@@ -134,9 +157,10 @@ def analyze(df):
 
     return df
 
+
 def add_features(df):
     """
-    Adds additional features to a track's dataframe per the config.
+    Adds additional features to a track's dataframe per the Config.preprocess.
 
     Parameters
     ----------
@@ -148,12 +172,14 @@ def add_features(df):
     df: pandas.DataFrame
         Modified track DataFrame
     """
-    config = Config()
-
-    for feature in config.features.diff:
+    for feature in Config.preprocess.features.diff:
+        if feature not in df:
+            Logger.error(f'Feature not in DataFrame: {feature}')
+            continue
         df[f'diff_{feature}'] = df[feature].diff()
 
     return df
+
 
 def add_label(df, drs):
     """
@@ -196,6 +222,7 @@ def add_label(df, drs):
 
     return df
 
+
 def timestamp_to_datetime(timestamps):
     """
     Converts an integer or floating point timestamp to a Python datetime object.
@@ -213,6 +240,7 @@ def timestamp_to_datetime(timestamps):
         return dtt.fromtimestamp(timestamps)
     else:
         return [dtt.fromtimestamp(ts) for ts in timestamps]
+
 
 def decode_strings(df):
     """
@@ -239,6 +267,7 @@ def decode_strings(df):
 
     return df
 
+
 def get_keys(file):
     """
     Retrieves the keys of the input h5 file
@@ -262,6 +291,7 @@ def get_keys(file):
 
     return keys
 
+
 def preprocess(mission, keys):
     """
     Preprocesses all the tracks for a given mission to prepare the data for the
@@ -273,36 +303,23 @@ def preprocess(mission, keys):
         The string name of the mission being processed
     keys: dict
         Dictionary of {antenna: [tracks]} for this mission
-
-    Notes
-    -----
-    config keys:
-        input:
-            tracks: str
-            drs: str
-        only:
-            drs: list of str
-        output:
-            tracks: str
     """
-    config = Config()
-
     Logger.info(f'Processing tracks for mission: {mission}')
 
     # Retrieve the DRs for this mission
     try:
         Logger.info('Retrieving DRs')
-        drs = pd.read_hdf(config.input.drs, mission)
+        drs = pd.read_hdf(Config.preprocess.drs, mission)
         drs = decode_strings(drs)
     except:
-        Logger.exception(f'Failed to retrieve DRs for mission {mission} from file {config.input.drs}, returning early')
+        Logger.exception(f'Failed to retrieve DRs for mission {mission} from file {Config.preprocess.drs}, returning early')
         return False
 
     # Skip tracks that have wrong DRs
     skip = []
-    if config.only.drs:
-        skip = list(drs.query(f'DR_CLOSURE_CAUSE_CD not in {config.only.drs}').SCHEDULE_ITEM_ID.astype(str))
-        Logger.debug(f'Processing only DRs: {config.only.drs}')
+    if Config.preprocess.only.drs:
+        skip = list(drs.query(f'DR_CLOSURE_CAUSE_CD not in {Config.preprocess.only.drs}').SCHEDULE_ITEM_ID.astype(str))
+        Logger.debug(f'Processing only DRs: {Config.preprocess.only.drs}')
         Logger.info(f'{len(skip)} tracks will be skipped due to being the wrong DR')
 
     # Setup TQDM
@@ -328,17 +345,17 @@ def preprocess(mission, keys):
             key = f'{mission}/{ant}/{track}'
 
             # Check if there are DCC channels
-            with h5py.File(config.input.tracks, 'r') as h5:
+            with h5py.File(Config.preprocess.tracks, 'r') as h5:
                 dccs = list(h5[key].keys())
 
             if len(dccs) > 1:
                 Logger.debug(f'Track {track} has {len(dccs)}: {dccs}')
-                if config.skip_dcc:
+                if Config.preprocess.skip_dcc:
                     dccs = []
 
             for dcc in dccs:
                 subkey = f'{key}/{dcc}'
-                df  = pd.read_hdf(config.input.tracks, subkey)
+                df  = pd.read_hdf(Config.preprocess.tracks, subkey)
 
                 # Decode the strings to cleanup column values (removes the b'')
                 df = decode_strings(df)
@@ -367,7 +384,7 @@ def preprocess(mission, keys):
                 df.index.name = 'datetime'
 
                 # Save to output and update TQDM
-                df.to_hdf(config.output.tracks, subkey)
+                df.to_hdf(Config.preprocess.file, f'preprocess/{subkey}')
 
                 dfs.append(df)
 
@@ -378,10 +395,11 @@ def preprocess(mission, keys):
     df = pd.concat(dfs)
     df = analyze(df)
 
-    if config.subsample:
+    if Config.preprocess.subsample:
+        Logger.info('Subsampling tracks')
         df = subsample(df)
 
-    df.to_hdf(config.output.tracks, f'{mission}/master')
+    df.to_hdf(Config.preprocess.file, f'preprocess/{mission}/complete')
 
     return True
 
@@ -402,13 +420,11 @@ def main():
         only:
             missions: list of str
     """
-    config = Config()
-
     # Retrieve key structure of the tracks h5
-    keys = get_keys(config.input.tracks)
+    keys = get_keys(Config.preprocess.tracks)
 
     # Subselect which missions to process
-    missions = config.only.missions
+    missions = Config.preprocess.only.missions
     if not missions:
         missions = list(keys.keys())
 
@@ -422,36 +438,20 @@ def main():
         if not preprocess(mission, keys[mission]):
             skip.update([mission])
 
-    if config.concat:
+    if Config.preprocess.concat:
         Logger.info('Concatenating mission frames together')
         data = []
         for mission in set(missions) - skip:
             data.append(
-                pd.read_hdf(config.output.tracks, f'{mission}/master')
+                pd.read_hdf(Config.preprocess.file, f'preprocess/{mission}/complete')
             )
         df = pd.concat(data)
-        df.to_hdf(config.output.tracks, 'concatenated/master')
+        df.to_hdf(Config.preprocess.file, 'preprocess/complete')
 
     return True
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
-
-    parser.add_argument('-c', '--config',   type     = str,
-                                            required = True,
-                                            metavar  = '/path/to/config.yaml',
-                                            help     = 'Path to a config.yaml file'
-    )
-    parser.add_argument('-s', '--section',  type     = str,
-                                            default  = 'preprocess',
-                                            metavar  = '[section]',
-                                            help     = 'Section of the config to use'
-    )
-
-    args  = parser.parse_args()
-    state = False
-
     # Initialize the loggers
     utils.init(args)
 

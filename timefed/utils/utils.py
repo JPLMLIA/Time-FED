@@ -6,8 +6,7 @@ import pickle
 import sys
 
 from datetime import datetime as dtt
-
-from timefed.config import Config
+from mlky     import Config
 
 # Increase matplotlib's logger to warning to disable the debug spam it makes
 logging.getLogger('matplotlib').setLevel(logging.WARNING)
