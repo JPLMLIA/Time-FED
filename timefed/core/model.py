@@ -4,6 +4,10 @@ import numpy as np
 import os
 import pandas as pd
 
+from mlky import (
+    Config,
+    Sect
+)
 from sklearn.ensemble import (
     RandomForestClassifier,
     RandomForestRegressor
@@ -23,12 +27,8 @@ from sklearn.metrics import (
     r2_score
 )
 
-from timefed        import utils
-from timefed.config import (
-    Config,
-    Section
-)
-from timefed.plots  import importances
+from timefed import utils
+from timefed.utils.plots import importances
 
 Logger = logging.getLogger('timefed/model.py')
 
@@ -41,7 +41,7 @@ def regress_score(model, data, name):
     preds    = truth.copy()
     preds[:] = model.predict(data)
 
-    scores = Section('scores', {
+    scores = Sect({
         'r2'      : r2_score(truth, preds),
         'rms'     : mean_squared_error(truth, preds),
         'perc_err': mean_absolute_percentage_error(truth, preds)
@@ -64,7 +64,7 @@ def class_score(model, data, name, multiclass_scores=False):
     preds    = truth.copy()
     preds[:] = model.predict(data)
 
-    scores = Section('scores', {
+    scores = Section({
         'accuracy'        : accuracy_score(truth, preds),
         'precision'       : precision_score(truth, preds),
         'recall'          : recall_score(truth, preds),

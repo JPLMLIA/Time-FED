@@ -59,30 +59,28 @@ generated:                    # K | dtype | Short description
       interactive: false      #   | bool  | Enables interactive mode for selection of feature functions from `tsfresh.feature_extraction.ComprehensiveFCParameters`
       whitelist: []           #   | list  | Name of feature functions to accept from `tsfresh.feature_extraction.ComprehensiveFCParameters`
       blacklist: []           #   | list  | Name of feature functions to reject from `tsfresh.feature_extraction.ComprehensiveFCParameters`
-  selfeatures:                #   | dict  | Options for the `select features` module
-    enabled: true             # ! | bool  | Enables/disables this module in a pipeline execution
-    cores: ${.cores}          #   | int   | Number of cores to use for the selfeatures module
-    file: ${.preprocess.file} # ! | str   | Path to an H5 file to write to
-    drop: []                  #   | list  | Feature columns to drop permanently
-    split:                    #   | dict  | Arguments for splitting the data into train and test sets
-      train: < 2020           #   | str   | Pandas.query compatible string to select the train set via df.query("index [this str]")
-      test: => 2020           #   | str   | Pandas.query compatible string to select the test set via df.query("index [this str]")
   subselect:                  #   | dict  | Options for the `subselect` module
     enabled: true             # ! | bool  | Enables/disables this module in a pipeline execution
+    cores: ${.cores}          #   | int   | Number of cores to use for the extract module
     file: ${.preprocess.file} # ! | str   | Path to an H5 file to write to
-    cores: ${.cores}
+    split_date: \             #   | str   | Split date to use if not in interactive mode
+    interactive: true         #   | bool  | Enables interactive mode for selecting a split date to use
+    metadata: metadata.pkl    # ! | str   | Path to a .pkl file to handle classification metadata (not used in regression)
   model:                      #   | dict  | Options for the `model` module
     enabled: true             # ! | bool  | Enables/disables this module in a pipeline execution
     type: regression          # ! | str   | Defines what kind of model this data would use. This influences many functions of TimeFED
-    # output: ./timefed_model/  # ! | str   | Output directory to write TimeFED modeling products to. Will attempt to create the directory if it does not exist
-    load: false               #   | bool  | Enables loading a present model from the output directory instead of creating a new one
-    metadata: metadata.pkl    # ! | str   | Path to a .pkl file to handle classification metadata (not used in regression)
-    target: \                 # ! | str   | Name of the target variable
-    # fit: true                 #   | bool  | Enables calling model.fit() on the training dataset
-    # scores:                   #   | dict  | Options for controlling scoring calculations
-      # train: false            #   | bool  | Enables calculating scores on the training dataset
-      # test: true              #   | bool  | Enables calculating scores on the testing dataset
+    file: ${.preprocess.file} # ! | str   | Path containing the train and set sets (under keys select/[train,test]) (pandas h5 format)
+    model:                    #   | dict  | Options for controlling the model creation
+      file: null              #   | str   | Path to a model pickle file. If this file does not exists, this will be the path to write to if output.model is enabled
+      overwrite: true         #   | bool  | If a model file already exists, this enables overwriting that file
+      fit: true               #   | bool  | Enables calling model.fit() on the training dataset
+    output:                   #   | dict  | Options for enabling/disabling various outputs
+      model: true             #   | bool  | Enables saving the model
+      predicts: predicts.h5   #   | str   | Path to write predict values to (pandas h5 format)
+      scores: scores.h5       #   | str   | Path to write scores to (dict in pickle format)
+    train_scores: false       #   | bool  | Perform scoring on the train set
 
+# Usage: python pipeline.py -c gen.yml -p "generated<-mms1"
 mms1:
   base: /Users/jamesmo/projects/timefed/TimeFED/timefed/local/mms
   data: /Users/jamesmo/projects/timefed/TimeFED/timefed/local/data
@@ -90,7 +88,7 @@ mms1:
     file: ${.base}/mms1.log
     mode: append
   preprocess:
-    enabled: true
+    enabled: false
     file: ${.base}/mms1.h5
     tracks: ${.data}/v4.MMS.tracks.h5
     drs: ${.data}/v3.drs.h5
@@ -105,37 +103,35 @@ mms1:
         - CARRIER_SYSTEM_NOISE_TEMP
         - AGC_VOLTAGE
     subsample:
-      pos_limit: 100
+      pos_limit: 200
       neg_ratio: 1
   extract:
-    enabled: true
+    enabled: false
     roll:
-      window: 30 min
+      window: 25 min
       frequency: null
     columns:
       - diff_CARRIER_SYSTEM_NOISE_TEMP
       - diff_AGC_VOLTAGE
-  selfeatures:
-    enabled: false
   subselect:
-    enabled: true
+    enabled: false
     interactive: true
     file: ${.preprocess.file}
     metadata: ${.base}/mms1.metadata.pkl
+    features: .*(CARRIER_SYSTEM_NOISE_TEMP|AGC_VOLTAGE).*
   model:
     enabled: true
     target: Label
     type: classification
     file: ${.preprocess.file}
     model:
-        overwrite: true
-        file: ${.base}/mms1.model.pkl
+      file: ${.base}/mms1.model.pkl
     output:
-        model: true
-        scores: ${.base}/mms1.scores.pkl
-        predicts: ${.base}/mms1.predicts.h5
-    train_scores: false
+      model: true
+      scores: ${.base}/mms1.scores.pkl
+      predicts: ${.base}/mms1.predicts.h5
 
+# Reduces the verbosity of the terminal log but the file logs will still be default (debug)
 quiet:
   log:
     terminal: INFO

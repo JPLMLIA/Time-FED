@@ -347,8 +347,35 @@ def main():
     else:
         Logger.debug(f'Split date selected: {date}')
 
+        # Subselect features to process on
+        if (features := Config.subselect.features):
+            if isinstance(features, list):
+                copy = data[features]
+            elif isinstance(features, str):
+                copy = data.filter(regex=features)
+            else:
+                Logger.error(f'Features provided cannot be interpreted as either a list or a regex string: {features}')
+
+            if copy.empty:
+                Logger.error('Feature subselection returned empty')
+                return
+
+            # Add target back in
+            copy[Config.model.target] = data[Config.model.target]
+
+            # Track the dropped columns so they can be saved elsewhere
+            dropped = set(data) - set(copy)
+
+            # Override and set as the data to train/test and select on
+            data = copy
+
         train = data.query('index <  @date')
         test  = data.query('index >= @date')
+
+        # TODO: Implement correctly
+        # if Config.subselect.save_dropped:
+        #     train.to_hdf(Config.subselect.file, 'select/train')
+        #     test .to_hdf(Config.subselect.file, 'select/test')
 
         Logger.debug(f'Train shape: {train.shape} ({train.shape[0]/data.shape[0]*100:.2f}%)')
         Logger.debug(f'Test  shape: {test.shape} ({test.shape[0]/data.shape[0]*100:.2f}%)')

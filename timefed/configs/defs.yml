@@ -56,7 +56,7 @@
   .kind:
     dtype: str
     sdesc: Which preprocess module to use
-    default: gnss
+    default: dsn
     required: True
     checks:
       - oneof:
@@ -143,7 +143,7 @@
   .file:
     dtype: str
     sdesc: Path to an H5 file to write to
-    default: preprocess.h5
+    default: ${.preprocess.file}
     required: True
   .multi:
     dtype: null

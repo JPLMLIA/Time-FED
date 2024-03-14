@@ -62,13 +62,14 @@ def subsample(df):
             count = int(pos.shape[0] * config.pos_limit)
 
         # Randomly select from the available tracks
+        count = min(count, pos.index.size)
         pos_tracks = np.random.choice(pos.index, count, replace=False)
         Logger.info(f'Randomly selecting {count}/{pos.shape[0]} ({count/pos.shape[0]*100:.2f}%) positive tracks')
 
     # Subsample the negative tracks using a ratio to the number of positive
     neg_tracks = neg.index
     if config.neg_ratio:
-        ratio = int(len(pos_tracks) * config.neg_ratio)
+        ratio = min(neg.index.size, int(len(pos_tracks) * config.neg_ratio))
         neg_tracks = np.random.choice(neg.index, ratio, replace=False)
         Logger.info(f'Randomly selecting {ratio}/{neg.shape[0]} ({ratio/neg.shape[0]*100:.2f}%) negative tracks')
 
@@ -82,6 +83,7 @@ def subsample(df):
             count = int(neg.shape[0] * config.neg_limit)
 
         # Randomly select from the available tracks
+        count = min(count, neg.index.size)
         neg_tracks = np.random.choice(neg.index, count, replace=False)
         Logger.info(f'Randomly selecting {count}/{neg.shape[0]} ({count/neg.shape[0]*100:.2f}%) negative tracks')
 

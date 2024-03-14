@@ -119,10 +119,10 @@ def main(config, patch, defs, print):
         handlers = handlers
     )
 
-    # if Config.validate():
-    pipeline()
-    # else:
-    #     Logger.error('Please correct any Configuration errors before proceeding')
+    if Config.validate():
+        pipeline()
+    else:
+        Logger.error('Please correct any Configuration errors before proceeding')
 
 
 @cli.command(name='generate')
