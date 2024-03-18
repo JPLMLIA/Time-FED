@@ -3,6 +3,7 @@ import logging
 import numpy as np
 import os
 import pandas as pd
+from pathlib import Path
 
 from mlky import (
     Config,
@@ -27,7 +28,7 @@ from sklearn.metrics import (
     r2_score
 )
 
-from timefed import utils
+from timefed.utils import utils
 from timefed.utils.plots import importances
 
 Logger = logging.getLogger('timefed/model.py')
@@ -64,7 +65,7 @@ def class_score(model, data, name, multiclass_scores=False):
     preds    = truth.copy()
     preds[:] = model.predict(data)
 
-    scores = Section({
+    scores = Sect({
         'accuracy'        : accuracy_score(truth, preds),
         'precision'       : precision_score(truth, preds),
         'recall'          : recall_score(truth, preds),
