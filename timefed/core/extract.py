@@ -1,9 +1,11 @@
 import argparse
-import h5py
 import logging
+import re
+
+import h5py
 import numpy  as np
 import pandas as pd
-import re
+import ray
 import tsfresh
 
 from mlky import (
@@ -12,16 +14,22 @@ from mlky import (
 )
 from tqdm import tqdm
 from tqdm.contrib.logging import logging_redirect_tqdm
-
 from tsfresh.feature_extraction import ComprehensiveFCParameters
 
 from timefed.utils import utils
+
 
 Logger = logging.getLogger('timefed/core/extract.py')
 
 
 def report(stats):
     """
+    Reports the statistics gathered by the roll function
+
+    Parameters
+    ----------
+    stats: mlky.Sect
+        Sect object produced by roll()
     """
     Logger.info('Roll stats:')
     Logger.info(f'- Frequency of the data is: {stats.frequency}')
@@ -96,7 +104,7 @@ def roll(df, window, frequency, step=1, required=None, optional=[], as_frames=Fa
 
     if frequency is None:
         frequency = freq.index[0]
-        Logger.info(f'Frequency not provided, assuming the most common frequency difference is the expected: {frequency}')
+        Logger.info(f'Frequency not provided, selecting the most common frequency difference: {frequency}')
 
     frequency = stats.frequency = pd.Timedelta(frequency)
 
@@ -182,26 +190,26 @@ def roll(df, window, frequency, step=1, required=None, optional=[], as_frames=Fa
     return windows, stats
 
 
-def get_features(whitelist=None, blacklist=None, prompt=False):
+def get_features(whitelist=None, blacklist=None, interactive=False):
     """
-    Retrieves the dictionary of tsfresh features to use and their arguments.
-    Can be used in an interactive mode or Configured via the Configuration file.
+    Retrieves the dictionary of tsfresh features to use and their arguments. Can be
+    used in an interactive mode or configured via the configuration file.
 
     Parameters
     ----------
-    whitelist : list
+    whitelist : list, default=None
         List of feature names to only include for calculations
-    blacklist : list
+    blacklist : list, default=None
         List of feature names to exclude from calculations
-    prompt : bool
-        Enables interactive mode for this function, printing the features list
-        to screen and prompting for a list to use for calculations
+    interactive : bool, default=False
+        Enables interactive mode for this function, printing the features list to
+        screen and prompting for a list to use for calculations
 
     Returns
     -------
-    features : dictionary
-        Dictionary of {feature_name: feature_arguments} for tsfresh to use
-        during feature extraction
+    features : dict
+        Dictionary of {feature_name: feature_arguments} for tsfresh to use during
+        feature extraction
     """
     features = ComprehensiveFCParameters()
 
@@ -212,7 +220,7 @@ def get_features(whitelist=None, blacklist=None, prompt=False):
         features = {key: value for key, value in features.items() if key not in blacklist}
 
     # Prompt the user with a list of available features
-    if prompt:
+    if interactive:
         retain = list(features.keys())
         Logger.info('Current list of features to be used in feature extraction:')
 
@@ -230,7 +238,19 @@ def get_features(whitelist=None, blacklist=None, prompt=False):
 
 def verify(df):
     """
-    Verifies
+    Verifies an extracted DataFrame is valid for the next steps of TimeFED by checking:
+    - If any column has NaNs, remove it
+    - If any column has Infs, remove it
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        DataFrame to verify on
+
+    Returns
+    -------
+    df : pd.DataFrame
+        Same input DataFrame with invalid columns removed
     """
     # Drop columns that have any NaNs
     nans = df.isna().sum()
@@ -257,6 +277,7 @@ def verify(df):
     return df
 
 
+@ray.remote
 def extract(df, slice=None, columns=[], target=None, features=None, index=-1, classification=False):
     """
     Prepares a window of data and performs tsfresh feature extraction
@@ -289,10 +310,10 @@ def extract(df, slice=None, columns=[], target=None, features=None, index=-1, cl
     always be 1 target column, and there can be N>0 columns for data.
     """
     # TODO: https://stackoverflow.com/questions/20625582/how-to-deal-with-settingwithcopywarning-in-pandas
-    pd.options.mode.chained_assignment = None
+    # pd.options.mode.chained_assignment = None
 
     if slice:
-        df = df.iloc[slice, :]
+        df = df.iloc[slice, :].copy()
 
     if not columns:
         columns = list(df.columns)
@@ -306,7 +327,7 @@ def extract(df, slice=None, columns=[], target=None, features=None, index=-1, cl
     df['_TIME'] = df.index
 
     try:
-        extracted   = tsfresh.extract_features(
+        extracted = tsfresh.extract_features(
             df[columns],
             column_id    = '_ID',
             column_sort  = '_TIME',
@@ -321,12 +342,13 @@ def extract(df, slice=None, columns=[], target=None, features=None, index=-1, cl
         return str(e)
 
     # Imitate the original index
-    extracted.index = [df.index[index]]
+    idx = df.index[index]
+    extracted.index = [idx]
 
     # Add the excluded columns back in
     excluded = list(set(df.columns) - set(columns))
     if excluded:
-        extracted[excluded] = df[excluded].iloc[index]
+        extracted.loc[idx, excluded] = df[excluded].iloc[index]
 
     # If this is a classification problem, modify the target
     if classification and df[target].any():
@@ -335,175 +357,240 @@ def extract(df, slice=None, columns=[], target=None, features=None, index=-1, cl
     return extracted
 
 
-def process(df, features=None):
+@ray.remote
+def rotate(df, slice=None, index=-1, **kwargs):
     """
-    Uses Ray as a multiprocessing backend to quickly process
-    many windows through extract. This is an optional function
-    and may be used as a guideline to writing custom scripts
-    leveraging the TimeFED API.
+    Rotates a DataFrame by stacking columns and converting to a single row DataFrame.
+    Sets the value of the last index as the index of the rotated DataFrame.
 
     Parameters
     ----------
-    df: pandas.core.DataFrame
-        A single input of data to create windows on and process through extraction
-    features: dict, default=None
-        Dictionary subset of tsfresh.feature_extraction.ComprehensiveFCParameters
-        Defaults to None which uses the default ComprehensiveFCParameters (all features, default parameters)
+    df : pandas.DataFrame
+        Input DataFrame to be rotated.
+    slice : slice, default=None
+        If given, uses this slice on df as the window.
+    index : int, default=-1
+        Index set the window at. Defaults to -1 which is the last index of the window.
+    **kwargs
+        Ignore any additional key-word arguments to enable compatibility with other
+        extraction functions that may have alternative parameters
 
     Returns
     -------
-    bool
-        Whether the function finished correctly
+    pandas.DataFrame
+        Rotated DataFrame with a single row.
+
+    Example
+    -------
+    >>> import pandas as pd
+    >>> data = {'A': [1, 2, 3], 'B': [4, 5, 6], 'C': [7, 8, 9]}
+    >>> df = pd.DataFrame(data, index=[-1, -2, -3])
+    >>> rotated_df = rotate(df)
+    >>> print(rotated_df)
+        A_0  A_1  A_2  B_0  B_1  B_2  C_0  C_1  C_2
+    -3    1    2    3    4    5    6    7    8    9
     """
-    import ray
+    if slice:
+        df = df.iloc[slice, :].copy()
 
-    # Only initialize if it's provided by the Config
-    if Config.extract.ray:
-        ray.init(**Config.extract.ray)
+    # Retrieve what will become the single index of this window
+    index = df.index[index]
 
-    windows, stats = roll(df,
-        window     = Config.extract.roll.window,
-        frequency  = Config.extract.roll.frequency,
-        step       = Config.extract.roll.step or 1,
-        required   = Config.extract.roll.required,
-        optional   = Config.extract.roll.optional,
-        as_frames  = False
-    )
+    # For each column, extract it and rename the index to "[column name]_[index position]"
+    hold = []
+    for col, data in df.items():
+        data.index = [f'{col}_{i}' for i in range(data.size)]
+        hold.append(data)
 
-    report(stats)
-
-    if stats.valid == 0:
-        Logger.error('No windows were accepted for this track of data. Nothing to do, returning.')
-        return
-
-    # Place constant params into shared memory
-    params = {
-        'df'            : ray.put(df),
-        'features'      : ray.put(features),
-        'target'        : ray.put(Config.model.get('target'   , None)),
-        'columns'       : ray.put(Config.extract.get('columns', []  )),
-        'index'         : ray.put(Config.extract.get('index'  , -1  )),
-        'classification': ray.put(Config.model.kind == 'classification'),
-    }
-    func = ray.remote(extract)
-    jobs = [func.remote(**params, slice=slice(*window)) for window in windows]
-
-    if Config.extract.flush:
-        Logger.debug(f'Window flushing enabled, will be written to: {Config.extract.file}')
-
-    errored  = Sect(count=0, reasons={})
-    extracts = []
-    for i in tqdm(range(len(windows)), desc='Processing Windows', position=0):
-        [done], running = ray.wait(jobs, num_returns=1)
-        jobs   = running
-        window = ray.get(done)
-
-        if isinstance(window, str):
-            errored.count += 1
-            if window not in errored.reasons:
-                errored.reasons[window] = 0
-            errored.reasons[window] += 1
-            continue
-
-        if Config.extract.flush:
-            window.to_hdf(Config.extract.file, f'extract/windows/w{i}')
-        else:
-            extracts.append(window)
-
-        del window, done
-
-    if errored:
-        Logger.warning(f'{errored.count} windows failed')
-        Logger.debug(f'Reasons:')
-        for reason, count in errored.reasons.items():
-            Logger.debug(f'- {count} = {reason}')
-
-        if errored.count == len(windows):
-            Logger.error('All windows failed, exiting')
-            return
-
-    if Config.extract.flush:
-        Logger.info('Loading windows into memory')
-        with h5py.File(Config.extract.file, 'r') as h5:
-            keys = list(h5['extract/windows'])
-        extracts = [pd.read_hdf(Config.extract.file, f'extract/windows/{key}') for key in keys]
-
-    Logger.info(f'Concatenating {len(extracts)} feature frames together')
-    df = pd.concat(extracts).sort_index()
-    df = verify(df)
+    # Concatenate the columns together and rotate
+    df = pd.concat(hold).to_frame().T
+    df.index = [index]
 
     return df
 
 
-@utils.timeit
-def main():
-    """
-    The main process of TrackWindow
-    """
-    if not Config.model.target:
-        Logger.warning(
-              'The target column is not defined. This script does not need a target, but subselect.py and model.py will. '
-            + 'If you plan to use those scripts, please define the target BEFORE executing extract.py.'
-        )
+class Extract:
+    def __init__(self):
+        """
+        """
+        self.C = Config.extract
+        self.model_kind   = Config.model.kind
+        self.model_target = Config.model.target or None
 
-    # Retrieve features to use
-    features = get_features(
-        whitelist = Config.extract.features.whitelist,
-        blacklist = Config.extract.features.blacklist,
-        prompt    = Config.extract.features.interactive
-    )
+        if self.C.ray:
+            ray.init(**self.C.ray)
 
-    # If `multi` is provided, process only these DataFrames
-    if Config.extract.multi:
-        keys = Config.extract.multi
+        # Determine what keys from the H5 file to load
+        match (keys := self.C.multi):
+            # Retrieve all subkeys from this group
+            case str():
+                with h5py.File(Config.extract.file, 'r') as h5:
+                    keys = [f'{keys}/{key}' for key in h5[keys].keys()]
 
-        # Select all subkeys from this str key
-        if isinstance(keys, str):
-            with h5py.File(Config.extract.file, 'r') as h5:
-                keys = [f'{keys}/{key}' for key in h5[keys].keys()]
+                self.multi = True
+                self.metadata = {}
 
-        metadata = {}
-        for key in tqdm(keys, position=1, desc='Processing Streams'):
-            df = pd.read_hdf(Config.extract.file, key)
-            df = process(df, features)
+            # Process these specific keys
+            case list():
+                self.multi = True
+                self.metadata = {}
 
-            if df is None:
-                Logger.error(f'Windows for key {key} returned None')
+            # Single track case
+            case _:
+                keys = ['preprocess/complete']
+                self.multi = False
+                self.metadata = None
+
+        # Select a window processing method
+        match self.C.method:
+            case "tsfresh":
+                process = extract
+                params  = {
+                    'features'      : ray.put(get_features(**self.C.features)),
+                    'target'        : ray.put(self.model_target),
+                    'columns'       : ray.put(self.C.get('columns', []  )),
+                    'index'         : ray.put(self.C.get('index'  , -1  )),
+                    'classification': ray.put(self.model_kind == 'classification')
+                }
+                columns = []
+            case "rotate":
+                process = rotate
+                params  = {
+                    'index': ray.put(self.C.get('index'  , -1))
+                }
+                columns = self.C.columns
+            case invalid:
+                raise AttributeError(f"Invalid method chosen: {invalid}")
+
+        # Perform the processing via Ray
+        for key in tqdm(keys, position=1, desc='Processing Frames'):
+            df = self.process(key, process, params, columns)
+
+        # Save the metadata, if there was any
+        if self.model_kind == 'classification' and self.multi:
+            if (file := Config.subselect.metadata):
+                if self.metadata:
+                    utils.save_pkl(file, self.metadata)
+                else:
+                    Logger.error('No metadata produced for a multi-track classification case, this may have consequences down the line')
+            else:
+                Logger.error('Classification runs must define Config.subselect.metadata')
+
+
+    def process(self, key, func, params, columns=[]):
+        """
+        """
+        df = pd.read_hdf(self.C.file, key)
+
+        if columns:
+            df = df[self.C.columns]
+
+        windows, stats = roll(df, as_frames=False, **self.C.roll)
+        report(stats)
+
+        if stats.valid == 0:
+            Logger.error('No windows were accepted for this track of data. Nothing to do, returning nothing')
+            return
+
+        if self.C.flush:
+            Logger.debug(f'Window flushing enabled, will be written to: {self.C.file}[extract/windows/w[i]]')
+
+        # Place constant params into shared memory
+        df_id = ray.put(df)
+        jobs  = [
+            func.remote(df=df_id, slice=slice(*window), **params)
+            for window in windows
+        ]
+
+        # Make sure any previous runs' data aren't still lingering
+        self.clear_flush()
+
+        errored = Sect(count=0, reasons={})
+        returns = []
+        for i in tqdm(range(len(windows)), desc='Processing Windows', position=0):
+            [done], jobs = ray.wait(jobs, num_returns=1)
+            window = ray.get(done)
+
+            # Track reasons for errors
+            if isinstance(window, str):
+                errored.count += 1
+
+                if window not in errored.reasons:
+                    errored.reasons[window] = 0
+
+                errored.reasons[window] += 1
                 continue
 
-            # Metadata information is used by subselect.py for the multitrack case
-            counts = {}
-            if Config.model.kind == 'classification':
-                counts = df[Config.model.target].value_counts()
+            # Flush to disk, if set
+            if self.C.flush:
+                window.to_hdf(self.C.file, key=f'extract/windows/w{i}')
+            else:
+                returns.append(window)
 
-            metadata[key] = {
+            del window, done
+
+        # Delete from ray memory
+        del df, df_id
+
+        if errored:
+            Logger.warning(f'{errored.count} windows failed')
+
+            Logger.debug(f'Reasons:')
+            for reason, count in errored.reasons.items():
+                Logger.debug(f'- {count} = {reason}')
+
+            if errored.count == len(windows):
+                Logger.error('All windows failed, returning nothing')
+                return
+
+        if self.C.flush:
+            Logger.info('Loading windows into memory')
+            with h5py.File(Config.extract.file, 'r') as h5:
+                keys = list(h5['extract/windows'])
+
+            # Pull into memory
+            returns = [pd.read_hdf(Config.extract.file, f'extract/windows/{key}') for key in keys]
+
+        Logger.info(f'Concatenating {len(returns)} window frames together')
+        if returns:
+            df = pd.concat(returns).sort_index()
+            df = verify(df)
+        else:
+            Logger.error('No window frames were gathered, returning nothing')
+            return
+
+        if self.multi:
+            counts = {}
+            if self.model_kind == 'classification':
+                counts = df[self.model_target].value_counts()
+
+            self.metadata[key] = {
                 'start': df.index[0],
                 'end'  : df.index[-1],
                 'neg'  : counts.get(0, 0),
                 'pos'  : counts.get(1, 0)
             }
 
-            df.to_hdf(Config.extract.file, f'windows/{key}')
+            df.to_hdf(self.C.file, key=f'extract/tracks/{key}')
+        else:
+            Logger.info('Saving to key extract/complete')
+            df.to_hdf(self.C.file, key=f'extract/complete')
 
-        if Config.model.kind == 'classification':
-            if not Config.subselect.metadata:
-                Logger.error('Classification runs must define Config.subselect.metadata')
-                return
-            utils.save_pkl(Config.subselect.metadata, metadata)
 
-    else:
-        Logger.debug(f'Loading {Config.extract.file}[preprocess/complete]')
-        df = pd.read_hdf(Config.extract.file, 'preprocess/complete')
+    def clear_flush(self):
+        """
+        Clears the [extract/windows] key from the H5 file
+        """
+        with h5py.File(self.C.file, 'a') as h5:
+            if 'extract/windows' in h5:
+                del h5['extract/windows']
 
-        Logger.debug('Beginning processing')
-        df = process(df, features)
 
-        if df is None:
-            return
-
-        df.to_hdf(Config.extract.file, 'extract/complete')
-
-    return True
+@utils.timeit
+def main():
+    """
+    """
+    Extract()
 
 
 if __name__ == '__main__':
@@ -523,11 +610,8 @@ if __name__ == '__main__':
 
     try:
         with logging_redirect_tqdm():
-            code = main()
+            main()
 
-        if code is True:
-            Logger.info('Finished successfully')
-        else:
-            Logger.error(f'Failed to complete with status code: {code}')
+        Logger.info('Finished')
     except Exception as e:
         Logger.exception('Failed to complete due to an exception')

@@ -106,7 +106,7 @@ mms1:
       pos_limit: 200
       neg_ratio: 1
   extract:
-    enabled: false
+    enabled: true
     roll:
       window: 25 min
       frequency: null
@@ -120,7 +120,7 @@ mms1:
     metadata: ${.base}/mms1.metadata.pkl
     features: .*(CARRIER_SYSTEM_NOISE_TEMP|AGC_VOLTAGE).*
   model:
-    enabled: true
+    enabled: false
     target: Label
     type: classification
     file: ${.preprocess.file}

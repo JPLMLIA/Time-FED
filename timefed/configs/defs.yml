@@ -140,6 +140,15 @@
     dtype: int
     sdesc: Number of cores to use for the extract module
     default: ${.cores}
+  .method:
+    dtype: str
+    sdesc: Window processing method
+    default: tsfresh
+    required: True
+    checks:
+      - oneof:
+        - tsfresh
+        - rotate
   .file:
     dtype: str
     sdesc: Path to an H5 file to write to
