@@ -107,6 +107,7 @@ mms1:
       neg_ratio: 1
   extract:
     enabled: true
+    method: rotate
     roll:
       window: 25 min
       frequency: null

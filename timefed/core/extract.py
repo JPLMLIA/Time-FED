@@ -358,7 +358,7 @@ def extract(df, slice=None, columns=[], target=None, features=None, index=-1, cl
 
 
 @ray.remote
-def rotate(df, slice=None, index=-1, **kwargs):
+def rotate(df, slice=None, columns=[], index=-1, **kwargs):
     """
     Rotates a DataFrame by stacking columns and converting to a single row DataFrame.
     Sets the value of the last index as the index of the rotated DataFrame.
@@ -369,6 +369,8 @@ def rotate(df, slice=None, index=-1, **kwargs):
         Input DataFrame to be rotated.
     slice : slice, default=None
         If given, uses this slice on df as the window.
+    columns: list, default=[]
+        Columns to rotate, all others will be re-added as the value from the specified index
     index : int, default=-1
         Index set the window at. Defaults to -1 which is the last index of the window.
     **kwargs
@@ -393,20 +395,28 @@ def rotate(df, slice=None, index=-1, **kwargs):
     if slice:
         df = df.iloc[slice, :].copy()
 
+    if not columns:
+        columns = list(df.columns)
+
     # Retrieve what will become the single index of this window
-    index = df.index[index]
+    idx = df.index[index]
 
     # For each column, extract it and rename the index to "[column name]_[index position]"
     hold = []
-    for col, data in df.items():
+    for col, data in df[columns].items():
         data.index = [f'{col}_{i}' for i in range(data.size)]
         hold.append(data)
 
     # Concatenate the columns together and rotate
-    df = pd.concat(hold).to_frame().T
-    df.index = [index]
+    rotated = pd.concat(hold).to_frame().T
+    rotated.index = [idx]
 
-    return df
+    # Add the excluded columns back in
+    excluded = list(set(df.columns) - set(columns))
+    if excluded:
+        rotated.loc[idx, excluded] = df[excluded].iloc[index]
+
+    return rotated
 
 
 class Extract:
@@ -448,23 +458,22 @@ class Extract:
                 params  = {
                     'features'      : ray.put(get_features(**self.C.features)),
                     'target'        : ray.put(self.model_target),
-                    'columns'       : ray.put(self.C.get('columns', []  )),
-                    'index'         : ray.put(self.C.get('index'  , -1  )),
+                    'columns'       : ray.put(self.C.get('columns', [])),
+                    'index'         : ray.put(self.C.get('index'  , -1)),
                     'classification': ray.put(self.model_kind == 'classification')
                 }
-                columns = []
             case "rotate":
                 process = rotate
                 params  = {
-                    'index': ray.put(self.C.get('index'  , -1))
+                    'columns': ray.put(self.C.get('columns', [])),
+                    'index'  : ray.put(self.C.get('index'  , -1)),
                 }
-                columns = self.C.columns
             case invalid:
                 raise AttributeError(f"Invalid method chosen: {invalid}")
 
         # Perform the processing via Ray
         for key in tqdm(keys, position=1, desc='Processing Frames'):
-            df = self.process(key, process, params, columns)
+            df = self.process(key, process, params)
 
         # Save the metadata, if there was any
         if self.model_kind == 'classification' and self.multi:
@@ -477,13 +486,10 @@ class Extract:
                 Logger.error('Classification runs must define Config.subselect.metadata')
 
 
-    def process(self, key, func, params, columns=[]):
+    def process(self, key, func, params):
         """
         """
         df = pd.read_hdf(self.C.file, key)
-
-        if columns:
-            df = df[self.C.columns]
 
         windows, stats = roll(df, as_frames=False, **self.C.roll)
         report(stats)
