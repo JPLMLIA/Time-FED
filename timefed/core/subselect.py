@@ -186,8 +186,8 @@ def _split_single_classification(data: pd.DataFrame, n: int = 10, target: str = 
     """
     # [S]plit [F]rame, DataFrame to store possible splits
     sf = pd.DataFrame(columns=pd.MultiIndex.from_product([['Train', 'Test'], ['Total', 'Percent'], [0, 1]]), index=range(n-1))
-    sf['Train% / Test%'] = np.nan
-    sf['Split Date']     = np.nan
+    sf['Train% / Test%'] = ''
+    sf['Split Date']     = ''
 
     total  = data.shape[0]
     labels = data[target].value_counts()
@@ -260,8 +260,8 @@ def _split_single_regression(data: pd.DataFrame, n: int = 10, **kwargs) -> pd.Da
     """
     # [S]plit [F]rame, DataFrame to store possible splits
     sf = pd.DataFrame(columns=['Train', 'Test'], index=range(n-1))
-    sf['Train% / Test%'] = np.nan
-    sf['Split Date']     = np.nan
+    sf['Train% / Test%'] = ''
+    sf['Split Date']     = ''
 
     total  = data.shape[0]
     groups = [int(i*total/n) for i in range(1, n)]
@@ -411,6 +411,8 @@ def main():
     if Config.subselect.interactive:
         date = interact(data)
     date = pd.Timestamp(date)
+
+    Logger.info(f'Using split date: {date}')
 
     if Config.subselect.input.multi:
         Logger.info('Loading streams into memory')

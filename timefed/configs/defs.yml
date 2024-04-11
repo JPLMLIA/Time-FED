@@ -224,7 +224,6 @@
     default: ${.preprocess.file}
     required: True
   .split_date:
-    dtype: str
     sdesc: Split date to use if not in interactive mode
   .interactive:
     dtype: bool

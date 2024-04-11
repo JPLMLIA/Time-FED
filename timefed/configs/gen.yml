@@ -82,8 +82,8 @@ generated:                    # K | dtype | Short description
 
 # Usage: python pipeline.py -c gen.yml -p "generated<-mms"
 base:
-  base: /Users/jamesmo/projects/timefed/TimeFED/timefed/local/mms
-  data: /Users/jamesmo/projects/timefed/TimeFED/timefed/local/data
+  base: \
+  data: \
   log:
     file: ${.base}/${.name}.log
     mode: append
@@ -129,6 +129,25 @@ base:
       scores: ${.base}/${.name}.scores.pkl
       predicts: ${.base}/${.name}.predicts.h5
 
+test:
+  name: test
+  base: /Users/jamesmo/projects/timefed/TimeFED/timefed/local/mms
+  data: /Users/jamesmo/projects/timefed/TimeFED/timefed/local/data
+  preprocess:
+    enabled: false
+    only:
+      missions:
+        - MMS1
+  extract:
+    enabled: false
+    roll:
+      window: 25 min
+  subselect:
+    interactive: true
+    split_date: 2018-08-14
+  model:
+    enabled: false
+
 mms:
   name: mms
   preprocess:
@@ -138,6 +157,9 @@ mms:
         - MMS2
         - MMS3
         - MMS4
+  subselect:
+    interactive: false
+    split_date: 2018-10-16
 
 mms1:
   name: mms1
@@ -145,6 +167,9 @@ mms1:
     only:
       missions:
         - MMS1
+  subselect:
+    interactive: false
+    split_date: 2018-10-16
 
 # Reduces the verbosity of the terminal log but the file logs will still be default (debug)
 quiet:
