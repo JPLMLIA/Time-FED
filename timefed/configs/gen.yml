@@ -80,21 +80,19 @@ generated:                    # K | dtype | Short description
       scores: scores.h5       #   | str   | Path to write scores to (dict in pickle format)
     train_scores: false       #   | bool  | Perform scoring on the train set
 
-# Usage: python pipeline.py -c gen.yml -p "generated<-mms1"
-mms1:
+# Usage: python pipeline.py -c gen.yml -p "generated<-mms"
+base:
   base: /Users/jamesmo/projects/timefed/TimeFED/timefed/local/mms
   data: /Users/jamesmo/projects/timefed/TimeFED/timefed/local/data
   log:
-    file: ${.base}/mms1.log
+    file: ${.base}/${.name}.log
     mode: append
   preprocess:
-    enabled: false
-    file: ${.base}/mms1.h5
+    enabled: true
+    file: ${.base}/${.name}.h5
     tracks: ${.data}/v4.MMS.tracks.h5
     drs: ${.data}/v3.drs.h5
     only:
-      missions:
-        - MMS1
       drs:
         - RFI
         - SC
@@ -103,36 +101,59 @@ mms1:
         - CARRIER_SYSTEM_NOISE_TEMP
         - AGC_VOLTAGE
     subsample:
-      pos_limit: 200
       neg_ratio: 1
   extract:
     enabled: true
-    method: rotate
+    method: tsfresh
     roll:
-      window: 25 min
+      window: 5 min
       frequency: null
     columns:
       - diff_CARRIER_SYSTEM_NOISE_TEMP
       - diff_AGC_VOLTAGE
   subselect:
-    enabled: false
+    enabled: true
     interactive: true
     file: ${.preprocess.file}
-    metadata: ${.base}/mms1.metadata.pkl
+    metadata: ${.base}/${.name}.metadata.pkl
     features: .*(CARRIER_SYSTEM_NOISE_TEMP|AGC_VOLTAGE).*
   model:
-    enabled: false
+    enabled: true
     target: Label
     type: classification
     file: ${.preprocess.file}
     model:
-      file: ${.base}/mms1.model.pkl
+      file: ${.base}/${.name}.model.pkl
     output:
       model: true
-      scores: ${.base}/mms1.scores.pkl
-      predicts: ${.base}/mms1.predicts.h5
+      scores: ${.base}/${.name}.scores.pkl
+      predicts: ${.base}/${.name}.predicts.h5
+
+mms:
+  name: mms
+  preprocess:
+    only:
+      missions:
+        - MMS1
+        - MMS2
+        - MMS3
+        - MMS4
+
+mms1:
+  name: mms1
+  preprocess:
+    only:
+      missions:
+        - MMS1
 
 # Reduces the verbosity of the terminal log but the file logs will still be default (debug)
 quiet:
   log:
     terminal: INFO
+
+gattaca:
+  base: /scratch/sudsaq/timefed/jobs/${.name}/output/
+  data: /scratch/sudsaq/timefed/data
+  preprocess:
+    tracks: ${.data}/mms.tracks.h5
+    drs: ${.data}/mms.drs.h5
