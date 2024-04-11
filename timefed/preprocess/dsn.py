@@ -206,10 +206,10 @@ def add_label(df, drs):
     df['Label'] = -1
 
     # Set rows between B/EoT as 0
-    df.Label.loc[df.query('BEGINNING_OF_TRACK_TIME_DT <= RECEIVED_AT_TS <= END_OF_TRACK_TIME_DT').index] = 0
+    df.loc[df.query('BEGINNING_OF_TRACK_TIME_DT <= RECEIVED_AT_TS <= END_OF_TRACK_TIME_DT').index, 'Label'] = 0
 
     # Exclude bad frames from the negative class
-    df.Label.loc[df.query('TLM_BAD_FRAME_COUNT > 0').index] = -1
+    df.loc[df.query('TLM_BAD_FRAME_COUNT > 0').index, 'Label'] = -1
 
     # Verify the bad frames were removed correctly
     assert df.query('Label == 0 and TLM_BAD_FRAME_COUNT > 0').empty, 'Failed to remove bad frames from negative class'
@@ -220,7 +220,7 @@ def add_label(df, drs):
         incident = *timestamp_to_datetime(lookup.INCIDENT_START_TIME_DT), *timestamp_to_datetime(lookup.INCIDENT_END_TIME_DT)
 
         # Set the incident as positive
-        df.Label.loc[df.query('@incident[0] <= RECEIVED_AT_TS <= @incident[1]').index] = 1
+        df.loc[df.query('@incident[0] <= RECEIVED_AT_TS <= @incident[1]').index, 'Label'] = 1
 
     return df
 
@@ -386,7 +386,7 @@ def preprocess(mission, keys):
                 df.index.name = 'datetime'
 
                 # Save to output and update TQDM
-                df.to_hdf(Config.preprocess.file, f'preprocess/{subkey}')
+                df.to_hdf(Config.preprocess.file, key=f'preprocess/{subkey}')
 
                 dfs.append(df)
 
@@ -401,7 +401,7 @@ def preprocess(mission, keys):
         Logger.info('Subsampling tracks')
         df = subsample(df)
 
-    df.to_hdf(Config.preprocess.file, f'preprocess/{mission}/complete')
+    df.to_hdf(Config.preprocess.file, key=f'preprocess/{mission}/complete')
 
     return True
 
@@ -448,7 +448,7 @@ def main():
                 pd.read_hdf(Config.preprocess.file, f'preprocess/{mission}/complete')
             )
         df = pd.concat(data)
-        df.to_hdf(Config.preprocess.file, 'preprocess/complete')
+        df.to_hdf(Config.preprocess.file, key='preprocess/complete')
 
     return True
 

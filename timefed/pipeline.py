@@ -6,14 +6,13 @@ import click
 
 from mlky import Config
 
-# Disable converting lists to dicts and some mlky warnings
-Config._opts.convertListTypes = False
-Config.Null._warn = False
+from timefed import config_options
+
 
 Logger = logging.getLogger('timefed/pipeline.py')
 
 
-def pipeline():
+def main():
     """\
     Executes the TimeFED pipeline
     """
@@ -59,32 +58,9 @@ def pipeline():
     return True
 
 
-@click.group(name='timefed')
-def cli():
-    """\
-    TimeFED is a machine learning system for Time series Forecasting, Evaluation and Deployment.
-    """
-    ...
-
-
-@cli.command(name='run')
-@click.option('-c', '--config',
-    help     = 'Configuration YAML',
-    required = True
-)
-@click.option('-p', '--patch',
-    help    = 'Sections to patch with',
-    default = 'generated'
-)
-@click.option('-d', '--defs',
-    help    = 'Definitions file',
-    default = 'configs/defs.yml'
-)
-@click.option('--print',
-    help    = 'Prints the Configuration to terminal',
-    is_flag = True
-)
-def main(config, patch, defs, print):
+@click.command(name='run')
+@config_options
+def run(config, patch, defs, print):
     """\
     Executes the TimeFED pipeline
     """
@@ -120,28 +96,10 @@ def main(config, patch, defs, print):
     )
 
     if Config.validate():
-        pipeline()
+        main()
     else:
         Logger.error('Please correct any Configuration errors before proceeding')
 
 
-@cli.command(name='generate')
-@click.option('-f', '--file',
-    help     = 'File to write the template to',
-    default  = 'timefed.template.yml'
-)
-@click.option('-d', '--defs',
-    help     = 'Definitions file',
-    default  = 'timefed.defs.yml'
-)
-def generate(file, defs):
-    """\
-    Generates a default configuration template using the definitions file
-    """
-    Config(data={}, defs=defs)
-    Config.generateTemplate(file=file)
-    click.echo(f'Wrote template Configuration to: {file}')
-
-
 if __name__ == '__main__':
-    cli()
+    run()

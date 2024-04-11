@@ -3,6 +3,8 @@ import logging
 import numpy  as np
 import pandas as pd
 
+from typing import Tuple
+
 from pathlib import Path
 
 from mlky    import Config
@@ -15,18 +17,35 @@ from timefed.utils        import utils
 Logger = logging.getLogger('timefed/core/subselect.py')
 
 
-def select(train, test, target='label', n_jobs=1):
+def select(train: pd.DataFrame, test: pd.DataFrame, target: str = 'label', n_jobs: int = 1) -> Tuple[pd.DataFrame, pd.DataFrame]:
     """
-    Selects relevant features from a tsfresh dataframe of features for a target
-    label
+    Uses tsfresh.select_features to select relevant features from the tsfresh feature
+    extraction. See for more:
+    https://tsfresh.readthedocs.io/en/latest/api/tsfresh.feature_selection.html#tsfresh.feature_selection.selection.select_features
 
     Parameters
     ----------
-
+    train : pd.DataFrame
+        DataFrame containing the training data.
+    test : pd.DataFrame
+        DataFrame containing the test data.
+    target : str, optional, default='label'
+        Name of the target column.
+    n_jobs : int, optional, default=1
+        Number of parallel jobs to run.
 
     Returns
     -------
+    Tuple[pd.DataFrame, pd.DataFrame]
+        A tuple containing the modified train and test DataFrames.
 
+    Notes
+    -----
+    The function selects features based on the training set and ensures that the same features
+    are kept in the test set as well.
+
+    Configuration Options:
+    - `chunksize`: Chunk size used for feature selection.
     """
     original = train.shape[1] - 1
 
@@ -50,17 +69,27 @@ def select(train, test, target='label', n_jobs=1):
 
     return train, test
 
-def _split_multi_classification(data, n=1, **kwargs):
+
+def split_multi_classification(data: dict, n: int = 1, **kwargs) -> pd.DataFrame:
     """
-    TODO
+    Creates a train/test split table for interactive use for multi track classification cases.
 
     Parameters
     ----------
-
+    data : dict
+        Dictionary containing information about the streams.
+    n : int, optional, default=1
+        Number of splits to create.
 
     Returns
     -------
+    pd.DataFrame
+        DataFrame containing the splits.
 
+    Notes
+    -----
+    This function splits the multi-classification dataset based on the unique edges of the streams.
+    It computes various statistics for each split regarding the distribution of the classes.
     """
     # Find the unique edges of the streams
     splits = set()
@@ -117,20 +146,43 @@ def _split_multi_classification(data, n=1, **kwargs):
 
     return sf
 
-def _split_single_classification(data, n=10, target='label', **kwargs):
+
+def _split_single_classification(data: pd.DataFrame, n: int = 10, target: str = 'label', **kwargs) -> pd.DataFrame:
     """
+    Creates a train/test split table for interactive use for single track classification cases.
+
     Parameters
     ----------
-    data: pandas.core.DataFrame
-        DataFrame to split
-    n: int
-        Number of splits to perform where step is 100/n
-    target: str
-        The column to use as the feature. Values are expected to be binary
+    data : pd.DataFrame
+        Input DataFrame to be split.
+    n : int, optional, default=10
+        Number of splits to create.
+    target : str, optional, default='label'
+        Name of the target column.
 
     Returns
     -------
+    pd.DataFrame
+        DataFrame containing the splits.
 
+    Notes
+    -----
+    This function splits the data into 'n' consecutive segments and computes various statistics
+    for each split regarding the distribution of the target variable.
+
+    Additional keyword arguments can be passed but are not used in this function.
+
+    Example
+    -------
+    >>> data = {
+    ...     'stream1': {'start': '2024-01-01', 'end': '2024-01-10', 'neg': 20, 'pos': 30},
+    ...     'stream2': {'start': '2024-01-02', 'end': '2024-01-09', 'neg': 15, 'pos': 25},
+    ...     'stream3': {'start': '2024-01-03', 'end': '2024-01-08', 'neg': 25, 'pos': 35},
+    ...     'stream4': {'start': '2024-01-04', 'end': '2024-01-07', 'neg': 30, 'pos': 40},
+    ...     'stream5': {'start': '2024-01-05', 'end': '2024-01-06', 'neg': 10, 'pos': 20},
+    ... }
+    >>> _split_multi_classification(data, n=2)
+    [TODO]
     """
     # [S]plit [F]rame, DataFrame to store possible splits
     sf = pd.DataFrame(columns=pd.MultiIndex.from_product([['Train', 'Test'], ['Total', 'Percent'], [0, 1]]), index=range(n-1))
@@ -173,21 +225,38 @@ def _split_single_classification(data, n=10, target='label', **kwargs):
 
     return sf
 
+
 def _split_multi_regression(data, n=1, **kwargs):
     pass
 
-def _split_single_regression(data, n=10, **kwargs):
+
+def _split_single_regression(data: pd.DataFrame, n: int = 10, **kwargs) -> pd.DataFrame:
     """
+    Creates a train/test split table for interactive use for single track regression cases.
+
     Parameters
     ----------
-    data: pandas.core.DataFrame
-        DataFrame to split
-    n: int
-        Number of splits to perform where step is 100/n
+    data : pd.DataFrame
+        Input DataFrame to be split.
+    n : int, optional, default=10
+        Number of splits to create.
 
     Returns
     -------
+    pd.DataFrame
+        DataFrame containing the splits.
 
+    Notes
+    -----
+    This function splits the data into 'n' consecutive segments for regression tasks.
+    It calculates the size of the train and test sets and the percentage each represents
+    relative to the total dataset size.
+
+    Example
+    -------
+    >>> data = pd.DataFrame(np.random.randn(100, 2), columns=['feature1', 'feature2'])
+    >>> _split_single_regression(data, n=5)
+    [TODO]
     """
     # [S]plit [F]rame, DataFrame to store possible splits
     sf = pd.DataFrame(columns=['Train', 'Test'], index=range(n-1))
@@ -211,24 +280,46 @@ def _split_single_regression(data, n=10, **kwargs):
 
 def interact(data):
     """
-    TODO
+    Interacts with the user to split the data into train/test sets and select a split date.
 
     Parameters
     ----------
+    data : pd.DataFrame
+        Input DataFrame to be split.
 
     Returns
     -------
+    str
+        The selected split date as a string.
 
+    Notes
+    -----
+    This function interacts with the user to perform data splitting and selection of a split date.
     """
     def _split(func):
         """
+        Wrapper function for splitting data into chunks depending on one of four use cases:
+        - Single track regression
+        - Single track classification
+        - Multi track regression [Not Implemented]
+        - Multi track classification
+
+        Parameters
+        ----------
+        func : function
+            The function to split the data per the use case.
+
+        Returns
+        -------
+        pd.DataFrame
+            The split frame returned by the split function.
         """
         Logger.info('Divide the data into N chunks')
         Logger.info('If this is a single stream, these are equal-sized split steps')
         Logger.info('If this is a multi stream, these are every Nth split choice')
 
         while True:
-            n = input('n = ')
+            n = input('[User Input] Please select an N: ')
             try:
                 n = int(n)
 
@@ -243,6 +334,12 @@ def interact(data):
 
     def _select():
         """
+        Helper function to select a split date.
+
+        Returns
+        -------
+        str
+            The selected split date as a string.
         """
         Logger.info(f'\n{sf}')
         Logger.info('Please select an index to use as the split date from the above table.')
@@ -262,6 +359,7 @@ def interact(data):
             except:
                 Logger.error(f'The input value is not an integer: {value!r}')
                 return _select
+
 
     if Config.subselect.input.multi:
         func = _split_multi_regression
@@ -289,7 +387,7 @@ def main():
     if Config.subselect.input.multi:
         if not Path(metadata := Config.subselect.metadata).exists():
             Logger.error('The multisteam case requires a metadata file produced by extract.py')
-            return 4
+            return
         data = utils.load_pkl(metadata)
     else:
         Logger.info(f'Reading file {Config.subselect.file}[extract/complete]')
@@ -299,15 +397,15 @@ def main():
             Logger.debug(f'This is a classification dataset using the target: {Config.model.target}')
             if Config.model.target not in data:
                 Logger.error(f'The target does not exist in the dataset: {Config.model.target}')
-                return 1
+                return
 
             keys = data[Config.model.target].value_counts().sort_index().keys()
             if len(keys) > 2:
                 Logger.error('Classification only supports binary values')
-                return 2
+                return
             if not all(keys == [0, 1]):
                 Logger.error('Classification only supports binary values')
-                return 3
+                return
 
     date = Config.subselect.split_date
     if Config.subselect.interactive:
