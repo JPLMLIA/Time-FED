@@ -46,7 +46,7 @@ generated:                    # K | dtype | Short description
     cores: ${.cores}          #   | int   | Number of cores to use for the extract module
     file: ${.preprocess.file} # ! | str   | Path to an H5 file to write to
     multi: \                  #   |       | Processes a stream of multiple input tracks. This is either a str to which the tracks reside under in the input file, or a list of specific keys in the file to grab
-    flush: true               #   | bool  | Flushes processed windows to disk to relieve held memory
+    flush: false               #   | bool  | Flushes processed windows to disk to relieve held memory
     roll:                     #   | dict  | Parameters for the roll function
       window: \               # ! | str   | Size of the windows to extract. The size of these windows is determined by this value divided by the frequency of the data, eg. 10min / 1min = 10 samples. This a is a string compatible with pandas.Timedelta().
       frequency: \            # ! |       | The sampling frequency of the data. If not set, the frequency will be assumed to be the largest quantity of differences between timestamps. This a is a string compatible with pandas.Timedelta().
