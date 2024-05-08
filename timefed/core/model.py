@@ -98,8 +98,8 @@ def class_score(model, data, name, multiclass_scores=False):
         # Special format for CM
         if key == 'confusion_matrix':
             cm = pd.DataFrame(value,
-                index   = pd.MultiIndex.from_product([['predicted'], list(range(value.shape[0]))]),
-                columns = pd.MultiIndex.from_product([['truth']    , list(range(value.shape[1]))])
+                index   = pd.MultiIndex.from_product([['truth']    , list(range(value.shape[0]))]),
+                columns = pd.MultiIndex.from_product([['predicted'], list(range(value.shape[1]))])
             )
             Logger.info(f'{key} = \n{cm}')
         else:

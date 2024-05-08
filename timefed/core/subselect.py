@@ -2,6 +2,7 @@ import argparse
 import logging
 import numpy  as np
 import pandas as pd
+import xarray as xr
 
 from typing import Tuple
 
@@ -70,7 +71,7 @@ def select(train: pd.DataFrame, test: pd.DataFrame, target: str = 'label', n_job
     return train, test
 
 
-def split_multi_classification(data: dict, n: int = 1, **kwargs) -> pd.DataFrame:
+def _split_multi_classification(data: dict, n: int = 1, **kwargs) -> pd.DataFrame:
     """
     Creates a train/test split table for interactive use for multi track classification cases.
 
@@ -109,7 +110,7 @@ def split_multi_classification(data: dict, n: int = 1, **kwargs) -> pd.DataFrame
     # [S]plit [F]rame, DataFrame to store possible splits
     sf = pd.DataFrame(columns=pd.MultiIndex.from_product([['Train', 'Test'], ['Total', 'Percent'], [0, 1]]), index=range(len(splits)))
     sf[:]                = 0
-    sf['Train% / Test%'] = np.nan
+    sf['Train% / Test%'] = ''
     sf['Split Date']     = splits
 
     # For each split date, find the samples of each class for each side of the split
@@ -124,9 +125,9 @@ def split_multi_classification(data: dict, n: int = 1, **kwargs) -> pd.DataFrame
 
     # Percentage of samples in train and test (samples=pos+neg)
     totals = sf[['Train', 'Test']].sum(axis=1)
-    train  = np.round(sf[('Train', 'Total')].sum(axis=1) / totals * 100, decimals=1)
-    test   = np.round(sf[('Test', 'Total')].sum(axis=1) / totals * 100, decimals=1)
-    sf['Train% / Test%'] = [f'{t0} / {t1}' for t0, t1 in zip(train, test)]
+    train  = sf[('Train', 'Total')].sum(axis=1) / totals
+    test   = sf[('Test', 'Total')].sum(axis=1) / totals
+    sf['Train% / Test%'] = [f'{t0:.2%} / {t1:.2%}' for t0, t1 in zip(train, test)]
 
     # Percentage of each class to the total for that class (% of neg total, % of pos total)
     train0 = sf[('Train', 'Total', 0)]
@@ -361,7 +362,7 @@ def interact(data):
                 return _select
 
 
-    if Config.subselect.input.multi:
+    if Config.subselect.multi:
         func = _split_multi_regression
         if Config.model.type == 'classification':
             func = _split_multi_classification
@@ -375,6 +376,29 @@ def interact(data):
     return _select()
 
 
+def cube(dfs, target=None, classification=False):
+    """
+    """
+    hold = []
+    for df in dfs:
+        if classification:
+            label = [int(df[target].any())]
+            df = df.drop(columns=[target])
+
+        # Retrieve what will become the single index of this window
+        idx = df.index[-1]
+
+        ds = df.reset_index().to_xarray()
+        ds = ds.expand_dims(window=[idx])
+
+        if classification:
+            ds[target] = ('window', label)
+
+        hold.append(ds)
+
+    return xr.merge(hold)
+
+
 def main():
     """
     TODO
@@ -384,11 +408,13 @@ def main():
     bool
         Returns True if the function completed successfully
     """
-    if Config.subselect.input.multi:
+    if Config.subselect.multi:
         if not Path(metadata := Config.subselect.metadata).exists():
             Logger.error('The multisteam case requires a metadata file produced by extract.py')
             return
+
         data = utils.load_pkl(metadata)
+
     else:
         Logger.info(f'Reading file {Config.subselect.file}[extract/complete]')
         data = pd.read_hdf(Config.subselect.file, 'extract/complete')
@@ -414,7 +440,11 @@ def main():
 
     Logger.info(f'Using split date: {date}')
 
-    if Config.subselect.input.multi:
+    # Now load the splits
+    if Config.subselect.multi:
+        model_targ = Config.model.target
+        model_type = Config.model.type == 'classification'
+
         Logger.info('Loading streams into memory')
         train = []
         test  = []
@@ -426,24 +456,46 @@ def main():
 
         streams = []
         for key in train:
-            streams.append(
-                pd.read_hdf(Config.subselect.file, f'windows/{key}').reset_index()
+            track = pd.read_hdf(Config.subselect.file, key)
+            index = track.index.name
+            streams.append(track)
+
+        if Config.subselect.output == 'pandas':
+            Logger.info(f'Merging {len(streams)} tracks as the train set')
+            index   = streams[0].index.name
+            streams = [stream.reset_index() for stream in streams]
+            train   = pd.concat(streams, axis=0, ignore_index=True).set_index(index)
+
+        elif Config.subselect.output == 'xarray':
+            Logger.info('Casting train dataframes to datasets')
+            train = cube(streams,
+                target = model_targ,
+                classification = model_type
             )
-        Logger.info('Merging train datasets together')
-        train = pd.concat(streams, axis=0, ignore_index=True).set_index('index')
 
         streams = []
         for key in test:
-            streams.append(
-                pd.read_hdf(Config.subselect.file, f'windows/{key}').reset_index()
-            )
-        Logger.info('Merging test datasets together')
-        test = pd.concat(streams, axis=0, ignore_index=True).set_index('index')
+            track = pd.read_hdf(Config.subselect.file, key)
+            streams.append(track)
 
-        Logger.info('Verifying the train dataset does not have NaNs')
-        train = verify(train)
-        Logger.info('Verifying the test dataset does not have NaNs')
-        test  = verify(test)
+        if Config.subselect.output == 'pandas':
+            Logger.info(f'Merging {len(streams)} tracks as the test set')
+            index   = streams[0].index.name
+            streams = [stream.reset_index() for stream in streams]
+            test    = pd.concat(streams, axis=0, ignore_index=True).set_index(index)
+
+            Logger.info('Verifying the train dataset does not have NaNs')
+            train = verify(train)
+            Logger.info('Verifying the test dataset does not have NaNs')
+            test  = verify(test)
+
+        elif Config.subselect.output == 'xarray':
+            Logger.info('Casting dataframes to datasets')
+            test = cube(streams,
+                target = model_targ,
+                classification = model_type
+            )
+
     else:
         Logger.debug(f'Split date selected: {date}')
 
@@ -480,13 +532,25 @@ def main():
         Logger.debug(f'Train shape: {train.shape} ({train.shape[0]/data.shape[0]*100:.2f}%)')
         Logger.debug(f'Test  shape: {test.shape} ({test.shape[0]/data.shape[0]*100:.2f}%)')
 
-    train, test = select(train, test,
-        target = Config.model.target,
-        n_jobs = Config.subselect.get('cores', 1))
 
-    Logger.info(f'Saving to {Config.subselect.file} under key select/[train,test]')
-    train.to_hdf(Config.subselect.file, 'select/train')
-    test .to_hdf(Config.subselect.file, 'select/test')
+    if Config.subselect.tsfresh:
+        if Config.subselect.output == 'pandas':
+            train, test = select(train, test,
+                target = Config.model.target,
+                n_jobs = Config.subselect.get('cores', 1))
+        else:
+            Logger.warning(f'tsfresh feature selection cannot be executed on {Config.subselect.output} objects, skipping')
+
+    if Config.subselect.output == 'pandas':
+        Logger.info(f'Saving to {Config.subselect.file} under key select/[train,test]')
+        train.to_hdf(Config.subselect.file, key='select/train')
+        test .to_hdf(Config.subselect.file, key='select/test')
+
+    else:
+        Config.subselect.file = Config.subselect.file.replace('.h5', '.nc')
+        Logger.info(f'Saving to {Config.subselect.file} under keys select/[train,test]')
+        train.to_netcdf(Config.subselect.file, mode='a', format='NETCDF4', group='select/train')
+        test .to_netcdf(Config.subselect.file, mode='a', format='NETCDF4', group='select/test')
 
     return True
 

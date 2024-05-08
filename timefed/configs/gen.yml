@@ -82,6 +82,7 @@ generated:                    # K | dtype | Short description
 
 # Usage: python pipeline.py -c gen.yml -p "generated<-mms"
 base:
+  name: \
   base: \
   data: \
   log:
@@ -182,3 +183,33 @@ gattaca:
   preprocess:
     tracks: ${.data}/mms.tracks.h5
     drs: ${.data}/mms.drs.h5
+
+gnss:
+  name: multi_gnss
+  base: /Users/jamesmo/projects/timefed/TimeFED/timefed/local/data/
+  preprocess:
+    enabled: false
+    file: ${.base}/gnss_multi.h5
+    tracks: ${.base}/preprocess.gnss.h5
+    drs: ${.base}/preprocess.gnss.h5
+  extract:
+    enabled: true
+    method: passthrough
+    roll:
+      window: 14D
+      frequency: null
+      step: 7D
+    columns: []
+    multi: preprocess
+    save_as_multi: true
+  subselect:
+    enabled: false
+    metadata: ${.base}/metadata.gnss.pkl
+    multi: true
+    output: xarray
+  model:
+    enabled: false
+    target: Label
+    type: classification
+    model:
+      file: ${.base}/model.gnss.pkl

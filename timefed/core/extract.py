@@ -419,12 +419,57 @@ def rotate(df, slice=None, columns=[], index=-1, **kwargs):
     return rotated
 
 
+@ray.remote
+def passthrough(df, slice=None, target=None, classification=False, **kwargs):
+    """
+    Passthrough the window directly
+    """
+    if slice:
+        df = df.iloc[slice, :]
+
+    if classification and df[target].any():
+        df = df.copy()
+        df[target] = 1
+
+    return df
+
+
+def findDatasets(h5, keys):
+    """
+    Finds all key paths in an H5 file containing h5py._hl.dataset.Dataset objects
+    """
+    if not isinstance(keys, list):
+        keys = [keys]
+
+    if isinstance(h5, str):
+        with h5py.File(h5, 'r') as h5:
+            return findDatasets(h5, keys)
+
+    valid = []
+    for key in keys:
+        if isinstance(group := h5[key], h5py._hl.group.Group):
+            subkeys = [f'{key}/{sub}' for sub in group.keys()]
+            sub = findDatasets(h5, subkeys)
+
+            # This key has Dataset objects, append it
+            if sub is True:
+                valid.append(key)
+            else:
+                # A list of valid keys was returned
+                valid += sub
+        else:
+            # This was a Dataset, return True that the parent is valid
+            return True
+
+    return valid
+
+
 class Extract:
     def __init__(self):
         """
         """
         self.C = Config.extract
-        self.model_kind   = Config.model.kind
+        self.model_type   = Config.model.type
         self.model_target = Config.model.target or None
 
         if self.C.ray:
@@ -433,15 +478,8 @@ class Extract:
         # Determine what keys from the H5 file to load
         match (keys := self.C.multi):
             # Retrieve all subkeys from this group
-            case str():
-                with h5py.File(Config.extract.file, 'r') as h5:
-                    keys = [f'{keys}/{key}' for key in h5[keys].keys()]
-
-                self.multi = True
-                self.metadata = {}
-
-            # Process these specific keys
-            case list():
+            case str() | list():
+                keys = findDatasets(Config.extract.file, keys)
                 self.multi = True
                 self.metadata = {}
 
@@ -460,7 +498,7 @@ class Extract:
                     'target'        : ray.put(self.model_target),
                     'columns'       : ray.put(self.C.get('columns', [])),
                     'index'         : ray.put(self.C.get('index'  , -1)),
-                    'classification': ray.put(self.model_kind == 'classification')
+                    'classification': ray.put(self.model_type == 'classification')
                 }
             case "rotate":
                 process = rotate
@@ -468,20 +506,28 @@ class Extract:
                     'columns': ray.put(self.C.get('columns', [])),
                     'index'  : ray.put(self.C.get('index'  , -1)),
                 }
+            case "passthrough":
+                process = passthrough
+                params  = {
+                    'target'        : ray.put(self.model_target),
+                    'classification': ray.put(self.model_type == 'classification')
+                }
             case invalid:
                 raise AttributeError(f"Invalid method chosen: {invalid}")
 
         # Perform the processing via Ray
+        Logger.info('Beginning processing')
         for key in tqdm(keys, position=1, desc='Processing Frames'):
-            df = self.process(key, process, params)
+            self.process(key, process, params)
 
         # Save the metadata, if there was any
-        if self.model_kind == 'classification' and self.multi:
+        if self.multi:
             if (file := Config.subselect.metadata):
                 if self.metadata:
+                    Logger.info(f'Saving metadata to: {file}')
                     utils.save_pkl(file, self.metadata)
                 else:
-                    Logger.error('No metadata produced for a multi-track classification case, this may have consequences down the line')
+                    Logger.error('No metadata produced for a multi-track case, this may have consequences down the line')
             else:
                 Logger.error('Classification runs must define Config.subselect.metadata')
 
@@ -490,6 +536,17 @@ class Extract:
         """
         """
         df = pd.read_hdf(self.C.file, key)
+
+        if not isinstance(df.index, pd.DatetimeIndex):
+            Logger.warning(f'The index is not a DatetimeIndex for key {key}')
+
+            datetimes = [col for col, data in df.items() if pd.api.types.is_datetime64_any_dtype(data.dtype)]
+            if datetimes:
+                Logger.warning(f'The following columns were detected to be datetime dtypes, using the first available: {datetimes}')
+                df = df.set_index(datetimes[0])
+            else:
+                Logger.error('No datetime column found, cannot proceed')
+                return
 
         windows, stats = roll(df, as_frames=False, **self.C.roll)
         report(stats)
@@ -555,33 +612,47 @@ class Extract:
                 keys = list(h5['extract/windows'])
 
             # Pull into memory
-            returns = [pd.read_hdf(Config.extract.file, f'extract/windows/{key}') for key in keys]
+            returns = [pd.read_hdf(Config.extract.file, f'extract/windows/{k}') for k in keys]
 
-        Logger.info(f'Concatenating {len(returns)} window frames together')
         if returns:
-            df = pd.concat(returns).sort_index()
-            df = verify(df)
+            if self.multi and self.C.save_as_multi:
+                for i, df in enumerate(returns):
+                    subkey = f'{key}/{keys[i]}'
+                    self.extract_metadata(df, subkey)
+            else:
+                Logger.info(f'Concatenating {len(returns)} window frames together')
+
+                df = pd.concat(returns).sort_index()
+                df = verify(df)
+
+                if self.multi:
+                    self.extract_metadata(df, key)
+                else:
+                    Logger.info('Saving to key extract/complete')
+                    df.to_hdf(self.C.file, key=f'extract/complete')
+
         else:
             Logger.error('No window frames were gathered, returning nothing')
             return
 
-        if self.multi:
-            counts = {}
-            if self.model_kind == 'classification':
-                counts = df[self.model_target].value_counts()
+    def extract_metadata(self, df, key):
+        """
+        """
+        key = f'extract/tracks/{key}'
 
-            self.metadata[key] = {
-                'start': df.index[0],
-                'end'  : df.index[-1],
-                'neg'  : counts.get(0, 0),
-                'pos'  : counts.get(1, 0)
-            }
+        counts = {}
+        if self.model_type == 'classification':
+            counts = df[self.model_target].value_counts()
 
-            df.to_hdf(self.C.file, key=f'extract/tracks/{key}')
-        else:
-            Logger.info('Saving to key extract/complete')
-            df.to_hdf(self.C.file, key=f'extract/complete')
+        self.metadata[key] = {
+            'start': df.index[0],
+            'end'  : df.index[-1],
+            'neg'  : counts.get(0, 0),
+            'pos'  : counts.get(1, 0)
+        }
 
+        Logger.debug(f'Saving to key {key}')
+        df.to_hdf(self.C.file, key=key)
 
     def clear_flush(self):
         """

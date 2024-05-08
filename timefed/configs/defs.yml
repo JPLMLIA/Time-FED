@@ -149,6 +149,7 @@
       - oneof:
         - tsfresh
         - rotate
+        - passthrough
   .file:
     dtype: str
     sdesc: Path to an H5 file to write to
@@ -234,6 +235,18 @@
     sdesc: Path to a .pkl file to handle classification metadata (not used in regression)
     default: metadata.pkl
     required: True
+  .tsfresh:
+    dtype: bool
+    sdesc: Enables/disables the tsfresh.feature_selection on the train dataframe. Only applies to pandas DataFrames
+    default: True
+  .output:
+    dtype: str
+    sdesc: "Output type for multi-track cases: pandas = Stacked DataFrames, xarray = 3D (track ID, window index, feature)"
+    default: pandas
+    checks:
+      - oneof:
+          - pandas
+          - xarray
 
 .model:
   dtype: dict
