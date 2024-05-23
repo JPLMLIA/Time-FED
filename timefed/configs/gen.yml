@@ -116,6 +116,7 @@ base:
     enabled: true
     interactive: true
     file: ${.preprocess.file}
+    parquet: ${.base}/extract.pqt/
     metadata: ${.base}/${.name}.metadata.pkl
     features: .*(CARRIER_SYSTEM_NOISE_TEMP|AGC_VOLTAGE).*
   model:
@@ -131,21 +132,32 @@ base:
       predicts: ${.base}/${.name}.predicts.h5
 
 test:
-  name: test
+  name: mms1
   base: /Users/jamesmo/projects/timefed/TimeFED/timefed/local/mms
   data: /Users/jamesmo/projects/timefed/TimeFED/timefed/local/data
+
   preprocess:
     enabled: false
     only:
       missions:
         - MMS1
+
   extract:
-    enabled: false
+    enabled: true
+    flush: false
+    method: rotate
+    parquet: ${.base}/extract.pqt/
     roll:
       window: 25 min
+    columns:
+      - diff_CARRIER_SYSTEM_NOISE_TEMP
+      - diff_AGC_VOLTAGE
+
   subselect:
+    enabled: false
     interactive: true
     split_date: 2018-08-14
+
   model:
     enabled: false
 

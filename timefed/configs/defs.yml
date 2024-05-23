@@ -155,6 +155,11 @@
     sdesc: Path to an H5 file to write to
     default: ${.preprocess.file}
     required: True
+  .file:
+    dtype: str
+    sdesc: Path to write the intermediary parquet
+    default: ${.preprocess.file}.pqt
+    required: True
   .multi:
     dtype: null
     sdesc: Processes a stream of multiple input tracks. This is either a str to which the tracks reside under in the input file, or a list of specific keys in the file to grab

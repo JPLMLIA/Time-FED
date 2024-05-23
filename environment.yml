@@ -3,14 +3,13 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - python>=3.10
+  - python=3.10
   - h5py
   - matplotlib
   - netCDF4
   - numpy
   - pandas
   - pytables
-  - tsfresh
   - tqdm
   - tables
   - scikit-learn
@@ -20,7 +19,8 @@ dependencies:
   - pip
   - pip:
     - mlky
-    - ray
+    - ray[data]
+    - tsfresh
     # - mat4py>=0.4.3
     # - mat73>=0.46
     # - pvlib>=0.8.1
