@@ -132,7 +132,7 @@ base:
       predicts: ${.base}/${.name}.predicts.h5
 
 test:
-  name: mms1
+  name: mms
   base: /Users/jamesmo/projects/timefed/TimeFED/timefed/local/mms
   data: /Users/jamesmo/projects/timefed/TimeFED/timefed/local/data
 
@@ -145,10 +145,10 @@ test:
   extract:
     enabled: true
     flush: false
-    method: rotate
+    method: tsfresh
     parquet: ${.base}/extract.pqt/
-    roll:
-      window: 25 min
+    # roll:
+    #   window: 25 min
     columns:
       - diff_CARRIER_SYSTEM_NOISE_TEMP
       - diff_AGC_VOLTAGE
@@ -170,6 +170,8 @@ mms:
         - MMS2
         - MMS3
         - MMS4
+  extract:
+    parquet: ${.base}/extract.pqt/
   subselect:
     interactive: false
     split_date: 2018-10-16
@@ -204,6 +206,7 @@ gnss:
     file: ${.base}/gnss_multi.h5
     tracks: ${.base}/preprocess.gnss.h5
     drs: ${.base}/preprocess.gnss.h5
+
   extract:
     enabled: true
     method: passthrough
@@ -219,6 +222,46 @@ gnss:
     metadata: ${.base}/metadata.gnss.pkl
     multi: true
     output: xarray
+
+  model:
+    enabled: false
+    target: Label
+    type: classification
+    model:
+      file: ${.base}/model.gnss.pkl
+
+gnss-multi:
+  name: multi_gnss
+  base: /Users/jamesmo/projects/timefed/TimeFED/timefed/local/data/
+  preprocess:
+    enabled: false
+    file: ${.base}/gnss_multi.h5
+    tracks: ${.base}/preprocess.gnss.h5
+    drs: ${.base}/preprocess.gnss.h5
+  extract:
+    enabled: true
+    method: tsfresh
+    parquet: ${.base}/extract.pqt/
+    roll:
+      window: 21D
+      frequency: null
+      step: 1D
+    columns:
+      - N
+      - E
+      - U
+    multi: preprocess
+    save_as_multi: true
+    blocks:
+      min: 20
+      max: \
+  subselect:
+    enabled: false
+    metadata: ${.base}/metadata.gnss.pkl
+    multi: true
+    output: pandas
+    interactive: false
+    split_date: 2018-12-31
   model:
     enabled: false
     target: Label

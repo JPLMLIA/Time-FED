@@ -155,7 +155,7 @@
     sdesc: Path to an H5 file to write to
     default: ${.preprocess.file}
     required: True
-  .file:
+  .parquet:
     dtype: str
     sdesc: Path to write the intermediary parquet
     default: ${.preprocess.file}.pqt
@@ -163,10 +163,16 @@
   .multi:
     dtype: null
     sdesc: Processes a stream of multiple input tracks. This is either a str to which the tracks reside under in the input file, or a list of specific keys in the file to grab
-  .flush:
-    dtype: bool
-    sdesc: Flushes processed windows to disk to relieve held memory
-    default: True
+  .blocks:
+    dtype: dict
+    sdesc: Defines the min/max block range for repartitioning. An ideal block size will attempt to be discovered in this range
+    .min:
+      dtype: int
+      sdesc: Minimum block size. If this is too small compared to the number of windows extracted, the system may perform poorly
+      default: 20
+    .max:
+      dtype: int
+      sdesc: Maximum block size. If not included, the max will be 10% of the total number of windows
   .roll:
     dtype: dict
     sdesc: Parameters for the roll function

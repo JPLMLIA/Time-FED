@@ -5,6 +5,7 @@ import os
 
 from datetime import datetime as dtt
 
+import h5py
 import numpy as np
 import pandas as pd
 import ray
@@ -176,12 +177,12 @@ class Roll:
 
             # This window was the wrong size (rare edge case)
             if window.shape[0] != self.size:
-                self.stats.reasons.wrong_size += 1
+                self.reasons.wrong_size += 1
                 continue
 
             # This window had NaNs in a required column
             if window[self.required].isna().any(axis=None):
-                self.stats.reasons.had_nans += 1
+                self.reasons.had_nans += 1
                 continue
 
             diff = window.index[-1] - window.index[0]
@@ -551,18 +552,18 @@ class Extract:
 
         # Find the ideal number of blocks to split such that the expected number of extracted windows is produced
         # Start with a minimum number of blocks as 20
-        samples = data.shape[0]
-        total   = samples / windows.size
-        blocks  = 20
+        samples   = data.shape[0]
+        total     = samples / windows.size
+        blocks    = self.C.blocks.min
+        maxBlocks = self.C.blocks.max or int(total/10)
 
-        for blocks in range(20, int(total/10)):
+        for blocks in range(blocks, maxBlocks):
             if total % blocks == 0:
+                Logger.debug(f'Blocks: {blocks}')
                 break
         else:
+            Logger.debug(f'Could not calculate an ideal block size')
             blocks = None
-            blocks = 100
-
-        Logger.debug(f'Blocks: {blocks}')
 
         # Cast to ray.data
         ds = ray.data.from_pandas(data)

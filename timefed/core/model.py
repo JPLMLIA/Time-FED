@@ -63,7 +63,7 @@ def class_score(model, data, name, multiclass_scores=False):
     truth    = data[Config.model.target]
     data     = data.drop(columns=Config.model.target)
     preds    = truth.copy()
-    preds[:] = model.predict(data)
+    preds[:] = model.predict_proba(data)
 
     scores = Sect({
         'accuracy'        : accuracy_score(truth, preds),
@@ -79,10 +79,8 @@ def class_score(model, data, name, multiclass_scores=False):
         scores.FN = FN = scores.confusion_matrix.sum(axis=1) - TP
         scores.TN = TN = scores.confusion_matrix.sum() - (FP + FN + TP)
     else:
-        scores.TP = TP = scores.confusion_matrix[1, 1]
-        scores.FP = FP = scores.confusion_matrix[1, 0]
-        scores.FN = FN = scores.confusion_matrix[0, 1]
-        scores.TN = TN = scores.confusion_matrix[0, 0]
+        TN, FP, FN, TP = scores.confusion_matrix.ravel()
+        scores.TN, scores.FP, scores.FN, scores.TP = TN, FP, FN, TP
 
     scores.TPR = TP/(TP+FN) # Sensitivity, hit rate, recall, or true positive rate
     scores.TNR = TN/(TN+FP) # Specificity or true negative rate
@@ -115,7 +113,6 @@ def class_score(model, data, name, multiclass_scores=False):
 
     # Return as dict instead of Section
     return scores._data, preds
-
 
 
 @utils.timeit
