@@ -65,11 +65,11 @@ def run(config, patch, defs, print):
     Executes the TimeFED pipeline
     """
     # Initialize the global Configuration object
-    Config(config, patch, defs=defs)
+    Config(config, _patch=patch, _defs=defs, _relativity=False)
 
     # Print configuration to terminal
     if print:
-        click.echo(Config.dumpYaml())
+        click.echo(Config.toYaml(listStyle='short'))
 
     # Logging handlers
     handlers = []
@@ -95,7 +95,7 @@ def run(config, patch, defs, print):
         handlers = handlers
     )
 
-    if Config.validate():
+    if Config.validateObj():
         main()
     else:
         Logger.error('Please correct any Configuration errors before proceeding')

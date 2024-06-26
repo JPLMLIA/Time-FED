@@ -555,9 +555,12 @@ class Extract:
         samples   = data.shape[0]
         total     = samples / windows.size
         blocks    = self.C.blocks.min
-        maxBlocks = self.C.blocks.max or int(total/10)
+        maxBlocks = self.C.blocks.max
 
-        for blocks in range(blocks, maxBlocks):
+        if isinstance(maxBlocks, float):
+            maxBlocks *= total
+
+        for blocks in range(blocks, int(maxBlocks)):
             if total % blocks == 0:
                 Logger.debug(f'Blocks: {blocks}')
                 break
