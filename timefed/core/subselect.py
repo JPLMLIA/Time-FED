@@ -18,7 +18,7 @@ from timefed.utils        import utils
 Logger = logging.getLogger('timefed/core/subselect.py')
 
 
-def select(train: pd.DataFrame, test: pd.DataFrame, target: str = 'label', n_jobs: int = 1) -> Tuple[pd.DataFrame, pd.DataFrame]:
+def select(train: pd.DataFrame, test: pd.DataFrame, target: str='label', n_jobs: int=1) -> Tuple[pd.DataFrame, pd.DataFrame]:
     """
     Uses tsfresh.select_features to select relevant features from the tsfresh feature
     extraction. See for more:

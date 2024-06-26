@@ -23,5 +23,5 @@ setuptools.setup(
         'tqdm>=4.50.1',
         'tsfresh>=0.17.0'
     ],
-    python_requires = '~=3.8',
+    python_requires = '~=3.10',
 )

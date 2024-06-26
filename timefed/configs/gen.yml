@@ -224,6 +224,7 @@ mms1:
 gnss:
   name: multi_gnss
   output: /Users/jamesmo/projects/timefed/TimeFED/timefed/local/data/
+
   preprocess:
     enabled: false
     file: ${output}/gnss_multi.h5
@@ -240,6 +241,7 @@ gnss:
     columns: []
     multi: preprocess
     save_as_multi: true
+
   subselect:
     enabled: false
     metadata: ${output}/metadata.gnss.pkl
@@ -256,9 +258,11 @@ gnss:
 
 gnss-multi:
   name: multi_gnss
+
   preprocess:
     enabled: false
     file: ${input}/multi_ridge_gnss.h5
+
   extract:
     enabled: true
     method: tsfresh
@@ -274,6 +278,7 @@ gnss-multi:
     save_as_multi: true
     blocks:
       min: 64
+
   subselect:
     enabled: true
     metadata: ${output}/metadata.gnss.pkl
@@ -281,6 +286,8 @@ gnss-multi:
     output: pandas
     interactive: false
     split_date: 2018-12-31
+    features: null
+
   model:
     enabled: true
     target: Label

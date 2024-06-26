@@ -2,11 +2,14 @@ import logging
 import os
 import sys
 
+from pathlib import Path
+
 import click
 
-from mlky import Config
-
-from timefed import config_options
+from mlky import (
+    Config,
+    cli as mli
+)
 
 
 Logger = logging.getLogger('timefed/pipeline.py')
@@ -58,9 +61,15 @@ def main():
     return True
 
 
-@click.command(name='run')
-@config_options
-def run(config, patch, defs, print):
+defs = Path(__file__).parent / 'configs/defs.yml'
+@click.command(name='run', context_settings={'show_default': True})
+@mli.config
+@mli.patch
+@mli.defs(default=defs)
+@mli.override
+@click.option("-pr", "--print", help="Prints the configuration to terminal and continues", is_flag=True)
+@click.option("-po", "--print-only", help="Prints the configuration to terminal and exits", is_flag=True)
+def cli(config, patch, defs, override, print, print_only):
     """\
     Executes the TimeFED pipeline
     """
@@ -68,8 +77,13 @@ def run(config, patch, defs, print):
     Config(config, _patch=patch, _defs=defs, _relativity=False)
 
     # Print configuration to terminal
-    if print:
-        click.echo(Config.toYaml(listStyle='short'))
+    if print or print_only:
+        click.echo(f'Config({config!r}, _patch={patch!r}, _defs={defs})')
+        click.echo('-'*100)
+        click.echo(Config.toYaml(comments=None, listStyle='short', header=False))
+        click.echo('-'*100)
+        if print_only:
+            return
 
     # Logging handlers
     handlers = []
@@ -102,4 +116,4 @@ def run(config, patch, defs, print):
 
 
 if __name__ == '__main__':
-    run()
+    cli()
