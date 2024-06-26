@@ -71,13 +71,13 @@
   .tracks:
     dtype: str
     sdesc: Path to a DSN tracks file
-    required: True
+    required: False
     checks:
       - isfile
   .drs:
     dtype: str
     sdesc: Path to a DSN DRs file
-    required: True
+    required: False
     checks:
       - isfile
   .skip_dcc:
@@ -161,7 +161,7 @@
     default: ${.preprocess.file}.pqt
     required: True
   .multi:
-    dtype: null
+    dtype: any
     sdesc: Processes a stream of multiple input tracks. This is either a str to which the tracks reside under in the input file, or a list of specific keys in the file to grab
   .blocks:
     dtype: dict
@@ -171,8 +171,17 @@
       sdesc: Minimum block size. If this is too small compared to the number of windows extracted, the system may perform poorly
       default: 20
     .max:
-      dtype: int
-      sdesc: Maximum block size. If not included, the max will be 10% of the total number of windows
+      sdesc: Maximum block size. If int, uses this with the min to create a range. If float, multiplies this with the total number of windows to create the max
+      default: .1
+      subtypes:
+        - dtype: float
+          checks:
+            - compare:
+                lt: 1
+        - dtype: int
+          checks:
+            - compare:
+                gt: ${.min}
   .roll:
     dtype: dict
     sdesc: Parameters for the roll function
@@ -181,11 +190,11 @@
       sdesc: Size of the windows to extract. The size of these windows is determined by this value divided by the frequency of the data, eg. 10min / 1min = 10 samples. This a is a string compatible with pandas.Timedelta().
       required: True
     .frequency:
-      dtype: null
+      dtype: any
       sdesc: The sampling frequency of the data. If not set, the frequency will be assumed to be the largest quantity of differences between timestamps. This a is a string compatible with pandas.Timedelta().
       required: True
     .step:
-      dtype: null
+      dtype: any
       sdesc: Size of the step when moving from one window to the next. This can be either an int or a str, where an int would step N many indices from the start of the previous window's start, and str would step N amount of time beyond the start of the previous window's start.
       default: 1
     .required:
