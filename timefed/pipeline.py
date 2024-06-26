@@ -113,6 +113,8 @@ def cli(config, patch, defs, override, print, print_only):
         main()
     else:
         Logger.error('Please correct any Configuration errors before proceeding')
+        Logger.warning('Continuing with execution')
+        main()
 
 
 if __name__ == '__main__':
