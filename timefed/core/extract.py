@@ -2,6 +2,7 @@
 """
 import logging
 import os
+import sys
 
 from datetime import datetime as dtt
 
@@ -22,6 +23,7 @@ from tsfresh.feature_extraction import ComprehensiveFCParameters
 from timefed.utils import utils
 
 
+sys.setrecursionlimit(5_000)
 Logger = logging.getLogger('timefed/extract')
 
 
