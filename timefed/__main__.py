@@ -92,7 +92,7 @@ def main(script, disablevalidate, **kwargs):
     initConfig(**kwargs, print=click.echo)
     initLogging()
 
-    if Config.validateObj() or disablevalidate:
+    if C.validateObj() or disablevalidate:
         match script:
             case None:
                 from timefed.pipeline import main
