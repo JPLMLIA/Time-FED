@@ -19,7 +19,7 @@ def initConfig(config, patch, defs, override, printconfig=False, printonly=False
     """
     Initializes the mlky Config object
     """
-    C(config, _patch=patch, _defs=defs, _override=override, _relativity=False)
+    C(config, _patch=patch, _defs=defs, _override=override)
 
     # Print configuration to terminal
     if printconfig or printonly:
@@ -74,7 +74,7 @@ def cli():
 
 
 # Path to the mlky definitions file for timefed
-defs = Path(__file__).parent / 'configs/defs.yml'
+defs = Path(__file__).parent / 'configs/defs/defs.yml'
 
 @cli.command(name='run', context_settings={'show_default': True})
 @click.option('-s', '--script', type=click.Choice(['preprocess', 'extract', 'subselect', 'model']), help='Executes a single script. If not provided, entire pipeline is executed')

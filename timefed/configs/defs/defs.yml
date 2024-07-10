@@ -32,7 +32,7 @@
   .terminal:
     dtype: str
     sdesc: The terminal level to log, ie. logger level to write to terminal. This can be different than the file level
-    default: ${.log.level}
+    default: ${.level}
     checks:
       - oneof:
         - DEBUG
@@ -143,7 +143,7 @@
   .cores:
     dtype: int
     sdesc: Number of cores to use for the extract module
-    default: ${.cores}
+    default: ${cores}
   .method:
     dtype: str
     sdesc: Window processing method
@@ -157,12 +157,12 @@
   .file:
     dtype: str
     sdesc: Path to an H5 file to write to
-    default: ${.preprocess.file}
+    default: ${preprocess.file}
     required: True
   .parquet:
     dtype: str
     sdesc: Path to write the intermediary parquet
-    default: ${.preprocess.file}.pqt
+    default: ${preprocess.file}.pqt
     required: True
   .multi:
     dtype: any
@@ -242,11 +242,11 @@
   .cores:
     dtype: int
     sdesc: Number of cores to use for the extract module
-    default: ${.cores}
+    default: ${cores}
   .file:
     dtype: str
     sdesc: Path to an H5 file to write to
-    default: ${.preprocess.file}
+    default: ${preprocess.file}
     required: True
   .split_date:
     sdesc: Split date to use if not in interactive mode
@@ -292,7 +292,7 @@
   .file:
     dtype: str
     sdesc: Path containing the train and set sets (under keys select/[train,test]) (pandas h5 format)
-    default: ${.preprocess.file}
+    default: ${preprocess.file}
     required: True
   .model:
     dtype: dict
