@@ -31,7 +31,9 @@ from sklearn.metrics import (
 from timefed.utils import utils
 from timefed.utils.plots import importances
 
+
 Logger = logging.getLogger('timefed/model.py')
+
 
 def regress_score(model, data, name):
     """
@@ -40,7 +42,7 @@ def regress_score(model, data, name):
     truth    = data[Config.model.target]
     data     = data.drop(columns=Config.model.target)
     preds    = truth.copy()
-    preds[:] = model.predict(data)
+    preds[:] = model.predict_proba(data)
 
     scores = Sect({
         'r2'      : r2_score(truth, preds),
@@ -55,6 +57,7 @@ def regress_score(model, data, name):
 
     # Return as dict instead of Section
     return scores._data, preds
+
 
 def class_score(model, data, name, multiclass_scores=False):
     """

@@ -165,7 +165,6 @@ quiet:
 # RUNS
 
 test:
-  mlky.patch: base
   name: mms
 
   preprocess:
@@ -211,19 +210,16 @@ mms:
 
 
 mms1:
+  mlky.patch: mms1
   name: mms1
   preprocess:
     only:
       missions:
         - MMS1
-  subselect:
-    interactive: false
-    split_date: 2018-10-16
 
 
 gnss:
-  name: multi_gnss
-  output: /Users/jamesmo/projects/timefed/TimeFED/timefed/local/data/
+  name: gnss
 
   preprocess:
     enabled: false

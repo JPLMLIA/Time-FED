@@ -30,7 +30,7 @@ def init(args):
             format: str
             datefmt: str
     """
-    config = Config(args.config, args.section)
+    config = Config(args.config, _patch=args.section)
 
     levels = {
         'critical': logging.CRITICAL,

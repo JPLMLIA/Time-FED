@@ -106,6 +106,10 @@
   .subsample:
     dtype: dict
     sdesc: Subsampling strategies to balance the negative:positive ratio in classification cases
+    .seed:
+      dtype: int
+      sdesc: Random seed to set for numpy.random.seed()
+      default: 0
     .query:
       dtype: str
       sdesc: Passes a query string to DataFrame.query()

@@ -1,3 +1,1 @@
-import click
-
-from mlky import Config
+__version__ = '2.1.0'

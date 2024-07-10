@@ -41,6 +41,9 @@ def subsample(df):
     # Section of config for this function
     config = Config.preprocess.subsample
 
+    Logger.debug(f'Setting random seed to: {config.seed}')
+    np.random.seed(config.seed)
+
     # If a query string is given, apply it first
     if config.query:
         Logger.info(f'Applying query: {config.query}')
@@ -404,6 +407,7 @@ def preprocess(mission, keys):
     df.to_hdf(Config.preprocess.file, key=f'preprocess/{mission}/complete')
 
     return True
+
 
 def main():
     """

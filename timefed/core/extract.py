@@ -495,7 +495,10 @@ class Extract:
         # Perform the processing via Ray
         Logger.info('Beginning processing')
         for key in tqdm(keys, position=1, desc='Processing Frames'):
-            self.process(key, process, params)
+            try:
+                self.process(key, process, params)
+            except:
+                Logger.exception(f'Failed to process key: {key}')
 
         # Save the metadata, if there was any
         if self.multi:
