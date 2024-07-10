@@ -42,7 +42,7 @@ def regress_score(model, data, name):
     truth    = data[Config.model.target]
     data     = data.drop(columns=Config.model.target)
     preds    = truth.copy()
-    preds[:] = model.predict_proba(data)
+    preds[:] = model.predict(data)
 
     scores = Sect({
         'r2'      : r2_score(truth, preds),
@@ -66,7 +66,7 @@ def class_score(model, data, name, multiclass_scores=False):
     truth    = data[Config.model.target]
     data     = data.drop(columns=Config.model.target)
     preds    = truth.copy()
-    preds[:] = model.predict_proba(data)
+    preds[:] = model.predict_proba(data)[:, 1]
 
     scores = Sect({
         'accuracy'        : accuracy_score(truth, preds),

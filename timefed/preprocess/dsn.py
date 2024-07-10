@@ -323,7 +323,7 @@ def preprocess(mission, keys):
     # Skip tracks that have wrong DRs
     skip = []
     if Config.preprocess.only.drs:
-        skip = list(drs.query(f'DR_CLOSURE_CAUSE_CD not in {Config.preprocess.only.drs}').SCHEDULE_ITEM_ID.astype(str))
+        skip = list(drs.query(f'DR_CLOSURE_CAUSE_CD not in {Config.preprocess.only.drs.toList()}').SCHEDULE_ITEM_ID.astype(str))
         Logger.debug(f'Processing only DRs: {Config.preprocess.only.drs}')
         Logger.info(f'{len(skip)} tracks will be skipped due to being the wrong DR')
 
