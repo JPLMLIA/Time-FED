@@ -62,11 +62,11 @@ def regress_score(model, data, name):
 def class_score(model, data, name, multiclass_scores=False):
     """
     """
-    config   = Config()
     truth    = data[Config.model.target]
     data     = data.drop(columns=Config.model.target)
-    preds    = truth.copy()
-    preds[:] = model.predict_proba(data)[:, 1]
+    proba    = truth.copy().astype(float)
+    proba[:] = model.predict_proba(data)[:, 1]
+    preds    = proba.round()
 
     scores = Sect({
         'accuracy'        : accuracy_score(truth, preds),
@@ -115,7 +115,7 @@ def class_score(model, data, name, multiclass_scores=False):
     importances(model, data.columns, print_only=True)
 
     # Return as dict instead of Section
-    return scores._data, preds
+    return scores._data, proba
 
 
 @utils.timeit
