@@ -97,6 +97,9 @@ local:
   input: .
   output: .
   data: .
+  preprocess:
+    tracks: ${data}/v4.MMS.tracks.h5
+    drs: ${data}/v3.drs.h5
 
 
 mlia:
@@ -104,6 +107,9 @@ mlia:
   input: /data/MLIA_active_data/timefed/experiments
   output: /data/MLIA_active_data/timefed/experiments
   data: /data/MLIA_active_data/timefed/experiments
+  preprocess:
+    tracks: ${data}/v4.MMS.tracks.h5
+    drs: ${data}/v3.drs.h5
 
 
 gattaca:
@@ -122,8 +128,6 @@ mms:
   name: mms
 
   preprocess:
-    tracks: ${data}/v4.MMS.tracks.h5
-    drs: ${data}/v3.drs.h5
     only:
       drs:
         - RFI
