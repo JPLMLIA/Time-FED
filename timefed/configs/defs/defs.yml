@@ -156,12 +156,12 @@
         - passthrough
   .file:
     dtype: str
-    sdesc: Path to an H5 file to write to
+    sdesc: Path to an H5 file to read from / write to
     default: ${preprocess.file}
     required: True
-  .parquet:
+  .output:
     dtype: str
-    sdesc: Path to write the intermediary parquet
+    sdesc: Path to write the intermediary data products of the extract script
     default: ${preprocess.file}.pqt
     required: True
   .multi:

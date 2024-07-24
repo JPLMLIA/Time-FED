@@ -5,214 +5,24 @@ import os
 import sys
 
 from datetime import datetime as dtt
+from pathlib  import Path
 
 import h5py
-import numpy as np
+import numpy  as np
 import pandas as pd
 import ray
 import tsfresh
 
-from mlky import (
-    Config,
-    Sect
-)
-from mlky.utils.track import Track
+from mlky import Config
 from tqdm import tqdm
 from tsfresh.feature_extraction import ComprehensiveFCParameters
 
-from timefed.utils import utils
-
+from timefed.utils      import utils
+from timefed.utils.roll import Roll
 
 sys.setrecursionlimit(5_000)
 Logger = logging.getLogger('timefed/extract')
 
-
-class Roll:
-    zero = pd.Timedelta(0)
-
-    def __init__(self, df, window, frequency=None, step=1, required=None, optional=[], method='groups'):
-        """
-        Performs some preprocessing for the roll function.
-
-        Parameters
-        ----------
-        df : pandas.DataFrame
-            The DataFrame to operate on. The index must be a datetime.
-        window : str
-            The window size to extract. This must be a pandas.Timedelta compatible
-            string, such as 5m or 2h.
-        frequency : str, default=None
-            The assumed frequency of the DataFrame. Must be a pandas.Timedelta
-            compatible string. If not provided, will assume the most common frequency.
-        step : int or str, default=1
-            The step size between windows. If int, steps by index position. If str,
-            uses pandas.Timedelta to step along the index.
-        required : list, default=None
-            These columns are required to be fully dense in each window.
-        optional : list, default=[]
-            These columns are optional. (NYI)
-        method : 'groups', 'pandas', None
-            How to format the .windows attribute
-            None:
-                Leave windows in index form tuples [(i, j), ...] such that i is the
-                start of the window and j is the end on the index
-            pandas:
-                Convert windows to individual pandas DataFrames (view, not copy)
-            groups:
-                Does 'pandas' then copies the frames, adds a windowID column, then
-                stacks them into a single DataFrame
-
-        Notes
-        -----
-        >>> windows = Roll(df, '60s')
-        >>> windows.roll()
-        20
-        >>> windows.windows
-        ...
-        """
-        self.df = df.copy()
-        self.windows = []
-        self.method  = method
-
-        freqs = (df.index[1:] - df.index[:-1]).value_counts().sort_values(ascending=False)
-        if self.zero in freqs:
-            Logger.info('Duplicate timestamps were detected, windowing may return unexpected results')
-
-        if frequency is None:
-            frequency = freqs.index[0]
-            Logger.info(f'Frequency not provided, selecting the most common frequency difference: {frequency}')
-
-        self.freq = pd.Timedelta(frequency)
-
-        if isinstance(step, str):
-            self.offset = pd.Timedelta(step)
-            self.step   = self.stepByTime
-
-        elif isinstance(step, int):
-            self.offset = step
-            self.step   = self.stepByIndex
-
-        self.delta = pd.Timedelta(window)
-        self.size  = int(self.delta / self.freq)
-        if self.size < 1:
-            Logger.error(f'The window size is too short for the cadence of the data (min size 1): size = int(delta / frequency) = int({delta} / {frequency}) = {size}')
-
-        if not required:
-            required = list(df.columns)
-        self.required = required
-
-        if not optional:
-            optional = set(df.columns) - set(self.required)
-        self.optional = optional
-
-        # Stats
-        self.possible = 0
-        self.valid    = 0
-        self.reasons  = Sect(
-            wrong_size  = 0,
-            had_nans    = 0,
-            had_gap     = 0,
-            not_ordered = 0
-        )
-
-
-    def stepByTime(self, i):
-        """
-        Performs a step in time that respects an imperfectly sampled datetime index
-
-        Parameters
-        ----------
-        i : int
-            Index position to start from
-
-        Returns
-        -------
-        i : int
-            The next index position such that this index is still less than [i] + offset
-        """
-        k = self.df.index[i] + self.offset
-        while self.df.index[i] < k:
-            i += 1
-        return i
-
-
-    def stepByIndex(self, i):
-        """
-        Performs a step by integer index
-
-        Parameters
-        ----------
-        i : int
-            Step from this
-
-        Returns
-        -------
-        int
-            i + step offset
-        """
-        return i + self.offset
-
-
-    def roll(self):
-        """
-        Rolls over a datetime index and calculates the possible valid windows that can
-        be extracted. After executing, access the windows from the .windows attribute.
-
-        Returns
-        -------
-        self.valid : int
-            The number of valid windows available
-        """
-        total = self.df.shape[0] - self.size
-        track = Track(total, step=10, print=Logger.info)
-
-        i = 0
-        while i <= total:
-            self.possible += 1
-
-            j = i
-            k = j + self.size
-            i = self.step(i)
-            track(i)
-
-            window = self.df.iloc[j:k]
-
-            # This window was the wrong size (rare edge case)
-            if window.shape[0] != self.size:
-                self.reasons.wrong_size += 1
-                continue
-
-            # This window had NaNs in a required column
-            if window[self.required].isna().any(axis=None):
-                self.reasons.had_nans += 1
-                continue
-
-            diff = window.index[-1] - window.index[0]
-
-            # Window too large
-            if diff > self.delta:
-                self.reasons.had_gap += 1
-                continue
-            # Timestamps are not in order causing a negative value or there's duplicates
-            elif diff <= self.zero:
-                self.reasons.not_ordered += 1
-                continue
-
-            self.valid += 1
-            self.windows.append((j, k))
-
-        if self.method in ['pandas', 'groups']:
-            self.windows = [self.df.iloc[i:j] for i, j in self.windows]
-
-            if self.method == 'groups':
-                Logger.info('Duplicating and stacking windows to create groups')
-                for w, df in enumerate(self.windows):
-                    self.windows[w] = df.copy()
-                    self.windows[w]['windowID'] = w
-
-                self.windows = pd.concat(self.windows)
-
-        return self.valid
 
 
 def get_features(whitelist=None, blacklist=None, interactive=False):
@@ -421,6 +231,16 @@ def rotate(window, columns=[], index=-1, target=None, classification=False, **kw
     return rotated
 
 
+def passthrough(windows, target=None, classification=False, **kwargs):
+    """
+    Classifies xarray windows
+    """
+    if classification:
+        windows[target] = ('windowID', windows[target].max('index').data)
+
+    return windows
+
+
 def findDatasets(h5, keys):
     """
     Finds all key paths in an H5 file containing h5py._hl.dataset.Dataset objects
@@ -483,6 +303,7 @@ class Extract:
             'index'         : self.C.get('index'  , -1),
             'classification': self.model_type == 'classification',
         }
+        self.roll_method = 'groups'
         match self.C.method:
             case "tsfresh":
                 process = extract
@@ -490,6 +311,7 @@ class Extract:
             case "rotate":
                 process = rotate
             case "passthrough":
+                self.roll_method = 'xarray'
                 process = passthrough
             case invalid:
                 raise AttributeError(f"Invalid method chosen: {invalid}")
@@ -516,6 +338,17 @@ class Extract:
 
     def loadAndRoll(self, key):
         """
+        Loads the input data and rolls it to produce windows
+
+        Parameters
+        ----------
+        key : str
+            Key in the input hdf5 to load a pandas DataFrame
+
+        Returns
+        -------
+        windows : timefed.utils.roll.Roll
+            TimeFED Roll object
         """
         Logger.info(f'Loading key {key!r} from {self.C.file}')
         df = pd.read_hdf(self.C.file, key)
@@ -532,7 +365,7 @@ class Extract:
                 return
 
         Logger.info('Calculating windows')
-        windows = Roll(df, method='groups', **self.C.roll)
+        windows = Roll(df, method=self.roll_method, **self.C.roll)
 
         Logger.info(f'Valid windows: {windows.roll()}')
 
@@ -541,6 +374,7 @@ class Extract:
 
     def process(self, key, func, params):
         """
+        Performs the
         """
         windows = self.loadAndRoll(key)
 
@@ -549,6 +383,16 @@ class Extract:
 
         if windows.valid == 0:
             Logger.error('No windows were accepted for this track of data. Nothing to do, returning nothing')
+            return
+
+        if self.C.method == 'passthrough':
+            ds = func(windows.windows, **params)
+
+            file = f'{self.C.output}/{key}.nc'
+            Path(file).parent.mkdir(parents=True, exist_ok=True)
+
+            Logger.info(f'Writing to netcdf: {file}')
+            ds.to_netcdf(file)
             return
 
         # Convert the index back to a column for processing, will set back later
@@ -587,7 +431,7 @@ class Extract:
             zero_copy_batch = True,
             fn_kwargs       = params
         )
-        file = f'{self.C.parquet}/{key}'
+        file = f'{self.C.output}/{key}'
         Logger.info(f'Writing to parquet: {file}')
         ds.write_parquet(file)
 
@@ -602,7 +446,7 @@ class Extract:
     def loadAndFinish(self, key, index):
         """
         """
-        ds = ray.data.read_parquet(f'{self.C.parquet}/{key}')
+        ds = ray.data.read_parquet(f'{self.C.output}/{key}')
         df = ds.to_pandas()
         df = df.set_index(index)
         df = verify(df)

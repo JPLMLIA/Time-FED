@@ -30,7 +30,7 @@ generated:                          #   | dict  | Generated via mlky toYaml
     cores: ${cores}                 #   | int   | Number of cores to use for the extract module
     method: tsfresh                 # * | str   | Window processing method
     file: ${preprocess.file}        # * | str   | Path to an H5 file to write to
-    parquet: ${preprocess.file}.pqt # * | str   | Path to write the intermediary parquet
+    output: ${preprocess.file}.pqt  # * | str   | Path to write the intermediary parquet
     multi: \                        #   | any   | Processes a stream of multiple input tracks. This is either a str to which the tracks reside under in the input file, or a list of specific keys in the file to grab
     blocks:                         #   | dict  | Defines the min/max block range for repartitioning. An ideal block size will attempt to be discovered in this range
       min: 20                       #   | int   | Minimum block size. If this is too small compared to the number of windows extracted, the system may perform poorly
@@ -208,7 +208,7 @@ gnss-multi:
   extract:
     enabled: true
     method: tsfresh
-    parquet: ${output}/extract.pqt/
+    output: ${output}/extract.pqt/
     roll:
       window: 21D
       frequency: null
@@ -254,5 +254,11 @@ interactive:
 rotate:
   extract:
     method: rotate
+  subselect:
+    tsfresh: false
+
+passthrough:
+  extract:
+    method: passthrough
   subselect:
     tsfresh: false
