@@ -68,6 +68,8 @@ def class_score(model, data, name, multiclass_scores=False):
     proba[:] = model.predict_proba(data)[:, 1]
     preds    = proba.round()
 
+    Logger.info('Using probability threshold of 0.5 for scoring')
+
     scores = Sect({
         'accuracy'        : accuracy_score(truth, preds),
         'precision'       : precision_score(truth, preds),
