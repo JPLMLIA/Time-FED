@@ -149,6 +149,8 @@ class Roll:
         self.valid : int
             The number of valid windows available
         """
+        Logger.info(f'Rolling using a delta: {self.delta}')
+
         total = self.df.shape[0] - self.size
         track = Track(total, step=10, print=Logger.info)
 
@@ -194,6 +196,7 @@ class Roll:
 
         Logger.debug(f'Valid windows: {self.valid}')
         return self.valid
+
 
     def convert(self, method):
         """
