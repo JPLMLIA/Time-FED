@@ -185,7 +185,7 @@
         - dtype: int
           checks:
             - compare:
-                gt: ${.min}
+                gt: 0
   .roll:
     dtype: dict
     sdesc: Parameters for the roll function
