@@ -82,7 +82,7 @@ defs = Path(__file__).parent / 'configs/defs/defs.yml'
 @mlky.cli.patch
 @mlky.cli.defs(default=defs)
 @mlky.cli.override
-@click.option('-dv', '--disableValidate', help='Disables the validation requirement. Validation will still be occur, but execution will not be prevented')
+@click.option('-dv', '--disableValidate', help='Disables the validation requirement. Validation will still be occur, but execution will not be prevented', is_flag=True)
 @click.option("-pc", "--printConfig", help="Prints the configuration to terminal and continues", is_flag=True)
 @click.option("-po", "--printOnly", help="Prints the configuration to terminal and exits", is_flag=True)
 def main(script, disablevalidate, **kwargs):
