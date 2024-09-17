@@ -18,6 +18,26 @@ from timefed.utils        import utils
 Logger = logging.getLogger('timefed/core/subselect.py')
 
 
+def xr_split(ds, date):
+    """
+    TODO
+
+    Parameters
+    ----------
+
+
+    Returns
+    -------
+
+    """
+    date = pd.to_datetime(date)
+
+    train = ds.datetime.isel(index=0) <= ts
+    test = ds.datetime.isel(index=0) > ts
+
+    return ds.sel(windowID=train.data), ds.sel(windowID=test.data)
+
+
 def select(train: pd.DataFrame, test: pd.DataFrame, target: str='label', n_jobs: int=1) -> Tuple[pd.DataFrame, pd.DataFrame]:
     """
     Uses tsfresh.select_features to select relevant features from the tsfresh feature
@@ -279,6 +299,7 @@ def _split_single_regression(data: pd.DataFrame, n: int = 10, **kwargs) -> pd.Da
 
     return sf
 
+
 def interact(data):
     """
     Interacts with the user to split the data into train/test sets and select a split date.
@@ -415,6 +436,17 @@ def main():
 
         data = utils.load_pkl(metadata)
 
+    elif Config.extract.method == 'passthrough':
+        Logger.info(f'Reading file {Config.extract.output}/preprocess/complete.nc')
+        ds = xr.load_dataset(f'{Config.extract.output}/preprocess/complete.nc')
+
+        train, test = xr_split(ds, Config.subselect.split_date)
+
+        Logger.info(f'Writing to file {Config.extract.output}/preprocess/complete.nc under select/[train,test]')
+        train.to_netcdf(Config.extract.output, mode='a', format='NETCDF4', group='select/train')
+        test .to_netcdf(Config.extract.output, mode='a', format='NETCDF4', group='select/test')
+
+        return True
     else:
         Logger.info(f'Reading file {Config.subselect.file}[extract/complete]')
         data = pd.read_hdf(Config.subselect.file, 'extract/complete')
