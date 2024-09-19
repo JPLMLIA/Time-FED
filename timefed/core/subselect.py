@@ -425,6 +425,93 @@ def cube(dfs, target=None, classification=False):
     return xr.merge(hold)
 
 
+def load_multi(data, date):
+    """
+    Loads train/test splits from a metadata
+
+    Parameters
+    ----------
+    data : dict
+        Metadata
+    date : str
+        Split date
+
+    Returns
+    -------
+    train, test
+    """
+    model_targ = Config.model.target
+    model_type = Config.model.type == 'classification'
+
+    Logger.info('Loading streams into memory')
+    train = []
+    test  = []
+    for key, stream in data.items():
+        if stream['end'] <= date:
+            train.append(key)
+        else:
+            test.append(key)
+
+    streams = []
+    for key in train:
+        track = pd.read_hdf(Config.subselect.file, key)
+        index = track.index.name
+        streams.append(track)
+
+    Logger.info(f'Retrieved {len(streams)} tracks as the train set')
+    Logger.debug(f'Tracks: {train}')
+
+    if Config.subselect.output == 'pandas':
+        Logger.info('Merging to a single dataframe')
+        index   = streams[0].index.name
+        streams = [stream.reset_index() for stream in streams]
+        train   = pd.concat(streams, axis=0, ignore_index=True).set_index(index)
+
+    elif Config.subselect.output == 'xarray':
+        Logger.info('Casting train dataframes to datasets')
+        train = cube(streams,
+            target = model_targ,
+            classification = model_type
+        )
+
+    streams = []
+    for key in test:
+        track = pd.read_hdf(Config.subselect.file, key)
+        streams.append(track)
+
+    Logger.info(f'Retrieved {len(streams)} tracks as the test set')
+    Logger.debug(f'Tracks: {test}')
+
+    if Config.subselect.output == 'pandas':
+        Logger.info('Merging to a single dataframe')
+        index   = streams[0].index.name
+        streams = [stream.reset_index() for stream in streams]
+        test    = pd.concat(streams, axis=0, ignore_index=True).set_index(index)
+
+        Logger.info('Verifying the train dataset does not have NaNs')
+        train = verify(train)
+        Logger.info('Verifying the test dataset does not have NaNs')
+        test  = verify(test)
+
+        diff = list(set(train) - set(test) | set(test) - set(train))
+        if diff:
+            Logger.warning('Some columns were dropped from one of train or test, dropping from both')
+            for key in diff:
+                Logger.debug(f'- {key}')
+
+            train = train.drop(columns=diff)
+            test = test.drop(columns=diff)
+
+    elif Config.subselect.output == 'xarray':
+        Logger.info('Casting dataframes to datasets')
+        test = cube(streams,
+            target = model_targ,
+            classification = model_type
+        )
+
+    return train, test
+
+
 def main():
     """
     TODO
@@ -480,102 +567,35 @@ def main():
 
     # Now load the splits
     if Config.subselect.multi:
-        model_targ = Config.model.target
-        model_type = Config.model.type == 'classification'
-
-        Logger.info('Loading streams into memory')
-        train = []
-        test  = []
-        for key, stream in data.items():
-            if stream['end'] <= date:
-                train.append(key)
-            else:
-                test.append(key)
-
-        streams = []
-        for key in train:
-            track = pd.read_hdf(Config.subselect.file, key)
-            index = track.index.name
-            streams.append(track)
-
-        Logger.info(f'Retrieved {len(streams)} tracks as the train set')
-        Logger.debug(f'Tracks: {train}')
-
-        if Config.subselect.output == 'pandas':
-            Logger.info('Merging to a single dataframe')
-            index   = streams[0].index.name
-            streams = [stream.reset_index() for stream in streams]
-            train   = pd.concat(streams, axis=0, ignore_index=True).set_index(index)
-
-        elif Config.subselect.output == 'xarray':
-            Logger.info('Casting train dataframes to datasets')
-            train = cube(streams,
-                target = model_targ,
-                classification = model_type
-            )
-
-        streams = []
-        for key in test:
-            track = pd.read_hdf(Config.subselect.file, key)
-            streams.append(track)
-
-        Logger.info(f'Retrieved {len(streams)} tracks as the test set')
-        Logger.debug(f'Tracks: {test}')
-
-        if Config.subselect.output == 'pandas':
-            Logger.info('Merging to a single dataframe')
-            index   = streams[0].index.name
-            streams = [stream.reset_index() for stream in streams]
-            test    = pd.concat(streams, axis=0, ignore_index=True).set_index(index)
-
-            Logger.info('Verifying the train dataset does not have NaNs')
-            train = verify(train)
-            Logger.info('Verifying the test dataset does not have NaNs')
-            test  = verify(test)
-
-        elif Config.subselect.output == 'xarray':
-            Logger.info('Casting dataframes to datasets')
-            test = cube(streams,
-                target = model_targ,
-                classification = model_type
-            )
-
+        train, test = load_multi(data, date)
     else:
-        Logger.debug(f'Split date selected: {date}')
-
-        # Subselect features to process on
-        if (features := Config.subselect.features):
-            if isinstance(features, list):
-                copy = data[features]
-            elif isinstance(features, str):
-                copy = data.filter(regex=features)
-            else:
-                Logger.error(f'Features provided cannot be interpreted as either a list or a regex string: {features}')
-
-            if copy.empty:
-                Logger.error('Feature subselection returned empty')
-                return
-
-            # Add target back in
-            copy[Config.model.target] = data[Config.model.target]
-
-            # Track the dropped columns so they can be saved elsewhere
-            dropped = set(data) - set(copy)
-
-            # Override and set as the data to train/test and select on
-            data = copy
-
         train = data.query('index <  @date')
         test  = data.query('index >= @date')
 
-        # TODO: Implement correctly
-        # if Config.subselect.save_dropped:
-        #     train.to_hdf(Config.subselect.file, 'select/train')
-        #     test .to_hdf(Config.subselect.file, 'select/test')
+    # Subselect features to process on
+    if (features := Config.subselect.features):
+        if isinstance(features, list):
+            copy = train[features]
+        elif isinstance(features, str):
+            copy = train.filter(regex=features)
+        else:
+            Logger.error(f'Features provided cannot be interpreted as either a list or a regex string: {features}')
 
-        Logger.debug(f'Train shape: {train.shape} ({train.shape[0]/data.shape[0]*100:.2f}%)')
-        Logger.debug(f'Test  shape: {test.shape} ({test.shape[0]/data.shape[0]*100:.2f}%)')
+        if train.empty:
+            Logger.error('Feature subselection returned empty')
+            return
 
+        # Add target back in
+        copy[Config.model.target] = train[Config.model.target]
+
+        # Track the dropped columns so they can be saved elsewhere
+        dropped = set(train) - set(copy)
+
+        train = copy
+        test  = test[list(train)]
+
+    Logger.debug(f'Train shape: {train.shape} ({train.shape[0]/data.shape[0]*100:.2f}%)')
+    Logger.debug(f'Test  shape: {test.shape} ({test.shape[0]/data.shape[0]*100:.2f}%)')
 
     if Config.subselect.tsfresh:
         if Config.subselect.output == 'pandas':
