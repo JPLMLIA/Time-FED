@@ -494,6 +494,7 @@ def main():
 
         if Config.subselect.output == 'pandas':
             Logger.info(f'Merging {len(streams)} tracks as the train set')
+            Logger.debug(f'Tracks: {streams}')
             index   = streams[0].index.name
             streams = [stream.reset_index() for stream in streams]
             train   = pd.concat(streams, axis=0, ignore_index=True).set_index(index)
@@ -512,6 +513,7 @@ def main():
 
         if Config.subselect.output == 'pandas':
             Logger.info(f'Merging {len(streams)} tracks as the test set')
+            Logger.debug(f'Tracks: {streams}')
             index   = streams[0].index.name
             streams = [stream.reset_index() for stream in streams]
             test    = pd.concat(streams, axis=0, ignore_index=True).set_index(index)
