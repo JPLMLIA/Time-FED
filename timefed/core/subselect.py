@@ -574,6 +574,8 @@ def main():
 
     # Subselect features to process on
     if (features := Config.subselect.features):
+        Logger.info(f'Filtering with: {Config.subselect.features}')
+
         if isinstance(features, list):
             copy = train[features]
         elif isinstance(features, str):
@@ -594,8 +596,9 @@ def main():
         train = copy
         test  = test[list(train)]
 
-    Logger.debug(f'Train shape: {train.shape} ({train.shape[0]/data.shape[0]*100:.2f}%)')
-    Logger.debug(f'Test  shape: {test.shape} ({test.shape[0]/data.shape[0]*100:.2f}%)')
+    total = train.shape[0] + test.shape[0]
+    Logger.debug(f'Train shape: {train.shape} ({train.shape[0]/total:.2%})')
+    Logger.debug(f'Test  shape: {test.shape} ({test.shape[0]/total:.2%})')
 
     if Config.subselect.tsfresh:
         if Config.subselect.output == 'pandas':
