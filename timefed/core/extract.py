@@ -415,7 +415,7 @@ class Extract:
                 break
         else:
             Logger.debug(f'Could not calculate an ideal block size')
-            blocks = None
+            blocks = os.cpu_count()
 
         # Cast to ray.data
         ds = ray.data.from_pandas(data)
