@@ -20,22 +20,27 @@ Logger = logging.getLogger('timefed/core/subselect.py')
 
 def xr_split(ds, date):
     """
-    TODO
+    Simple date splitting on xarray Datasets
 
     Parameters
     ----------
-
+    ds : xr.Dataset
+        Dataset to operate on
+    date : str
+        Datetime string to split with
 
     Returns
     -------
-
+    train, test : Tuple[xr.Dataset, xr.Dataset]
+        Train and test subsets
     """
     date = pd.to_datetime(date)
 
-    train = ds.datetime.isel(index=0) <= ts
-    test = ds.datetime.isel(index=0) > ts
+    train = ds.datetime.isel(index=0) <= date
+    test = ds.datetime.isel(index=0) > date
+    train, test = ds.sel(windowID=train.data), ds.sel(windowID=test.data)
 
-    return ds.sel(windowID=train.data), ds.sel(windowID=test.data)
+    return train, test
 
 
 def select(train: pd.DataFrame, test: pd.DataFrame, target: str='label', n_jobs: int=1) -> Tuple[pd.DataFrame, pd.DataFrame]:
@@ -434,6 +439,7 @@ def main():
             Logger.error('The multisteam case requires a metadata file produced by extract.py')
             return
 
+        Logger.info(f'Reading file {metadata}')
         data = utils.load_pkl(metadata)
 
     elif Config.extract.method == 'passthrough':
@@ -492,9 +498,11 @@ def main():
             index = track.index.name
             streams.append(track)
 
+        Logger.info(f'Retrieved {len(streams)} tracks as the train set')
+        Logger.debug(f'Tracks: {train}')
+
         if Config.subselect.output == 'pandas':
-            Logger.info(f'Merging {len(streams)} tracks as the train set')
-            Logger.debug(f'Tracks: {streams}')
+            Logger.info('Merging to a single dataframe')
             index   = streams[0].index.name
             streams = [stream.reset_index() for stream in streams]
             train   = pd.concat(streams, axis=0, ignore_index=True).set_index(index)
@@ -511,9 +519,11 @@ def main():
             track = pd.read_hdf(Config.subselect.file, key)
             streams.append(track)
 
+        Logger.info(f'Retrieved {len(streams)} tracks as the test set')
+        Logger.debug(f'Tracks: {test}')
+
         if Config.subselect.output == 'pandas':
-            Logger.info(f'Merging {len(streams)} tracks as the test set')
-            Logger.debug(f'Tracks: {streams}')
+            Logger.info('Merging to a single dataframe')
             index   = streams[0].index.name
             streams = [stream.reset_index() for stream in streams]
             test    = pd.concat(streams, axis=0, ignore_index=True).set_index(index)
