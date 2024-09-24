@@ -245,16 +245,16 @@ gnss-multi:
 mms-test:
   name: mms_test
 
-  output: /Users/marchett/Documents/TIME-FED/output/timefed/mms_test
-  data: /Users/marchett/Documents/TIME-FED/data/dsn
+  output: /data/MLIA_active_data/timefed/dsn/outputs/mms_test
+  data: /data/MLIA_active_data/timefed/dsn/data
   log:
     file: ${output}/${name}.log
   
   preprocess:
-    enabled: false
+    enabled: true
     file: ${output}/${name}.h5
-    tracks: ${data}/v4.MMS1.tracks.h5
-    drs: ${data}/v3.drs.h5
+    tracks: ${data}/tracks/v4/v4.MMS.tracks.h5
+    drs: ${data}/drs/v3.drs.h5
     only:
       drs:
         - RFI
@@ -267,7 +267,7 @@ mms-test:
       neg_ratio: 1
   
   extract:
-    enabled: false
+    enabled: true
     method: passthrough
     roll:
       window: 25 min
@@ -275,7 +275,7 @@ mms-test:
     output: ${output}
 
   subselect:
-    enabled: false
+    enabled: true
     split_date: '2019-01-01'
   
   model:
