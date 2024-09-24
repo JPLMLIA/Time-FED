@@ -44,9 +44,9 @@ def main():
         Logger.debug('The subselect script is disabled')
 
     if C.model.enabled:
-        if C.model.algorithm == 'rf':
+        if C.model.model.algorithm == 'rf':
             from timefed.core.model import main as model
-        if C.model.algorithm == 'deep':
+        if C.model.model.algorithm == 'deep':
             from timefed.core.deep import main as model
         Logger.info(f'Running script: model')
         model()

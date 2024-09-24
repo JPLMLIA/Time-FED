@@ -281,11 +281,16 @@ mms-test:
   model:
     enabled: true
     file: ${output}/preprocess/complete.nc
-    algorithm: deep
+    #algorithm: deep
     target: Label
     type: classification
     evaluate: True
-    model:                  
+    model:
+      algorithm: deep
+      parameters:
+        epochs: 2
+        batch: 32
+        rate: 0.001
       file: ${output}/model.${name}.pkl
       overwrite: True
       fit: True

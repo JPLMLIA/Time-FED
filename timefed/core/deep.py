@@ -199,9 +199,9 @@ def main():
     Logger.info('Done reading train and test.')
     
     cols = ['diff_AGC_VOLTAGE', 'diff_CARRIER_SYSTEM_NOISE_TEMP']
-    batch_size = 32
-    learning_rate = 0.001
-    n_epochs = 50
+    batch_size = C.model.parameters.batch
+    learning_rate = C.model.parameters.rate
+    n_epochs = C.model.parameters.epochs
 
     # Either load an existing model file
     if Path(path := C.model.file).exists() and not C.model.overwrite:
