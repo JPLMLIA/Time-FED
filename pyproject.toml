@@ -1,4 +1,57 @@
-# python -m build --wheel # May need to install build
 [build-system]
 requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["timefed"]
+
+[project]
+name = "timefed"
+version = "0.0.1"
+description = "Timeseries Forecasting, Evaluation, and Deployment"
+readme = "README.rst"
+requires-python = ">=3.10"
+# license = {file = "LICENSE"}
+keywords = ["timefed", "TimeFED", "Time-FED"]
+authors = [
+  {name = "James Montgomery", email = "J.Montgomery@jpl.nasa.gov"}
+]
+maintainers = [
+  {name = "James Montgomery", email = "J.Montgomery@jpl.nasa.gov"}
+]
+classifiers = [
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+]
+dependencies = [
+  "click",
+  "h5py",
+  "matplotlib",
+  "mlky",
+  "numpy",
+  "pandas",
+  "pvlib",
+  "pyyaml",
+  "ray",
+  "scipy == 1.13.0",
+  "seaborn",
+  "scikit-learn",
+  "tables",
+  "tqdm",
+  "tsfresh",
+]
+
+[project.optional-dependencies]
+docs = [
+  "mkdocs",
+  "mkapi",
+  "pytkdocs[numpy-style]",
+  "mkdocstrings[python]"
+]
+
+[project.urls]
+repository = "https://github.jpl.nasa.gov/jamesmo/TimeFED"
+
+[project.scripts]
+timefed = "timefed.__main__:cli"
