@@ -1,0 +1,15 @@
+site_name: TimeFED
+repo_name: jammont/TimeFED
+repo_url: https://github.jpl.nasa.gov/jamesmo/TimeFED
+docs_dir: docs/
+theme:
+  name: readthedocs
+plugins:
+  - search:
+  - mkapi:
+
+nav:
+  - Home: index.md
+  - Getting Started: usage.md
+  - Configurations: configs.md
+  - API: $api/timefed.***

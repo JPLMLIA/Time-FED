@@ -18,7 +18,7 @@ The Machine Learning and Instrument Autonomy group at JPL has built an infrastru
 
 ## Setup
 
-Clone the repo via `git pull https://github.jpl.nasa.gov/jamesmo/TimeFED.git`
+Clone the repo via `git clone https://github.jpl.nasa.gov/jamesmo/TimeFED.git`
 
 ### Environment
 
