@@ -7,7 +7,7 @@ include = ["timefed"]
 
 [project]
 name = "timefed"
-version = "0.0.1"
+version = "2.2.0"
 description = "Timeseries Forecasting, Evaluation, and Deployment"
 readme = "README.rst"
 requires-python = ">=3.10"
