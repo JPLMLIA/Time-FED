@@ -238,6 +238,33 @@ gnss-multi:
     model:
       file: ${output}/model.gnss.pkl
 
+# LSTM models
+
+lstm-mms:
+  mlky.patch: mms
+  name: lstm_mms
+
+  extract:
+    method: passthrough
+    roll:
+      window: 25 min
+      frequency: null
+
+  subselect:
+    split_date: 2019-01-01
+
+  model:
+    algorithm: LSTM
+    evaluate: True
+    model:
+      parameters:
+        cols: [diff_AGC_VOLTAGE, diff_CARRIER_SYSTEM_NOISE_TEMP]
+        epochs: 2
+        batch: 32
+        rate: 0.001
+      file: ${output}/model.${name}.pkl
+      overwrite: True
+      fit: True
 
 # Utilities
 

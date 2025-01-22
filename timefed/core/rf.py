@@ -37,6 +37,22 @@ Logger = logging.getLogger('timefed/model.py')
 
 def regress_score(model, data, name):
     """
+    Scores a RandomForestRegressor model
+
+    Parameters
+    ----------
+    model : RandomForestRegressor
+        Trained model to score
+    data : pandas.DataFrame
+        Test dataset
+    name : str
+        Name of this dataset
+
+    Returns
+    -------
+    dict, pandas.Series
+        The first is the scores dict that will contain a number of metrics; the second
+        is the prediction values
     """
     config   = Config()
     truth    = data[Config.model.target]
@@ -61,6 +77,25 @@ def regress_score(model, data, name):
 
 def class_score(model, data, name, multiclass_scores=False):
     """
+    Scores a RandomForestClassifier model
+
+    Parameters
+    ----------
+    model : RandomForestClassifier
+        Trained model to score
+    data : pandas.DataFrame
+        Test dataset
+    name : str
+        Name of this dataset
+    multiclass_scores : bool, default=False
+        Sets if this model had more than two classes
+
+    Returns
+    -------
+    dict, pandas.Series
+        The first is the scores dict that will contain a number of metrics; the second
+        is the probability values from model.predict_proba, rounded to the nearest
+        whole number
     """
     truth    = data[Config.model.target]
     data     = data.drop(columns=Config.model.target)
@@ -124,19 +159,14 @@ def class_score(model, data, name, multiclass_scores=False):
 def main():
     """
     Builds a model, trains and tests against it, then creates plots for the run.
-
-    Parameters
-    ----------
-    config : utils.Config
-        Config object defining arguments for classify
     """
     # Retrieve this script's configuration section to reduce verbosity of code
     C = Config.model
 
-    data = Sect({
-        'train': pd.read_hdf(C.file, 'select/train'),
-        'test' : pd.read_hdf(C.file, 'select/test')
-    })
+    data = Sect(
+        train = pd.read_hdf(C.file, 'select/train'),
+        test  = pd.read_hdf(C.file, 'select/test')
+    )
 
     for kind, df in data.items():
         if df.isna().any(axis=None):

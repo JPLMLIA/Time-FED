@@ -44,10 +44,11 @@ def main():
         Logger.debug('The subselect script is disabled')
 
     if C.model.enabled:
-        if C.model.model.algorithm == 'rf':
-            from timefed.core.model import main as model
-        if C.model.model.algorithm == 'deep':
-            from timefed.core.deep import main as model
+        if C.model.algorithm == 'RandomForest':
+            from timefed.core.rf import main as model
+        elif C.model.algorithm == 'LSTM':
+            from timefed.core.lstm import main as model
+
         Logger.info(f'Running script: model')
         model()
     else:

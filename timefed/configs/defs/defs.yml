@@ -280,6 +280,14 @@
     sdesc: Enables/disables this module in a pipeline execution
     default: True
     required: True
+  .algorithm:
+    dtype: str
+    sdesc: ML algorithm to use, either a `RandomForest` (classical) or a `LSTM` (deep) ML model
+    default: RandomForest
+    checks:
+      - oneof:
+        - RandomForest
+        - LSTM
   .type:
     dtype: str
     sdesc: Defines what kind of model this data would use. This influences many functions of TimeFED
@@ -309,6 +317,9 @@
       dtype: bool
       sdesc: Enables calling model.fit() on the training dataset
       default: True
+  .version:
+    dtype: str
+    sdesc: Version name for this model. Not set by default, this just inserts the name into some plots for better tracking
   .output:
     dtype: dict
     sdesc: Options for enabling/disabling various outputs
@@ -324,6 +335,10 @@
       dtype: str
       sdesc: Path to write scores to (dict in pickle format)
       default: scores.h5
+    .plots:
+      dtype: str
+      sdesc: Path to generate model evaluation plots to. Set to null to disable plots
+      default: ./
   .train_scores:
     dtype: bool
     sdesc: Perform scoring on the train set
