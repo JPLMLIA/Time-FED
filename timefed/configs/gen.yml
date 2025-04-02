@@ -255,16 +255,20 @@ lstm-mms:
 
   model:
     algorithm: LSTM
-    evaluate: True
+    file: ${input}/data.nc
     model:
       parameters:
         cols: [diff_AGC_VOLTAGE, diff_CARRIER_SYSTEM_NOISE_TEMP]
-        epochs: 2
+        epochs: 20
         batch: 32
         rate: 0.001
       file: ${output}/model.${name}.pkl
       overwrite: True
       fit: True
+    output:
+      model: True
+      predicts: ${output}/predicts.h5
+      plots: ${output}/
 
 # Utilities
 

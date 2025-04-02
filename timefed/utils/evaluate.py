@@ -153,6 +153,8 @@ def plotConfusionMatrix(df, version=None, save=None):
     if version:
         title += f'\nVersion: {version}'
 
+    percent = cm / cm.sum(axis=0)
+
     img = metrics.ConfusionMatrixDisplay(cm)
     img.plot()
     img.ax_.set_title(title, fontsize=12)
@@ -161,7 +163,7 @@ def plotConfusionMatrix(df, version=None, save=None):
         pos  = obj.get_position()
         perc = percent[pos]
         text = obj.get_text()
-        obj.set_text(f"{lbls[pos]}\n{text} ({perc:.2f}%)")
+        obj.set_text(f"{lbls[pos]}\n{text} ({perc:.2%})")
 
     plt.tight_layout()
     if save:

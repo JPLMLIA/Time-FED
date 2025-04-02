@@ -51,6 +51,9 @@ def initLogging():
         if C.log.mode == 'write' and os.path.exists(file):
             os.remove(C.log.file)
 
+        # Make sure path exists
+        Path(file).parent.mkdir(exist_ok=True, parents=True)
+
         # Add the file logging
         fh = logging.FileHandler(file)
         fh.setLevel(C.log.level or logging.DEBUG)

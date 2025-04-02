@@ -29,6 +29,7 @@ dependencies = [
   "h5py",
   "matplotlib",
   "mlky",
+  "netcdf4",
   "numpy",
   "pandas",
   "pvlib",
@@ -38,16 +39,16 @@ dependencies = [
   "seaborn",
   "scikit-learn",
   "tables",
+  "torch",
   "tqdm",
   "tsfresh",
+  "xarray"
 ]
 
 [project.optional-dependencies]
 docs = [
   "mkdocs",
-  "mkapi",
-  "pytkdocs[numpy-style]",
-  "mkdocstrings[python]"
+  "mkapi"
 ]
 
 [project.urls]

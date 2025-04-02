@@ -144,7 +144,10 @@ class TDLDataset(Dataset):
         self.stds  = stds
 
         # Track the timestamps for this dataset
-        self.time = ds['datetime'].isel(index=0)
+        try:
+            self.time = ds['datetime'].isel(index=0)
+        except:
+            self.time = ds.windowID
 
         data = ds[columns].to_array().transpose('windowID', 'index', 'variable')
         data = (data + means) / stds - data.mean('index')
@@ -339,13 +342,9 @@ def main():
     Logger.info('Loading test and train')
     Logger.debug(f'File: {C.file}')
 
-    # data = Sect(
-    #     train = xr.open_dataset(C.file, group='select/train'),
-    #     test  = xr.open_dataset(C.file, group='select/test')
-    # )
     data = Sect(
-        train = xr.open_dataset('train.nc'),
-        test  = xr.open_dataset('test.nc')
+        train = xr.open_dataset(C.file, group='select/train'),
+        test  = xr.open_dataset(C.file, group='select/test')
     )
     means = np.array(data.train[params.cols].mean().to_array())
     stds  = np.array(data.train[params.cols].std().to_array())
@@ -410,9 +409,10 @@ def main():
             threshold = 0.5
         )
 
-        if C.evaluate:
-            Logger.info('Evaluating results')
-            evaluate.lstm()
+        # Generate some evaluate plots
+        if C.output.plots:
+            Logger.info('Generating plots')
+            evaluate.generatePlots(C.output.predicts, output=C.output.plots, version=C.version)
 
 
 if __name__ == '__main__':

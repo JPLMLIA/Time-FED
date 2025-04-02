@@ -4,6 +4,7 @@ import logging
 import os
 import pickle
 import sys
+from pathlib import Path
 
 from datetime import datetime as dtt
 from mlky     import Config
@@ -50,6 +51,9 @@ def init(args):
     if config.log.file:
         if config.log.reset and os.path.exists(config.log.file):
             os.remove(config.log.file)
+
+        # Make sure path exists
+        Path(config.log.file).parent.mkdir(exist_ok=True, parents=True)
 
         # Add the file logging
         fh = logging.FileHandler(config.log.file)
