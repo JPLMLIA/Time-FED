@@ -11,7 +11,7 @@ version = "2.2.0"
 description = "Timeseries Forecasting, Evaluation, and Deployment"
 readme = "README.rst"
 requires-python = ">=3.10"
-# license = {file = "LICENSE"}
+license = {file = "LICENSE"}
 keywords = ["timefed", "TimeFED", "Time-FED"]
 authors = [
   {name = "James Montgomery", email = "J.Montgomery@jpl.nasa.gov"}
