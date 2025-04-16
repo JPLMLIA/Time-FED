@@ -41,4 +41,4 @@ jobs:
       - name: Test installation
         shell: bash
         run: |
-          spectral_util
+          timefed
