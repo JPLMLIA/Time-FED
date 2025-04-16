@@ -1,15 +1,8 @@
-[build-system]
-requires = ["setuptools"]
-build-backend = "setuptools.build_meta"
-
-[tool.setuptools.packages.find]
-include = ["timefed"]
-
 [project]
 name = "timefed"
 version = "2.2.0"
 description = "Timeseries Forecasting, Evaluation, and Deployment"
-readme = "README.rst"
+readme = "README.md"
 requires-python = ">=3.10"
 license = {file = "LICENSE"}
 keywords = ["timefed", "TimeFED", "Time-FED"]
@@ -56,3 +49,10 @@ repository = "https://github.jpl.nasa.gov/jamesmo/TimeFED"
 
 [project.scripts]
 timefed = "timefed.__main__:cli"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+path = "timefed/__init__.py"
