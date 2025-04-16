@@ -2,7 +2,7 @@
 name = "timefed"
 version = "2.2.0"
 description = "Timeseries Forecasting, Evaluation, and Deployment"
-readme = "README.rst"
+readme = "README.md"
 requires-python = ">=3.10"
 license = {file = "LICENSE"}
 keywords = ["timefed", "TimeFED", "Time-FED"]
